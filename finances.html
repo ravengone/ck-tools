@@ -739,11 +739,11 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
                 <select class="nx-select" id="market-role-filter" onchange="refreshMarket()">
                   <option value="all">All Roles</option>
                   <option value="igl">IGL</option>
-                  <option value="star player">Star Player</option>
+                  <option value="rifler">Rifler</option>
                   <option value="entry fragger">Entry Fragger</option>
+                  <option value="star player">Star Player</option>
                   <option value="awper">AWPer</option>
                   <option value="anchor">Anchor</option>
-                  <option value="dynamic">Dynamic</option>
                 </select>
               </div>
             </div>
@@ -1490,35 +1490,38 @@ function handleXL(e, cb) {
 /* ROLE (tactical position) catalog — distinct from Roster (Starter/Bench/no team) */
 const ROLE_OPTIONS = [
   { value:'igl',           label:'IGL' },
-  { value:'star player',   label:'Star Player' },
+  { value:'rifler',        label:'Rifler' },
   { value:'entry fragger', label:'Entry Fragger' },
+  { value:'star player',   label:'Star Player' },
   { value:'awper',         label:'AWPer' },
   { value:'anchor',        label:'Anchor' },
-  { value:'dynamic',       label:'Dynamic' },
 ];
 const ROLE_LABEL_BY_VALUE = Object.fromEntries(ROLE_OPTIONS.map(r => [r.value, r.label]));
 
-/* Legacy role values (from the old 8-role system) auto-map into the new catalog
-   so existing/imported spreadsheet data keeps working without manual re-tagging. */
+/* Normalize only known legacy aliases/typos. Rifler is a real role and must
+   never be converted into Dynamic (Dynamic is no longer a supported role). */
 const ROLE_MIGRATION = {
-  'support': 'dynamic',
-  'lurker': 'dynamic',
-  'rifler': 'dynamic',
-  'rotator': 'dynamic',
-  'trader': 'dynamic',
+  'support': 'anchor',
+  'lurker': 'rifler',
+  'rotator': 'anchor',
+  'trader': 'rifler',
   'closer': 'star player',
   'star rifle': 'star player',
   'star rifler': 'star player',
   'closer/star player': 'star player',
+  'entry fagger': 'entry fragger',
+  'awpper': 'awper',
 };
 
-/* Splits a "awper|igl|support" string into a clean lowercase array, applying legacy migration */
+/* Splits a "awper|igl|anchor" string into a clean lowercase array,
+   preserving multiple tactical roles. */
 function parseRoleList(roleStr) {
-  return String(roleStr || '')
+  return [...new Set(String(roleStr || '')
     .split('|')
     .map(s => s.trim().toLowerCase())
     .filter(Boolean)
-    .map(s => ROLE_MIGRATION[s] || s);
+    .map(s => ROLE_MIGRATION[s] || s)
+    .filter(s => ROLE_OPTIONS.some(r => r.value === s)))];
 }
 
 /* Normalize column names from Excel → internal code names */
@@ -2089,7 +2092,7 @@ function loadDemoData() {
     {TeamName:'Nova Collective',Tier:'Tier 2',CurrentBank:42000,Coach:4000,Analyst:2000,HealthTeam:1000,PhysicalTeam:800,Maintenance:900,Marketing:1200},
     {TeamName:'Drift Esports',Tier:'Tier 3',CurrentBank:8600,Coach:2500,Analyst:1200,HealthTeam:600,PhysicalTeam:500,Maintenance:700,Marketing:600}
   ];
-  const roles=['Duelist','Initiator','Controller','Sentinel','Flex'];
+  const roles=['igl','rifler','entry fragger','star player','awper','anchor'];
   const countries=['south korea','sweden','brazil','germany','united states','france','canada','japan'];
   const mk=(team,names,mvs,rost,con)=>names.map((n,i)=>({PlayerName:n,TeamName:team,'Market Value':mvs[i],'Prize Pool':Math.round(mvs[i]*0.3),Roster:rost[i],Role:roles[i%5],Country:countries[i%countries.length],MVP:Math.max(0,4-i)+1,EVP:3-(i%3),VP:5-(i%4),Titles:(i%3),'Total MVP':10+i,'Total EVP':8,'Total VP':12,'Total Titles':2,'Major Winner':i===0?1:0,'Previous MV':Math.round(mvs[i]*0.92),ContractMonths:con[i]}));
   let P=[];
