@@ -2514,6 +2514,8 @@ canvas { width: 100% !important; }
 
 .ev-result-value.gold-text { color: var(--gold); }
 .ev-result-value.silver-text { color: var(--silver); }
+.ev-result-value.bronze-text { color: var(--bronze); }
+.ev-result-value.steel-text { color: var(--muted); }
 
 .ev-card-medals {
   display: flex;
@@ -2907,6 +2909,10 @@ canvas { width: 100% !important; }
 }
 .evd-result-place { font-size: 11px; color: var(--muted); font-weight: 600; }
 .evd-result-team { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.evd-result-pill.gold-text .evd-result-team { color: var(--gold); }
+.evd-result-pill.silver-text .evd-result-team { color: var(--silver); }
+.evd-result-pill.bronze-text .evd-result-team { color: var(--bronze); }
+.evd-result-pill.steel-text .evd-result-team { color: var(--muted); }
 
 /* Medal cards */
 .evd-medals-row { display: flex; gap: 10px; flex-wrap: wrap; }

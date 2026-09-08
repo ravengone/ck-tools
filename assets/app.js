@@ -2588,6 +2588,18 @@ function renderEventsGrid() {
         html += `<div><div class="ev-result-label">2nd Place</div><div class="ev-result-value silver-text">${escHtml(e.second)}</div></div>`;
         html += `</div>`;
       }
+      if (e.third) {
+        html += `<div class="ev-card-result" style="border-color:rgba(176,122,67,0.15)">`;
+        html += `<div class="ev-card-trophy-wrap">🥉</div>`;
+        html += `<div><div class="ev-result-label">3rd Place</div><div class="ev-result-value bronze-text">${escHtml(e.third)}</div></div>`;
+        html += `</div>`;
+      }
+      if (e.fourth) {
+        html += `<div class="ev-card-result" style="border-color:rgba(138,130,117,0.15)">`;
+        html += `<div class="ev-card-trophy-wrap">4️⃣</div>`;
+        html += `<div><div class="ev-result-label">4th Place</div><div class="ev-result-value steel-text">${escHtml(e.fourth)}</div></div>`;
+        html += `</div>`;
+      }
       // Medals
       const medals = [];
       if (e.mvp) medals.push({ label: 'MVP', icon: '🥇', val: e.mvp });
@@ -2669,10 +2681,12 @@ function openEventDetails(idx) {
   }
 
   // Results section
-  if ((e.status || '').toLowerCase() === 'finished' && (e.winner || e.second)) {
+  if ((e.status || '').toLowerCase() === 'finished' && (e.winner || e.second || e.third || e.fourth)) {
     body += `<div class="evd-section evd-results-row">`;
     if (e.winner) body += `<div class="evd-result-pill gold-text"><span class="evd-result-place">🏆 1st Place</span><span class="evd-result-team">${escHtml(e.winner)}</span></div>`;
     if (e.second) body += `<div class="evd-result-pill silver-text"><span class="evd-result-place">🥈 2nd Place</span><span class="evd-result-team">${escHtml(e.second)}</span></div>`;
+    if (e.third) body += `<div class="evd-result-pill bronze-text"><span class="evd-result-place">🥉 3rd Place</span><span class="evd-result-team">${escHtml(e.third)}</span></div>`;
+    if (e.fourth) body += `<div class="evd-result-pill steel-text"><span class="evd-result-place">4️⃣ 4th Place</span><span class="evd-result-team">${escHtml(e.fourth)}</span></div>`;
     body += `</div>`;
     // Player medals
     const medals = [];
@@ -2881,6 +2895,8 @@ function openEventModal(editIdx = -1) {
     } else {
       document.getElementById('evmWinner').value = e.winner || '';
       document.getElementById('evmSecond').value = e.second || '';
+      document.getElementById('evmThird').value = e.third || '';
+      document.getElementById('evmFourth').value = e.fourth || '';
       document.getElementById('evmMVP').value = e.mvp || '';
       document.getElementById('evmEVP').value = e.evp || '';
       document.getElementById('evmVP').value = e.vp || '';
@@ -2926,7 +2942,7 @@ function closeEventModal() {
 function clearEventModal() {
   ['evmName','evmDriveLink','evmPrizePool','evmLogo','evmTrophy','evmCity','evmCountry',
    'evmFlag','evmTeamCount','evmStage','evmNext1','evmNext2','evmNext3',
-   'evmWinner','evmSecond','evmMVP','evmEVP','evmVP',
+   'evmWinner','evmSecond','evmThird','evmFourth','evmMVP','evmEVP','evmVP',
    'evmPrize1st','evmPrize2nd','evmPrize34','evmPrize58','evmPrize911','evmPrize1216','evmPrize1724',
    'evmPrizeMVP','evmPrizeEVP','evmPrizeVP'].forEach(id => {
     const el = document.getElementById(id);
@@ -2955,6 +2971,41 @@ function updateEventLogoPreview() {
   img.src = url;
   img.style.display = '';
 }
+
+/* ─── Inject 3rd/4th Place fields next to "2nd Place" in the Add/Edit modal ───
+   The form markup itself lives in index.html (not included here), so instead
+   of requiring an HTML edit, we clone the "2nd Place" field's structure at
+   runtime and insert two more right after it. Safe to call multiple times —
+   it's a no-op once the fields exist. */
+function ensurePlacementFields() {
+  if (document.getElementById('evmThird')) return;
+  const secondInput = document.getElementById('evmSecond');
+  if (!secondInput) return;
+  const secondGroup = secondInput.closest('.form-group') || secondInput.parentElement;
+  if (!secondGroup) return;
+
+  const makeGroup = (id, labelText) => {
+    const group = document.createElement('div');
+    group.className = secondGroup.className || 'form-group';
+    const label = document.createElement('label');
+    label.className = 'form-label';
+    label.textContent = labelText;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control';
+    input.id = id;
+    input.placeholder = 'Team name';
+    group.appendChild(label);
+    group.appendChild(input);
+    return group;
+  };
+
+  const thirdGroup = makeGroup('evmThird', '3rd Place');
+  const fourthGroup = makeGroup('evmFourth', '4th Place');
+  secondGroup.insertAdjacentElement('afterend', thirdGroup);
+  thirdGroup.insertAdjacentElement('afterend', fourthGroup);
+}
+ensurePlacementFields();
 
 function toggleStatusFields() {
   const status = document.getElementById('evmStatus').value;
@@ -2986,10 +3037,12 @@ function saveEvent() {
     ev.nextMatch1 = document.getElementById('evmNext1').value.trim();
     ev.nextMatch2 = document.getElementById('evmNext2').value.trim();
     ev.nextMatch3 = document.getElementById('evmNext3').value.trim();
-    ev.winner = ''; ev.second = ''; ev.mvp = ''; ev.evp = ''; ev.vp = '';
+    ev.winner = ''; ev.second = ''; ev.third = ''; ev.fourth = ''; ev.mvp = ''; ev.evp = ''; ev.vp = '';
   } else {
     ev.winner = document.getElementById('evmWinner').value.trim();
     ev.second = document.getElementById('evmSecond').value.trim();
+    ev.third = document.getElementById('evmThird').value.trim();
+    ev.fourth = document.getElementById('evmFourth').value.trim();
     ev.mvp = document.getElementById('evmMVP').value.trim();
     ev.evp = document.getElementById('evmEVP').value.trim();
     ev.vp = document.getElementById('evmVP').value.trim();
