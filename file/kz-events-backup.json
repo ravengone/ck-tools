@@ -712,9 +712,9 @@
       "17th-24th": ""
     },
     "playerPrizes": {
-      "mvp": "",
-      "evp": "",
-      "vp": ""
+      "mvp": "$4,999.5",
+      "evp": "$3,571.5",
+      "vp": "$2,143.5"
     },
     "playoffTeams": [
       {
@@ -792,60 +792,60 @@
     },
     "playoffPlayers": {
       "MOUZ": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Brollan",
+        "torzsi",
+        "Spinx",
+        "Jimpphat",
+        "xertioN"
       ],
       "Astralis": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "device",
+        "HooXi",
+        "stavn",
+        "jabbi",
+        "Staehr"
       ],
       "Envy": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "cosmeeeN",
+        "liTTle",
+        "h4rn",
+        "PTC",
+        "Snax"
       ],
       "Enemy": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Nodios",
+        "valde",
+        "kroK",
+        "salaza",
+        "leakz"
       ],
       "BC.Game": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "s1mple",
+        "electroNic",
+        "Valiance",
+        "shadiy",
+        "SaVage"
       ],
       "Imperial": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "VINI",
+        "try",
+        "Shr",
+        "noway",
+        "chelo"
       ],
       "Lynn Vision": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Westmelon",
+        "z4kr",
+        "Starry",
+        "EmiliaQAQ",
+        "C4LLM3SU3"
       ],
       "Lux Tenebris": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "kilzys",
+        "heroghoxxt",
+        "kyourezz",
+        "taco",
+        "boltz"
       ]
     }
   }
