@@ -1238,6 +1238,7 @@ function parseHistoryData(rows) {
     const map = String(r['Map'] ?? r['map'] ?? '').trim();
     const result = String(r['Result'] ?? r['result'] ?? '').trim();
     const event = String(r['Event'] ?? r['event'] ?? '').trim();
+    const details = String(r['Details'] ?? r['details'] ?? '').trim();
     let dateRaw = r['Date'] ?? r['date'] ?? '';
     if (!team1 || !team2 || !result) continue;
 
@@ -1264,7 +1265,7 @@ function parseHistoryData(rows) {
     let winner = score1 > score2 ? team1 : score2 > score1 ? team2 : 'Draw';
 
     data.push({
-      team1, team2, map, result, event, dateStr, dateObj,
+      team1, team2, map, result, event, details, dateStr, dateObj,
       score1, score2, winner,
       month: dateObj ? dateObj.getMonth() + 1 : 0,
       year: dateObj ? dateObj.getFullYear() : 0
@@ -1293,6 +1294,12 @@ function getAllMapsFromHistory() {
 function getAllEventsFromHistory() {
   const set = new Set();
   historyData.forEach(m => { if (m.event) set.add(m.event); });
+  return Array.from(set).sort();
+}
+
+function getAllDetailsFromHistory() {
+  const set = new Set();
+  historyData.forEach(m => { if (m.details) set.add(m.details); });
   return Array.from(set).sort();
 }
 
@@ -1375,6 +1382,7 @@ function initProAnalyses() {
   // Populate filter dropdowns
   const maps = getAllMapsFromHistory();
   const events = getAllEventsFromHistory();
+  const details = getAllDetailsFromHistory();
   const months = getAllMonthsFromHistory();
   const years = getAllYearsFromHistory();
 
@@ -1389,6 +1397,9 @@ function initProAnalyses() {
 
   const eventSel = document.getElementById('paFilterEvent');
   eventSel.innerHTML = '<option value="">All Events</option>' + events.map(e => `<option value="${escHtml(e)}">${escHtml(e)}</option>`).join('');
+
+  const detailsSel = document.getElementById('paFilterDetails');
+  detailsSel.innerHTML = '<option value="">All Details</option>' + details.map(d => `<option value="${escHtml(d)}">${escHtml(d)}</option>`).join('');
 
   const monthSel = document.getElementById('paFilterMonth');
   monthSel.innerHTML = '<option value="">All Months</option>' + months.map(m => `<option value="${m}">${MONTH_NAMES[m]}</option>`).join('');
@@ -1408,7 +1419,7 @@ function initProAnalyses() {
     setupAutocomplete('h2hTeamB', 'h2hTeamBSugg', allTeams, null);
 
     // Filter listeners
-    ['paFilterMap', 'paFilterEvent', 'paFilterMonth', 'paFilterYear'].forEach(id => {
+    ['paFilterMap', 'paFilterEvent', 'paFilterDetails', 'paFilterMonth', 'paFilterYear'].forEach(id => {
       document.getElementById(id).addEventListener('change', renderHistoryTable);
     });
     document.getElementById('paFilterDate').addEventListener('change', renderHistoryTable);
@@ -1427,6 +1438,7 @@ function initProAnalyses() {
       document.getElementById('paFilterOpponent').value = '';
       document.getElementById('paFilterMap').value = '';
       document.getElementById('paFilterEvent').value = '';
+      document.getElementById('paFilterDetails').value = '';
       document.getElementById('paFilterDate').value = '';
       document.getElementById('paFilterMonth').value = '';
       document.getElementById('paFilterYear').value = '';
@@ -1471,6 +1483,7 @@ function getFilteredHistory() {
   const opp = paFilteredOpponent.trim();
   const map = document.getElementById('paFilterMap').value;
   const event = document.getElementById('paFilterEvent').value;
+  const details = document.getElementById('paFilterDetails').value;
   const date = document.getElementById('paFilterDate').value;
   const month = document.getElementById('paFilterMonth').value;
   const year = document.getElementById('paFilterYear').value;
@@ -1485,6 +1498,7 @@ function getFilteredHistory() {
     }
     if (map && m.map !== map) return false;
     if (event && m.event !== event) return false;
+    if (details && m.details !== details) return false;
     if (date && m.dateStr !== date) return false;
     if (month && m.month !== parseInt(month)) return false;
     if (year && m.year !== parseInt(year)) return false;
@@ -1502,7 +1516,7 @@ function renderHistoryTable() {
   if (badge) badge.textContent = historyData.length ? historyData.length : '';
 
   if (!filtered.length) {
-    body.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found for current filters.</td></tr>';
+    body.innerHTML = '<tr><td colspan="8" class="empty-state">No matches found for current filters.</td></tr>';
     return;
   }
 
@@ -1552,6 +1566,7 @@ function renderHistoryTable() {
       <td>${t2Html}</td>
       <td><span class="pa-map-badge">${escHtml(m.map)}</span></td>
       <td class="text-xs">${escHtml(m.event)}</td>
+      <td class="text-xs">${escHtml(m.details)}</td>
       <td class="center">${outcomeHtml}</td>
     </tr>`;
   }).join('');
