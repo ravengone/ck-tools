@@ -2579,25 +2579,25 @@ function renderEventsGrid() {
         html += `<div class="ev-card-result">`;
         if (e.trophy) html += `<div class="ev-card-trophy-wrap"><img src="${escHtml(e.trophy)}" alt="🏆" onerror="this.textContent='🏆'"></div>`;
         else html += `<div class="ev-card-trophy-wrap">🏆</div>`;
-        html += `<div><div class="ev-result-label">Winner</div><div class="ev-result-value gold-text">${escHtml(e.winner)}</div></div>`;
+        html += `<div><div class="ev-result-label">Winner</div><div class="ev-result-value gold-text"><span class="team-name-with-logo">${teamLogoImgHtml(e.winner, 'team-logo-sm')}${escHtml(e.winner)}</span></div></div>`;
         html += `</div>`;
       }
       if (e.second) {
         html += `<div class="ev-card-result" style="border-color:rgba(154,160,171,0.15)">`;
         html += `<div class="ev-card-trophy-wrap">🥈</div>`;
-        html += `<div><div class="ev-result-label">2nd Place</div><div class="ev-result-value silver-text">${escHtml(e.second)}</div></div>`;
+        html += `<div><div class="ev-result-label">2nd Place</div><div class="ev-result-value silver-text"><span class="team-name-with-logo">${teamLogoImgHtml(e.second, 'team-logo-sm')}${escHtml(e.second)}</span></div></div>`;
         html += `</div>`;
       }
       if (e.third) {
         html += `<div class="ev-card-result" style="border-color:rgba(176,122,67,0.15)">`;
         html += `<div class="ev-card-trophy-wrap">🥉</div>`;
-        html += `<div><div class="ev-result-label">3rd Place</div><div class="ev-result-value bronze-text">${escHtml(e.third)}</div></div>`;
+        html += `<div><div class="ev-result-label">3rd Place</div><div class="ev-result-value bronze-text"><span class="team-name-with-logo">${teamLogoImgHtml(e.third, 'team-logo-sm')}${escHtml(e.third)}</span></div></div>`;
         html += `</div>`;
       }
       if (e.fourth) {
         html += `<div class="ev-card-result" style="border-color:rgba(138,130,117,0.15)">`;
         html += `<div class="ev-card-trophy-wrap">4️⃣</div>`;
-        html += `<div><div class="ev-result-label">4th Place</div><div class="ev-result-value steel-text">${escHtml(e.fourth)}</div></div>`;
+        html += `<div><div class="ev-result-label">4th Place</div><div class="ev-result-value steel-text"><span class="team-name-with-logo">${teamLogoImgHtml(e.fourth, 'team-logo-sm')}${escHtml(e.fourth)}</span></div></div>`;
         html += `</div>`;
       }
       // Medals
@@ -2683,10 +2683,10 @@ function openEventDetails(idx) {
   // Results section
   if ((e.status || '').toLowerCase() === 'finished' && (e.winner || e.second || e.third || e.fourth)) {
     body += `<div class="evd-section evd-results-row">`;
-    if (e.winner) body += `<div class="evd-result-pill gold-text"><span class="evd-result-place">🏆 1st Place</span><span class="evd-result-team">${escHtml(e.winner)}</span></div>`;
-    if (e.second) body += `<div class="evd-result-pill silver-text"><span class="evd-result-place">🥈 2nd Place</span><span class="evd-result-team">${escHtml(e.second)}</span></div>`;
-    if (e.third) body += `<div class="evd-result-pill bronze-text"><span class="evd-result-place">🥉 3rd Place</span><span class="evd-result-team">${escHtml(e.third)}</span></div>`;
-    if (e.fourth) body += `<div class="evd-result-pill steel-text"><span class="evd-result-place">4️⃣ 4th Place</span><span class="evd-result-team">${escHtml(e.fourth)}</span></div>`;
+    if (e.winner) body += `<div class="evd-result-pill gold-text"><span class="evd-result-place">🏆 1st Place</span><span class="evd-result-team team-name-with-logo">${teamLogoImgHtml(e.winner, 'team-logo-md')}${escHtml(e.winner)}</span></div>`;
+    if (e.second) body += `<div class="evd-result-pill silver-text"><span class="evd-result-place">🥈 2nd Place</span><span class="evd-result-team team-name-with-logo">${teamLogoImgHtml(e.second, 'team-logo-md')}${escHtml(e.second)}</span></div>`;
+    if (e.third) body += `<div class="evd-result-pill bronze-text"><span class="evd-result-place">🥉 3rd Place</span><span class="evd-result-team team-name-with-logo">${teamLogoImgHtml(e.third, 'team-logo-md')}${escHtml(e.third)}</span></div>`;
+    if (e.fourth) body += `<div class="evd-result-pill steel-text"><span class="evd-result-place">4️⃣ 4th Place</span><span class="evd-result-team team-name-with-logo">${teamLogoImgHtml(e.fourth, 'team-logo-md')}${escHtml(e.fourth)}</span></div>`;
     body += `</div>`;
     // Player medals
     const medals = [];
