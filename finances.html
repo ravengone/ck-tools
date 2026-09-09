@@ -1375,11 +1375,16 @@ const COUNTRY_DATA = {
   'greece':{'code':'GR','region':'Europa'},'turkey':{'code':'TR','region':'Europa'},
   'turkiye':{'code':'TR','region':'Europa'},'iceland':{'code':'IS','region':'Europa'},
   'ireland':{'code':'IE','region':'Europa'},'georgia':{'code':'GE','region':'Europa'},
-  'kazakhstan':{'code':'KZ','region':'Europa'},'moldova':{'code':'MD','region':'Europa'},
+  'moldova':{'code':'MD','region':'Europa'},
   'north macedonia':{'code':'MK','region':'Europa'},'slovenia':{'code':'SI','region':'Europa'},
-  'bosnia':{'code':'BA','region':'Europa'},'albania':{'code':'AL','region':'Europa'},
+  'bosnia':{'code':'BA','region':'Europa'},'bosnia and herzegovina':{'code':'BA','region':'Europa'},
+  'albania':{'code':'AL','region':'Europa'},
   'montenegro':{'code':'ME','region':'Europa'},'belarus':{'code':'BY','region':'Europa'},
+  'kosovo':{'code':'XK','region':'Europa'},'luxembourg':{'code':'LU','region':'Europa'},
+  'south africa':{'code':'ZA','region':'Europa'},
+  'israel':{'code':'IL','region':'Europa'},
   'russia':{'code':'RU','region':'Asia'},
+  'kazakhstan':{'code':'KZ','region':'Asia'},'uzbekistan':{'code':'UZ','region':'Asia'},
   'china':{'code':'CN','region':'Asia'},'south korea':{'code':'KR','region':'Asia'},
   'korea':{'code':'KR','region':'Asia'},'japan':{'code':'JP','region':'Asia'},
   'australia':{'code':'AU','region':'Asia'},'new zealand':{'code':'NZ','region':'Asia'},
@@ -1388,8 +1393,9 @@ const COUNTRY_DATA = {
   'vietnam':{'code':'VN','region':'Asia'},'philippines':{'code':'PH','region':'Asia'},
   'india':{'code':'IN','region':'Asia'},'pakistan':{'code':'PK','region':'Asia'},
   'mongolia':{'code':'MN','region':'Asia'},'taiwan':{'code':'TW','region':'Asia'},
-  'hong kong':{'code':'HK','region':'Asia'},'israel':{'code':'IL','region':'Asia'},
+  'hong kong':{'code':'HK','region':'Asia'},'iraq':{'code':'IQ','region':'Asia'},
   'uae':{'code':'AE','region':'Asia'},'united arab emirates':{'code':'AE','region':'Asia'},
+  'guatemala':{'code':'GT','region':'Americas'},
 };
 
 function codeToFlagImg(code, size) {
@@ -1429,7 +1435,20 @@ const REGION_STYLE = {
   'Europa':  { color:'var(--cyan)',   icon:'\uD83C\uDF0D' },
   'Asia':    { color:'var(--purple)', icon:'\uD83C\uDF0F' },
   'MIXED':   { color:'var(--yellow)', icon:'\uD83C\uDF10' },
+  'Unknown': { color:'var(--text-faint)', icon:'\uD83C\uDF10' },
 };
+
+// Player-level region badge (macro region: Americas / Europa / Asia), derived from Country
+function getPlayerMacroRegion(p) {
+  if (!p) return 'Unknown';
+  return p.Region || getCountryRegion(p.Country) || 'Unknown';
+}
+
+function playerRegionBadge(p) {
+  const r = getPlayerMacroRegion(p);
+  const s = REGION_STYLE[r] || REGION_STYLE['Unknown'];
+  return `<span title="Region" style="font-family:var(--font-data);font-size:10px;color:${s.color};background:${s.color}22;border:1px solid ${s.color}44;border-radius:4px;padding:1px 6px;letter-spacing:1px;white-space:nowrap;">${s.icon} ${r.toUpperCase()}</span>`;
+}
 
 function regionBadge(teamName) {
   const r = getTeamRegion(teamName);
@@ -1555,6 +1574,7 @@ function normalizePlayers(arr) {
     row['Previous MV'] = Number(row['Previous MV']) || 0;
     row.ContractMonths = Number(row.ContractMonths || row['ContractMonths']) || 0;
     row.Country = String(row.Country || row['Country'] || '').trim();
+    row.Region = getCountryRegion(row.Country) || 'Unknown';
 
     // Front Office contract fields (0/empty = not set)
     row.Salary = Number(row.Salary) || 0;
@@ -3239,7 +3259,7 @@ function openPlayerProfile(name) {
         <div class="pm-crest">${crest}</div>
         <div class="pm-head-main">
           <div class="pm-name">${p.Country ? getCountryFlag(p.Country, 22)+' ' : ''}${String(p.PlayerName)} ${medals(p)}</div>
-          <div class="pm-sub">${p.TeamName==='none'?'FREE AGENT':p.TeamName} <span style="color:var(--border-strong)">|</span> ${p.Roster} <span style="color:var(--border-strong)">|</span> Contract ${p.ContractMonths||0}m${p.Country ? ' <span style="color:var(--border-strong)">|</span> '+p.Country : ''}</div>
+          <div class="pm-sub">${p.TeamName==='none'?'FREE AGENT':p.TeamName} <span style="color:var(--border-strong)">|</span> ${p.Roster} <span style="color:var(--border-strong)">|</span> Contract ${p.ContractMonths||0}m${p.Country ? ' <span style="color:var(--border-strong)">|</span> '+p.Country : ''} <span style="color:var(--border-strong)">|</span> ${playerRegionBadge(p)}</div>
           <div class="pm-sub" style="margin-top:6px;">${roleBadges(p) || '<span style="color:var(--text-faint);">No role assigned</span>'}</div>
         </div>
       </div>
@@ -4297,6 +4317,7 @@ function exportExcels() {
     'Total Titles': p['Total Titles'] || 0,
     'Previous MV': p['Previous MV'] || 0,
     'Country': p.Country || '',
+    'Region': getPlayerMacroRegion(p),
     'Major Winner': p['Major Winner'] || 0,
     'Salary': p.Salary || 0,
     'Buyout': p.Buyout || 0,
