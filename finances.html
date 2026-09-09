@@ -362,6 +362,16 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .award-toggle input:checked+span::before{transform:translateX(15px);background:var(--green);}
 .award-toggle input:disabled+span{opacity:.35;cursor:not-allowed;}
 .award-locked-note{font-family:var(--font-data);font-size:8.5px;color:var(--text-faint);flex-shrink:0;width:100px;text-align:right;}
+.ach-icon-row{display:flex;gap:10px;}
+.ach-icon-square{flex:1;min-width:0;text-align:center;}
+.ach-icon-box{width:100%;aspect-ratio:1;border-radius:14px;background:var(--bg3);border:1px solid var(--border);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;}
+.ach-icon-box:hover{border-color:var(--border-hot);}
+.ach-icon-box img{width:100%;height:100%;object-fit:contain;}
+.ach-icon-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.ach-icon-box .ach-icon-default{font-family:var(--font-data);font-size:8px;color:var(--text-faint);letter-spacing:.3px;pointer-events:none;}
+.ach-icon-label{font-family:var(--font-data);font-size:9px;color:var(--text-dim);margin-top:6px;letter-spacing:.3px;}
+.ach-icon-clear{display:block;width:100%;margin-top:4px;background:none;border:none;color:var(--red);font-family:var(--font-data);font-size:8.5px;cursor:pointer;letter-spacing:.3px;padding:0;}
+.ach-icon-clear:hover{text-decoration:underline;}
 .pm-section-title{font-family:var(--font-display);font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--text-dim);margin:22px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);font-weight:600;}
 .pm-col > .pm-section-title:first-child{margin-top:0;}
 .pm-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
@@ -1294,6 +1304,11 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
           <div class="form-group"><div class="form-label">Event Prize Pool ($)</div><input type="number" class="nx-input" id="hist-ev-pool" placeholder="0.00"></div>
           <div class="form-group"><div class="form-label">Team Winnings ($)</div><input type="number" class="nx-input" id="hist-ev-won" placeholder="0.00"></div>
         </div>
+        <div class="form-label" style="margin-bottom:6px;">TROPHY IMAGE OVERRIDE (OPTIONAL)</div>
+        <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); margin:-2px 0 10px; line-height:1.5;">
+          Not tied to this event name — upload once, it stays loaded for every placement you record until you clear or replace it. Empty square = keep the normal Award Registry icon. Applied to the Position selected above at the moment you submit.
+        </div>
+        <div class="ach-icon-row" id="ach-icon-squares" style="margin-bottom:16px;"></div>
         <button class="btn btn-yellow btn-full" id="ach-ev-submit" onclick="submitTeamAchievement()">Add to History — Team + Starters</button>
         <button class="btn btn-ghost btn-full" id="ach-ev-cancel" style="display:none; margin-top:8px;" onclick="cancelAchEdit()">✕ CANCEL EDIT</button>
       </div>
@@ -1526,6 +1541,10 @@ function loadAwardsConfig(data){
     if (merged[k].appliesTo === 'team') { merged[k].affectsScore = false; merged[k].scoreValue = 0; }
   });
   awardsConfig = merged;
+  achIconStaging = { winner:'', second:'', third:'', fourth:'', ...((data && data.__achIconStaging) || {}) };
+  historyIconsMap = (data && data.__historyIcons) || {};
+  applyHistoryIconsMap(historyIconsMap);
+  if ($('ach-icon-squares')) renderAchIconSquares();
 }
 
 function getAward(key){ return awardsConfig[key] || null; }
@@ -1577,6 +1596,73 @@ function computeAwardKey(kind, tier, scope, compRegion, position){
 function positionLabel(position){
   return position==='Winner' ? '1st' : position==='Second' ? '2nd' : position==='Third' ? '3rd' : position==='Fourth' ? '4th\u20138th' : (position||'');
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   🖼 RECORD ACHIEVEMENT — trophy image staging squares
+   4 upload slots (Winner / Top2 / Top3 / Top4-8) sitting in the Record
+   Achievement modal. Not tied to any event name — upload once, it's
+   reused for every team achievement you record at that placement until
+   you clear or replace it. Whatever is loaded gets "baked into" the
+   specific history entry (and its mirrored player rows) at the moment
+   you hit submit, so later clearing/replacing a square never changes
+   past entries. Empty square = keep the normal Award Registry icon.
+═══════════════════════════════════════════════════════════════════ */
+const POSITION_ICON_FIELD = { Winner:'winner', Second:'second', Third:'third', Fourth:'fourth' };
+const ACH_ICON_SLOTS = [
+  { field:'winner', label:'\ud83e\udd47 Top 1' },
+  { field:'second', label:'\ud83e\udd48 Top 2' },
+  { field:'third',  label:'\ud83e\udd49 Top 3' },
+  { field:'fourth', label:'Top 4\u20138' },
+];
+let achIconStaging = { winner:'', second:'', third:'', fourth:'' };
+/* id-keyed map of baked history icons, persisted through awards.json so
+   customized entries survive a reload (kept out of the xlsx workbooks —
+   base64 images can blow past Excel's per-cell character limit there). */
+let historyIconsMap = {};
+
+function renderAchIconSquares(){
+  const box = $('ach-icon-squares'); if (!box) return;
+  box.innerHTML = ACH_ICON_SLOTS.map(s=>{
+    const icon = achIconStaging[s.field];
+    return `<div class="ach-icon-square">
+      <div class="ach-icon-box" title="Click to upload — reused for every ${s.label} team achievement until you clear or replace it">
+        ${icon ? `<img src="${icon}" alt="">` : `<span class="ach-icon-default">DEFAULT</span>`}
+        <input type="file" accept="image/*" onchange="setAchIconStaging('${s.field}', this)">
+      </div>
+      <div class="ach-icon-label">${s.label}</div>
+      ${icon ? `<button type="button" class="ach-icon-clear" onclick="clearAchIconStaging('${s.field}')">\u2715 clear \u2014 use default</button>` : ''}
+    </div>`;
+  }).join('');
+}
+function setAchIconStaging(field, input){
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    achIconStaging[field] = ev.target.result;
+    const lbl = ACH_ICON_SLOTS.find(s=>s.field===field).label;
+    addLog(`\ud83d\uddbc Loaded a custom "${lbl}" trophy image \u2014 it'll be used for every team achievement you record at that placement until you clear or replace it.`,'good');
+    renderAchIconSquares();
+  };
+  r.readAsDataURL(file);
+}
+function clearAchIconStaging(field){
+  achIconStaging[field] = '';
+  renderAchIconSquares();
+}
+/* Reads whichever square matches the given position ('Winner'/'Second'/'Third'/'Fourth').
+   Returns '' (falsy) if that square is empty, so callers just fall back to the default icon. */
+function stagedIconForPosition(position){
+  const field = POSITION_ICON_FIELD[position];
+  return field ? (achIconStaging[field] || '') : '';
+}
+/* Re-attaches persisted per-entry icons (from awards.json's __historyIcons) onto
+   whichever teamHistory/playerHistory rows are currently loaded, matched by id/refId. */
+function applyHistoryIconsMap(map){
+  if (!map) return;
+  teamHistory.forEach(e=>{ if (map[e.id]) e.customIcon = map[e.id]; });
+  playerHistory.forEach(h=>{ if (h.refId!=null && map[h.refId]) h.customIcon = map[h.refId]; });
+}
 /* Inline "this legacy entry needs a region before it can show its real badge" fix. */
 function compRegionPickerHTML(entryType, id){
   return `<select class="nx-select" style="padding:3px 6px;font-size:9.5px;margin-top:5px;" onchange="setHistoryCompRegion('${entryType}','${id}',this.value)">
@@ -1608,7 +1694,9 @@ function teamHistoryLines(e){
   const award = awardKey ? getAward(awardKey) : null;
   const fallbackTier = e.position==='Winner'?'gold':e.position==='Second'?'silver':e.position==='Third'?'bronze':'none';
   const tier = award ? award.tierColor : fallbackTier;
-  const medal = awardKey ? awardMedalHTML(awardKey, 22) : `<div class="pm-hist-medal ${awardTierClass(tier)}">${AWARD_TIER_FALLBACK_GLYPH[tier]}</div>`;
+  const medal = e.customIcon
+    ? `<div class="pm-hist-medal ${awardTierClass(tier)}"><img src="${e.customIcon}" alt="" style="width:100%;height:100%;object-fit:contain;"></div>`
+    : (awardKey ? awardMedalHTML(awardKey, 22) : `<div class="pm-hist-medal ${awardTierClass(tier)}">${AWARD_TIER_FALLBACK_GLYPH[tier]}</div>`);
   const posTxt = isBadge ? (award ? award.label.split('\u2014').pop().trim() : '') : positionLabel(e.position);
   const posClass = AWARD_TIER_POS_CLASS[tier];
   const line1 = `<span class="medal-ic medal-ic-trophy"></span> ${e.event}${posTxt ? ` — <span class="${posClass}">${posTxt}</span>` : ''}`;
@@ -1625,7 +1713,9 @@ function playerHistoryLines(h){
   const award = awardKey ? getAward(awardKey) : null;
   const legacyTier = h.kind==='EVENT' ? (h.position==='Winner'?'gold':h.position==='Second'?'silver':h.position==='Third'?'bronze':'none') : (h.kind==='MVP'?'gold':h.kind==='EVP'?'silver':'bronze');
   const tier = award ? award.tierColor : legacyTier;
-  const medal = awardKey ? awardMedalHTML(awardKey, 22) : `<div class="pm-hist-medal ${awardTierClass(tier)}">${AWARD_TIER_FALLBACK_GLYPH[tier]}</div>`;
+  const medal = h.customIcon
+    ? `<div class="pm-hist-medal ${awardTierClass(tier)}"><img src="${h.customIcon}" alt="" style="width:100%;height:100%;object-fit:contain;"></div>`
+    : (awardKey ? awardMedalHTML(awardKey, 22) : `<div class="pm-hist-medal ${awardTierClass(tier)}">${AWARD_TIER_FALLBACK_GLYPH[tier]}</div>`);
   const kindTxt = isBadge ? (award ? award.label.split('\u2014').pop().trim() : '') : (h.kind!=='EVENT' ? h.kind : positionLabel(h.position));
   const posClass = AWARD_TIER_POS_CLASS[tier];
   const line1 = `${h.event}${kindTxt ? ` — <span class="${posClass}">${kindTxt}</span>` : ''}`;
@@ -2777,9 +2867,11 @@ function applyTeamAchievement(){
   if (!confirm(`Record "${event}" (${histStars(tier)} · ${scope} · ${position}) for ${team}?\nPrize pool ${fmt(prizePool)} · team won ${fmt(wonAmount)}.\nThe event is also written to ${starters.length} active-roster player(s).\nRECORD-ONLY — no money moves (use ⚙ OPS for payouts).`)) return;
   saveState();
   const id=Date.now()+Math.floor(Math.random()*999);
-  teamHistory.unshift({id, team, event, tier, scope, compRegion, position, prizePool, wonAmount, month:monthCounter, kind:'EVENT'});
-  starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:monthCounter}));
-  addLog(`🏛 HISTORY: ${team} — ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for the team and ${starters.length} starter(s).`,'good');
+  const customIcon = stagedIconForPosition(position);
+  teamHistory.unshift({id, team, event, tier, scope, compRegion, position, prizePool, wonAmount, month:monthCounter, kind:'EVENT', customIcon});
+  starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:monthCounter, customIcon}));
+  if (customIcon) historyIconsMap[id] = customIcon; else delete historyIconsMap[id];
+  addLog(`🏛 HISTORY: ${team} — ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for the team and ${starters.length} starter(s).${customIcon?' Custom trophy image applied.':''}`,'good');
   $('hist-ev-name').value=''; $('hist-ev-pool').value=''; $('hist-ev-won').value='';
   renderHistory(); updateAll();
 }
@@ -2806,6 +2898,7 @@ function deleteTeamEvent(id){
   saveState();
   teamHistory=teamHistory.filter(e=>String(e.id)!==String(id));
   playerHistory=playerHistory.filter(h=>String(h.refId)!==String(id));
+  delete historyIconsMap[id];
   renderHistory(); updateAll();
 }
 function deletePlayerAward(id){
@@ -2867,6 +2960,7 @@ function renderFoAchievements(team){
 function openAchModal(){
   achEditRef=null; setAchMode('create');
   populateHistoryControls();
+  renderAchIconSquares();
   const at=$('dash-team-select').value;
   const sel=$('hist-ev-team'); if (sel && at && finances.some(t=>t.TeamName===at)) sel.value=at;
   $('ach-modal-overlay').classList.add('active');
@@ -2922,6 +3016,7 @@ function openAchEditTeam(id){
   $('hist-ev-pos').value   = e.position || 'Winner';
   $('hist-ev-pool').value  = e.prizePool || '';
   $('hist-ev-won').value   = e.wonAmount || '';
+  renderAchIconSquares();
   achEditRef = { kind:'team', id:String(e.id) };
   setAchMode('edit','team');
   $('ach-modal-overlay').classList.add('active');
@@ -2974,13 +3069,15 @@ function saveTeamAchievement(){
     + `Linked player entries will be rebuilt from ${team}'s ${starters.length} current starter(s).\n`
     + `RECORD-ONLY \u2014 no money moves.`)) return;
   saveState();
+  const customIcon = stagedIconForPosition(position);
   rec.team = team; rec.event = event; rec.tier = tier; rec.scope = scope; rec.compRegion = compRegion;
-  rec.position = position; rec.prizePool = prizePool; rec.wonAmount = wonAmount;
+  rec.position = position; rec.prizePool = prizePool; rec.wonAmount = wonAmount; rec.customIcon = customIcon;
+  if (customIcon) historyIconsMap[rec.id] = customIcon; else delete historyIconsMap[rec.id];
   /* unconditional re-fan-out: drop every linked row, rebuild against current starters */
   playerHistory = playerHistory.filter(h=>String(h.refId) !== String(rec.id));
   starters.forEach(p=>playerHistory.unshift({ id:rec.id+'-'+String(p.PlayerName), refId:rec.id,
-    player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:rec.month }));
-  addLog(`\u270e HISTORY EDIT: ${team} \u2014 "${event}" (${histStars(tier)}, ${scope}, ${position}) updated \u00b7 re-synced to ${starters.length} starter(s).`,'warn');
+    player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:rec.month, customIcon }));
+  addLog(`\u270e HISTORY EDIT: ${team} \u2014 "${event}" (${histStars(tier)}, ${scope}, ${position}) updated \u00b7 re-synced to ${starters.length} starter(s).${customIcon?' Custom trophy image applied.':''}`,'warn');
   closeAchModal(); renderHistory(); updateAll();
 }
 
@@ -3068,6 +3165,7 @@ function loadHistoryWB(wb){
   playerHistory=sheet('PlayerHistory').filter(r=>r.player&&r.event).map(r=>({id:r.id||Date.now()+Math.random(), refId:r.refId||null, player:String(r.player||''), team:String(r.team||''), kind:String(r.kind||'EVENT'), event:String(r.event||''), tier:Number(r.tier)||1, scope:normScope(r.scope), compRegion:String(r.compRegion||''), position:String(r.position||'Winner'), month:Number(r.month)||1, awardKey:String(r.awardKey||'')||null, note:String(r.note||'')}));
   transactions=sheet('Transactions').filter(r=>r.type).map(r=>({id:r.id||Date.now()+Math.random(), month:Number(r.month)||1, type:String(r.type||''), playerName:String(r.playerName||''), from:String(r.from||''), to:String(r.to||''), amount:Number(r.amount)||0, note:String(r.note||'')}));
   transferHistory=sheet('Deals').filter(r=>r.playerName).map(r=>({id:r.id||Date.now()+Math.random(), buyer:String(r.buyer||''), seller:String(r.seller||''), playerName:String(r.playerName||''), amount:Number(r.amount)||0, status:String(r.status||''), month:Number(r.month)||1}));
+  applyHistoryIconsMap(historyIconsMap);
   const meta=sheet('Meta');
   if (meta.length && meta[0].monthCounter) monthCounter=Number(meta[0].monthCounter)||1;
 }
@@ -4384,7 +4482,10 @@ function exportExcels() {
 /* Downloads the current award registry (icons + score config) as a standalone JSON,
    the same shape accepted by the AWARDS.JSON upload box / assets/awards.json. */
 function exportAwardsJSON(){
-  const blob = new Blob([JSON.stringify(awardsConfig, null, 2)], {type:'application/json'});
+  const historyIcons = {};
+  teamHistory.forEach(e=>{ if (e.customIcon) historyIcons[e.id] = e.customIcon; });
+  const out = { ...awardsConfig, __achIconStaging: achIconStaging, __historyIcons: historyIcons };
+  const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'awards.json';
