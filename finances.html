@@ -345,6 +345,39 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .pm-hist-title{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--text);}
 .pm-hist-meta{font-family:var(--font-data);font-size:10.5px;color:var(--text-dim);margin-top:4px;line-height:1.6;}
 .pm-hist-empty{color:var(--text-faint);font-family:var(--font-data);font-size:11.5px;padding:24px 4px;text-align:center;line-height:1.7;}
+/* ── Award tier colors — shared by every trophy medal box across the app ── */
+.pm-hist-medal.tier-gold{border-color:var(--yellow);background:rgba(230,197,106,0.14);box-shadow:0 0 0 1px rgba(230,197,106,0.25) inset;}
+.pm-hist-medal.tier-silver{border-color:#b0bec5;background:rgba(176,190,197,0.14);}
+.pm-hist-medal.tier-bronze{border-color:#ff7043;background:rgba(255,112,67,0.14);}
+.pm-hist-medal.tier-none{border-color:var(--border);background:var(--bg3);}
+.award-row-icon.tier-gold{border-color:var(--yellow);background:rgba(230,197,106,0.14);}
+.award-row-icon.tier-silver{border-color:#b0bec5;background:rgba(176,190,197,0.14);}
+.award-row-icon.tier-bronze{border-color:#ff7043;background:rgba(255,112,67,0.14);}
+.award-row-icon.tier-none{border-color:var(--border);background:var(--bg3);}
+.award-pos-gold{color:var(--yellow);font-weight:700;}
+.award-pos-silver{color:#b0bec5;font-weight:700;}
+.award-pos-bronze{color:#ff7043;font-weight:700;}
+.award-pos-none{color:var(--text-dim);font-weight:600;}
+/* ── 🏅 Badges & Awards panel ── */
+.award-registry-group{margin-bottom:20px;}
+.award-registry-group-title{font-family:var(--font-display);font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--text-dim);margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.award-row{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid var(--border);}
+.award-row:last-child{border-bottom:none;}
+.award-row-icon{width:40px;height:40px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;}
+.award-row-icon img{width:100%;height:100%;object-fit:contain;}
+.award-row-icon input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.award-row-label{flex:1;min-width:0;font-family:var(--font-ui);font-size:12.5px;color:var(--text);font-weight:600;}
+.award-row-sub{font-family:var(--font-data);font-size:9.5px;color:var(--text-faint);margin-top:2px;letter-spacing:.3px;}
+.award-row-score{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.award-row-score input[type=number]{width:64px;padding:5px 7px;font-size:11px;}
+.award-toggle{position:relative;width:34px;height:19px;flex-shrink:0;}
+.award-toggle input{opacity:0;width:0;height:0;}
+.award-toggle span{position:absolute;inset:0;background:var(--bg4);border:1px solid var(--border);border-radius:20px;cursor:pointer;transition:.15s;}
+.award-toggle span::before{content:'';position:absolute;width:13px;height:13px;left:2px;top:2px;background:var(--text-dim);border-radius:50%;transition:.15s;}
+.award-toggle input:checked+span{background:var(--green-dim);border-color:var(--green);}
+.award-toggle input:checked+span::before{transform:translateX(15px);background:var(--green);}
+.award-toggle input:disabled+span{opacity:.35;cursor:not-allowed;}
+.award-locked-note{font-family:var(--font-data);font-size:9.5px;color:var(--text-faint);flex-shrink:0;width:120px;text-align:right;}
 .pm-section-title{font-family:var(--font-display);font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--text-dim);margin:22px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);font-weight:600;}
 .pm-col > .pm-section-title:first-child{margin-top:0;}
 .pm-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
@@ -496,6 +529,14 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
       <div class="upload-label">TEAM_LOGO.JSON</div>
       <div class="upload-status" id="logo-status">AWAITING DATA</div>
     </div>
+    <div class="upload-box" id="awards-box">
+      <input type="file" id="upload-awards" accept=".json">
+      <div class="corner-tl"></div><div class="corner-tr"></div>
+      <div class="corner-bl"></div><div class="corner-br"></div>
+      <div class="upload-icon">🏅</div>
+      <div class="upload-label">AWARDS.JSON (OPTIONAL)</div>
+      <div class="upload-status" id="awards-status">AWAITING DATA — DEFAULTS READY</div>
+    </div>
   </div>
 
   <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
@@ -534,6 +575,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
     <button class="nav-tab" onclick="showPanel('p-league', this)"><svg class="ico" viewBox="0 0 24 24"><path d="M6 4h12v3a6 6 0 0 1-12 0z"/><path d="M6 5H3v1a3 3 0 0 0 3 3"/><path d="M18 5h3v1a3 3 0 0 1-3 3"/><path d="M12 13v4"/><path d="M8 21h8"/><path d="M9 21v-2h6v2"/></svg>League</button>
     <button class="nav-tab" onclick="showPanel('p-history', this); renderHistory()"><svg class="ico" viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg>History</button>
     <button class="nav-tab" onclick="showPanel('p-ops', this)"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Operations <span class="badge" id="alert-badge" style="display:none">!</span></button>
+    <button class="nav-tab" onclick="showPanel('p-badges', this); renderBadgesPanel()"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3h8v4a4 4 0 0 1-8 0V3z"/><path d="M8 4H4v2a4 4 0 0 0 4 4"/><path d="M16 4h4v2a4 4 0 0 1-4 4"/><path d="M12 11v4"/><path d="M9 19h6"/><path d="M10 15h4l1 4H9l1-4z"/></svg>Badges</button>
     <button class="nav-tab" onclick="showPanel('p-intel', this); runIntel()"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.6"/></svg>Intel</button>
   </div>
 
@@ -943,12 +985,22 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             <div class="form-label">EVENT / TOURNAMENT NAME</div>
             <input type="text" class="nx-input" id="ops-event-name" placeholder="e.g. IEM Cologne 2026">
           </div>
-          <div class="form-group" style="margin-bottom:10px;">
-            <div class="form-label">SCOPE</div>
-            <select class="nx-select" id="ops-event-scope">
-              <option value="Global">Global</option>
-              <option value="Regional">Regional</option>
-            </select>
+          <div class="g2" style="margin-bottom:10px;">
+            <div class="form-group">
+              <div class="form-label">SCOPE</div>
+              <select class="nx-select" id="ops-event-scope" onchange="toggleOpsRegion()">
+                <option value="Global">Global</option>
+                <option value="Regional">Regional</option>
+              </select>
+            </div>
+            <div class="form-group" id="ops-event-region-wrap" style="display:none;">
+              <div class="form-label">REGION</div>
+              <select class="nx-select" id="ops-event-region">
+                <option value="Europe">Europe</option>
+                <option value="America">America</option>
+                <option value="Asia">Asia</option>
+              </select>
+            </div>
           </div>
 
           <hr class="sep">
@@ -976,6 +1028,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
                 <option value="Winner">🥇 1st — Champion</option>
                 <option value="Second">🥈 2nd</option>
                 <option value="Third">🥉 3rd</option>
+                <option value="Fourth">4th–8th</option>
               </select>
             </div>
           </div>
@@ -985,7 +1038,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
           </div>
           <div class="alert-item info" style="margin-bottom:10px; font-size:11px; font-family:var(--font-data);">
             60% → Team Bank&nbsp;&nbsp;|&nbsp;&nbsp;40% → Starter MV split<br>
-            Placement 1st–3rd → history for team + active roster<br>🏆 Title counter: 1st place only
+            Placement 1st–8th → history for team + active roster<br>🏆 Title counter: 1st place only
           </div>
           <button class="btn btn-green btn-full" onclick="distributeTourneyPrize()">DISTRIBUTE PRIZE</button>
 
@@ -1077,6 +1130,54 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
     </div>
 
     <!-- ═══ INTEL PANEL ═══ -->
+    <div class="panel" id="p-badges" style="padding:16px; overflow-y:auto;">
+      <div class="g2" style="align-items:start;">
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="card yellow">
+            <div class="card-title" style="justify-content:space-between;">
+              <span>🏅 GRANT BADGE</span>
+            </div>
+            <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:10px; line-height:1.6;">
+              For role awards, Player of the Year &amp; Team of the Year only — competition placements (Major/Global/Regional) still go through ⚙ OPS so money &amp; Titles keep working.
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+              <div class="form-label">AWARD</div>
+              <select class="nx-select" id="grant-award-select" onchange="onGrantAwardChange()"></select>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;" id="grant-player-wrap">
+              <div class="form-label">PLAYER</div>
+              <select class="nx-select" id="grant-player-select"></select>
+            </div>
+            <div class="form-group" style="margin-bottom:8px; display:none;" id="grant-team-wrap">
+              <div class="form-label">TEAM</div>
+              <select class="nx-select" id="grant-team-select"></select>
+            </div>
+            <div class="g2" style="gap:10px; margin-bottom:8px;">
+              <div class="form-group"><div class="form-label">EVENT / SEASON (optional)</div><input type="text" class="nx-input" id="grant-event-name" placeholder="e.g. 2026 Season"></div>
+              <div class="form-group"><div class="form-label">MONTH</div><input type="number" class="nx-input" id="grant-month" placeholder="1"></div>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;"><div class="form-label">NOTE (optional)</div><input type="text" class="nx-input" id="grant-note" placeholder="Fixing an old nomination, jury vote, etc."></div>
+            <div class="alert-item info" id="grant-score-preview" style="margin-bottom:10px; font-size:11px; font-family:var(--font-data);"></div>
+            <button class="btn btn-yellow btn-full" onclick="grantBadge()">🏅 GRANT BADGE</button>
+          </div>
+          <div class="card">
+            <div class="card-title">🕘 RECENT BADGE GRANTS</div>
+            <div id="badges-recent-grants" class="scroll-list" style="max-height:340px;"></div>
+          </div>
+        </div>
+        <div class="card purple">
+          <div class="card-title" style="justify-content:space-between;">
+            <span>🖼 AWARD REGISTRY — ICONS &amp; SCORE</span>
+          </div>
+          <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:10px; line-height:1.6;">
+            Upload each trophy's image once — every place it's used in the app updates instantly. Toggle whether it affects player score and by how much. Team-scoped badges never score, by design.<br>
+            Edits live for this session only — use 📥 EXPORT (Operations panel) to save <code>awards_updated.json</code>, then re-upload it next time.
+          </div>
+          <div id="award-registry-list" class="scroll-list" style="max-height:640px;"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="panel" id="p-intel" style="padding:16px; overflow-y:auto;">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
         <div style="font-family:var(--font-display); font-size:18px; font-weight:900; color:var(--cyan); letter-spacing:4px; text-shadow:0 0 20px var(--cyan);">
@@ -1201,7 +1302,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             </select>
           </div>
           <div class="form-group"><div class="form-label">Scope</div>
-            <select class="nx-select" id="hist-ev-scope" disabled>
+            <select class="nx-select" id="hist-ev-scope" disabled onchange="toggleHistRegion('ev')">
               <option value="Global">Global</option>
               <option value="Regional">Regional</option>
             </select>
@@ -1211,6 +1312,16 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
               <option value="Winner">🥇 Winner</option>
               <option value="Second">🥈 Second</option>
               <option value="Third">🥉 Third</option>
+              <option value="Fourth">4th–8th</option>
+            </select>
+          </div>
+        </div>
+        <div class="g2" style="gap:10px; margin-bottom:10px;" id="hist-ev-region-wrap">
+          <div class="form-group"><div class="form-label">Region</div>
+            <select class="nx-select" id="hist-ev-region">
+              <option value="Europe">Europe</option>
+              <option value="America">America</option>
+              <option value="Asia">Asia</option>
             </select>
           </div>
         </div>
@@ -1246,7 +1357,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             </select>
           </div>
           <div class="form-group"><div class="form-label">Scope</div>
-            <select class="nx-select" id="hist-aw-scope" disabled>
+            <select class="nx-select" id="hist-aw-scope" disabled onchange="toggleHistRegion('aw')">
               <option value="Global">Global</option>
               <option value="Regional">Regional</option>
             </select>
@@ -1256,6 +1367,15 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
               <option value="Winner">🥇 Winner</option>
               <option value="Second">🥈 Second</option>
               <option value="Third">🥉 Third</option>
+            </select>
+          </div>
+        </div>
+        <div class="g2" style="gap:10px; margin-bottom:10px;" id="hist-aw-region-wrap">
+          <div class="form-group"><div class="form-label">Region</div>
+            <select class="nx-select" id="hist-aw-region">
+              <option value="Europe">Europe</option>
+              <option value="America">America</option>
+              <option value="Asia">Asia</option>
             </select>
           </div>
         </div>
@@ -1305,6 +1425,230 @@ function getTeamLogo(teamName, size) {
   const url = teamLogos[teamName];
   if (!url) return '';
   return `<img src="${url}" alt="${teamName}" title="${teamName}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25));">`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   🏅 AWARDS / BADGES REGISTRY
+   One config object drives every trophy icon + its score effect,
+   shared app-wide. Ships with sensible defaults (68 award slots);
+   upload AWARDS.JSON to restore your own icons/values, and "Save All"
+   exports awards_updated.json so edits carry over between sessions.
+═══════════════════════════════════════════════════════════════════ */
+const AWARD_COMPETITIONS = [
+  { comp:'major',       label:'Major' },
+  { comp:'global',      label:'Global' },
+  { comp:'regional_eu', label:'Regional Europe' },
+  { comp:'regional_am', label:'Regional America' },
+  { comp:'regional_as', label:'Regional Asia' },
+];
+const AWARD_PLACEMENTS = [
+  { sub:'winner', label:'Winner',            tier:'gold'   },
+  { sub:'second', label:'2nd Place',         tier:'silver' },
+  { sub:'third',  label:'3rd Place',         tier:'bronze' },
+  { sub:'fourth', label:'4th\u20138th Place',tier:'none'   },
+  { sub:'mvp',    label:'MVP',               tier:'gold'   },
+  { sub:'evp',    label:'EVP',               tier:'silver' },
+  { sub:'vp',     label:'VP',                tier:'bronze' },
+];
+const AWARD_ROLES = [
+  { comp:'role_igl',          label:'Top IGL' },
+  { comp:'role_awper',        label:'Top Awper' },
+  { comp:'role_starplayer',   label:'Top Star Player' },
+  { comp:'role_entryfragger', label:'Top Entry Fragger' },
+  { comp:'role_anchor',       label:'Top Anchor' },
+  { comp:'role_rifler',       label:'Top Rifler' },
+];
+const AWARD_ROLE_TIERS = [
+  { sub:'top1',    label:'Top 1',           tier:'gold',   score:6 },
+  { sub:'top2',    label:'Top 2',           tier:'silver', score:4 },
+  { sub:'top3',    label:'Top 3',           tier:'bronze', score:3 },
+  { sub:'top4to5', label:'Top 4\u20135',    tier:'none',   score:1 },
+];
+const AWARD_POTY_TIERS = [
+  { sub:'top1',    label:'Top 1',           tier:'gold',   score:20 },
+  { sub:'top2to3', label:'Top 2\u20133',    tier:'silver', score:10 },
+];
+const AWARD_TOTY_TIERS = [
+  { sub:'top1',     label:'Top 1',      tier:'gold'   },
+  { sub:'top2',     label:'Top 2',      tier:'silver' },
+  { sub:'top3',     label:'Top 3',      tier:'bronze' },
+  { sub:'top4',     label:'Top 4',      tier:'none'   },
+  { sub:'top5',     label:'Top 5',      tier:'none'   },
+  { sub:'top6to7',  label:'Top 6\u20137',   tier:'none' },
+  { sub:'top8to10', label:'Top 8\u201310',  tier:'none' },
+];
+
+/* Builds the full 68-slot registry from scratch (empty icons, default score values). */
+function defaultAwardsConfig(){
+  const cfg = {};
+  AWARD_COMPETITIONS.forEach(c=>{
+    AWARD_PLACEMENTS.forEach(p=>{
+      cfg[`${c.comp}_${p.sub}`] = {
+        label: `${c.label} \u2014 ${p.label}`,
+        category: c.label,
+        appliesTo: (p.sub==='mvp'||p.sub==='evp'||p.sub==='vp') ? 'player' : 'team',
+        tierColor: p.tier,
+        system: true,        // scored via existing Titles / MVP / EVP / VP counters — not editable here
+        affectsScore: false,
+        scoreValue: 0,
+        icon: ''
+      };
+    });
+  });
+  AWARD_ROLES.forEach(r=>{
+    AWARD_ROLE_TIERS.forEach(t=>{
+      cfg[`${r.comp}_${t.sub}`] = {
+        label: `${r.label} \u2014 ${t.label}`,
+        category: r.label,
+        appliesTo: 'player',
+        tierColor: t.tier,
+        system: false,
+        affectsScore: true,
+        scoreValue: t.score,
+        icon: ''
+      };
+    });
+  });
+  AWARD_POTY_TIERS.forEach(t=>{
+    cfg[`poty_${t.sub}`] = {
+      label: `Player of the Year \u2014 ${t.label}`,
+      category: 'Player of the Year',
+      appliesTo: 'player',
+      tierColor: t.tier,
+      system: false,
+      affectsScore: true,
+      scoreValue: t.score,
+      icon: ''
+    };
+  });
+  AWARD_TOTY_TIERS.forEach(t=>{
+    cfg[`toty_${t.sub}`] = {
+      label: `Top Team of the Year \u2014 ${t.label}`,
+      category: 'Top Team of the Year',
+      appliesTo: 'team',
+      tierColor: t.tier,
+      system: false,
+      affectsScore: false,   // team trophies never carry score — for either the team or its players
+      scoreValue: 0,
+      icon: ''
+    };
+  });
+  return cfg;
+}
+
+let awardsConfig = defaultAwardsConfig();
+
+/* Merge an uploaded/imported config over the defaults — fills any missing slot,
+   keeps your icons/score edits, and always enforces "team awards never score". */
+function loadAwardsConfig(data){
+  const def = defaultAwardsConfig();
+  const merged = {};
+  Object.keys(def).forEach(k=>{
+    const incoming = (data && typeof data==='object' && data[k]) || {};
+    merged[k] = { ...def[k], ...incoming };
+    if (merged[k].appliesTo === 'team') { merged[k].affectsScore = false; merged[k].scoreValue = 0; }
+  });
+  awardsConfig = merged;
+}
+
+function getAward(key){ return awardsConfig[key] || null; }
+function awardTierClass(tier){
+  return tier==='gold' ? 'tier-gold' : tier==='silver' ? 'tier-silver' : tier==='bronze' ? 'tier-bronze' : 'tier-none';
+}
+const AWARD_TIER_FALLBACK_GLYPH = { gold:'🥇', silver:'🥈', bronze:'🥉', none:'🏆' };
+const AWARD_TIER_POS_CLASS = { gold:'award-pos-gold', silver:'award-pos-silver', bronze:'award-pos-bronze', none:'award-pos-none' };
+
+/* One "medal box" — the uploaded icon when present, else a color-coded glyph fallback. */
+function awardMedalHTML(key, sizePx){
+  sizePx = sizePx || 22;
+  const a = getAward(key);
+  const tier = a ? a.tierColor : 'none';
+  const inner = (a && a.icon) ? `<img src="${a.icon}" alt="" style="width:${sizePx}px;height:${sizePx}px;">` : (AWARD_TIER_FALLBACK_GLYPH[tier]||'🏆');
+  return `<div class="pm-hist-medal ${awardTierClass(tier)}">${inner}</div>`;
+}
+
+/* Maps an existing history row (scope/tier/region/position/kind) to its award key.
+   Returns null when it can't be resolved yet — e.g. a legacy Regional entry with
+   no region set — so the caller can offer a quick "set region" fix instead. */
+function computeAwardKey(kind, tier, scope, compRegion, position){
+  tier = Number(tier)||1;
+  let comp;
+  if (tier >= 5) comp = 'major';
+  else if (scope === 'Global') comp = 'global';
+  else if (scope === 'Regional') {
+    if (compRegion === 'Europe') comp = 'regional_eu';
+    else if (compRegion === 'America') comp = 'regional_am';
+    else if (compRegion === 'Asia') comp = 'regional_as';
+    else return null;
+  } else return null;
+  if (kind === 'EVENT') {
+    const posMap = { Winner:'winner', Second:'second', Third:'third', Fourth:'fourth' };
+    const sub = posMap[position];
+    return sub ? `${comp}_${sub}` : null;
+  }
+  if (kind === 'MVP' || kind === 'EVP' || kind === 'VP') return `${comp}_${kind.toLowerCase()}`;
+  return null;
+}
+function positionLabel(position){
+  return position==='Winner' ? '1st' : position==='Second' ? '2nd' : position==='Third' ? '3rd' : position==='Fourth' ? '4th\u20138th' : (position||'');
+}
+/* Inline "this legacy entry needs a region before it can show its real badge" fix. */
+function compRegionPickerHTML(entryType, id){
+  return `<select class="nx-select" style="padding:3px 6px;font-size:9.5px;margin-top:5px;" onchange="setHistoryCompRegion('${entryType}','${id}',this.value)">
+    <option value="">\ud83d\udd17 Set region to unlock badge\u2026</option>
+    <option value="Europe">Europe</option>
+    <option value="America">America</option>
+    <option value="Asia">Asia</option>
+  </select>`;
+}
+function setHistoryCompRegion(entryType, id, region){
+  if (!region) return;
+  const arr = entryType==='team' ? teamHistory : playerHistory;
+  const rec = arr.find(x=>String(x.id)===String(id));
+  if (!rec) return;
+  saveState();
+  rec.compRegion = region;
+  addLog(`\ud83d\udd17 Linked "${rec.event}" to Regional ${region} \u2014 badge now matched.`,'good');
+  updateAll();
+}
+
+/* Two-line trophy card content, shared by the Team Trophy Case and every player
+   history list: 🏆 Event — Position (colored) / tier · scope · pool · won · month.
+   Auto-matches legacy rows to their award via computeAwardKey(); if a Regional row
+   has no region yet, flags it so the caller can render the quick-fix picker. */
+function teamHistoryLines(e){
+  const isBadge = e.kind === 'BADGE';
+  let awardKey = e.awardKey || null;
+  if (!awardKey && !isBadge) awardKey = computeAwardKey('EVENT', e.tier, e.scope, e.compRegion, e.position);
+  const award = awardKey ? getAward(awardKey) : null;
+  const fallbackTier = e.position==='Winner'?'gold':e.position==='Second'?'silver':e.position==='Third'?'bronze':'none';
+  const tier = award ? award.tierColor : fallbackTier;
+  const medal = awardKey ? awardMedalHTML(awardKey, 22) : `<div class="pm-hist-medal ${awardTierClass(tier)}">${AWARD_TIER_FALLBACK_GLYPH[tier]}</div>`;
+  const posTxt = isBadge ? (award ? award.label.split('\u2014').pop().trim() : '') : positionLabel(e.position);
+  const posClass = AWARD_TIER_POS_CLASS[tier];
+  const line1 = `🏆 ${e.event}${posTxt ? ` — <span class="${posClass}">${posTxt}</span>` : ''}`;
+  const line2 = isBadge
+    ? `${award ? award.category : 'Badge'}${e.note ? ' · '+e.note : ''} · Month ${e.month}`
+    : `${histStars(e.tier)} · ${e.scope}${e.compRegion ? ' '+e.compRegion : ''} · Pool ${fmtK(e.prizePool)} · Won <span style="color:var(--green);">${fmtK(e.wonAmount)}</span> · Month ${e.month}`;
+  const needsRegion = !isBadge && !awardKey && e.scope==='Regional' && !e.compRegion;
+  return { medal, line1, line2, needsRegion };
+}
+function playerHistoryLines(h){
+  const isBadge = h.kind === 'BADGE';
+  let awardKey = h.awardKey || null;
+  if (!awardKey && !isBadge) awardKey = computeAwardKey(h.kind, h.tier, h.scope, h.compRegion, h.position);
+  const award = awardKey ? getAward(awardKey) : null;
+  const legacyTier = h.kind==='EVENT' ? (h.position==='Winner'?'gold':h.position==='Second'?'silver':h.position==='Third'?'bronze':'none') : (h.kind==='MVP'?'gold':h.kind==='EVP'?'silver':'bronze');
+  const tier = award ? award.tierColor : legacyTier;
+  const medal = awardKey ? awardMedalHTML(awardKey, 22) : `<div class="pm-hist-medal ${awardTierClass(tier)}">${AWARD_TIER_FALLBACK_GLYPH[tier]}</div>`;
+  const kindTxt = isBadge ? (award ? award.label.split('\u2014').pop().trim() : '') : (h.kind!=='EVENT' ? h.kind : positionLabel(h.position));
+  const posClass = AWARD_TIER_POS_CLASS[tier];
+  const line1 = `${h.event}${kindTxt ? ` — <span class="${posClass}">${kindTxt}</span>` : ''}`;
+  const line2 = isBadge
+    ? `${award ? award.category : 'Badge'}${h.note ? ' · '+h.note : ''}${h.team ? ' · '+h.team : ''} · Month ${h.month}`
+    : `${histStars(h.tier)} · ${h.scope}${h.compRegion ? ' '+h.compRegion : ''}${h.team ? ' · '+h.team : ''} · Month ${h.month}`;
+  const needsRegion = !isBadge && !awardKey && h.scope==='Regional' && !h.compRegion;
+  return { medal, line1, line2, needsRegion };
 }
 
 /* ── Team crest: real logo when available, else a clean monogram chip ── */
@@ -1497,6 +1841,22 @@ $('upload-logos').addEventListener('change', e => {
   r.readAsText(e.target.files[0]);
 });
 
+$('upload-awards').addEventListener('change', e => {
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      loadAwardsConfig(data);
+      $('awards-box').classList.add('loaded');
+      $('awards-status').textContent = `✓ ${Object.keys(awardsConfig).filter(k=>awardsConfig[k].icon).length}/${Object.keys(awardsConfig).length} ICONS LOADED`;
+    } catch(err) {
+      $('awards-status').textContent = `✗ INVALID JSON`;
+      $('awards-status').style.color = 'var(--red)';
+    }
+  };
+  r.readAsText(e.target.files[0]);
+});
+
 function handleXL(e, cb) {
   const r = new FileReader();
   r.onload = ev => {
@@ -1572,6 +1932,7 @@ function normalizePlayers(arr) {
     row['Total Titles'] = Number(row['Total Titles']) || 0;
     row['Major Winner'] = Number(row['Major Winner']) || 0;
     row['Previous MV'] = Number(row['Previous MV']) || 0;
+    row.BadgeScore = Number(row.BadgeScore || row['Badge Score']) || 0; // score granted by 🏅 Badges (role awards, Player of the Year, etc.)
     row.ContractMonths = Number(row.ContractMonths || row['ContractMonths']) || 0;
     row.Country = String(row.Country || row['Country'] || '').trim();
     row.Region = getCountryRegion(row.Country) || 'Unknown';
@@ -1685,6 +2046,17 @@ async function scanFiles() {
     errors.push('assets/team_logo.json');
     $('logo-status').textContent = `✗ NOT FOUND`;
     $('logo-status').style.color = 'var(--red)';
+  }
+
+  // --- awards.json (auto from assets/) — optional, app ships with defaults ---
+  try {
+    const awardsData = await fetchJSON('assets/awards.json');
+    loadAwardsConfig(awardsData);
+    $('awards-box').classList.add('loaded');
+    $('awards-status').textContent = `✓ ${Object.keys(awardsConfig).filter(k=>awardsConfig[k].icon).length}/${Object.keys(awardsConfig).length} ICONS LOADED`;
+  } catch(e) {
+    $('awards-status').textContent = '— optional, not found (using default registry, no icons)';
+    $('awards-status').style.color = 'var(--orange)';
   }
 
   // --- result ---
@@ -2705,6 +3077,12 @@ function histTierChanged(prefix){
   const tier=$(`hist-${prefix}-tier`).value, scope=$(`hist-${prefix}-scope`);
   if (!scope) return;
   if (tier==='5'){ scope.value='Global'; scope.disabled=true; } else { scope.disabled=false; } // 5★ / SS+ = Major ⇒ always a GLOBAL event
+  toggleHistRegion(prefix);
+}
+function toggleHistRegion(prefix){
+  const scope=$(`hist-${prefix}-scope`), wrap=$(`hist-${prefix}-region-wrap`);
+  if (!scope || !wrap) return;
+  wrap.style.display = (scope.value === 'Regional') ? '' : 'none';
 }
 function populateHistoryControls(){
   if (!$('hist-ev-team')) return;
@@ -2717,6 +3095,7 @@ function applyTeamAchievement(){
   const event=($('hist-ev-name').value||'').trim();
   const tier=Number($('hist-ev-tier').value)||1;
   const scope=tier>=5?'Global':$('hist-ev-scope').value;
+  const compRegion=scope==='Regional'?$('hist-ev-region').value:'';
   const position=$('hist-ev-pos').value;
   const prizePool=parseFloat($('hist-ev-pool').value)||0;
   const wonAmount=parseFloat($('hist-ev-won').value)||0;
@@ -2726,8 +3105,8 @@ function applyTeamAchievement(){
   if (!confirm(`Record "${event}" (${histStars(tier)} · ${scope} · ${position}) for ${team}?\nPrize pool ${fmt(prizePool)} · team won ${fmt(wonAmount)}.\nThe event is also written to ${starters.length} active-roster player(s).\nRECORD-ONLY — no money moves (use ⚙ OPS for payouts).`)) return;
   saveState();
   const id=Date.now()+Math.floor(Math.random()*999);
-  teamHistory.unshift({id, team, event, tier, scope, position, prizePool, wonAmount, month:monthCounter});
-  starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, position, month:monthCounter}));
+  teamHistory.unshift({id, team, event, tier, scope, compRegion, position, prizePool, wonAmount, month:monthCounter, kind:'EVENT'});
+  starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:monthCounter}));
   addLog(`🏛 HISTORY: ${team} — ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for the team and ${starters.length} starter(s).`,'good');
   $('hist-ev-name').value=''; $('hist-ev-pool').value=''; $('hist-ev-won').value='';
   renderHistory(); updateAll();
@@ -2741,9 +3120,10 @@ function applyPlayerAward(){
   if (!event) return alert('Enter the event name.');
   const tier=Number($('hist-aw-tier').value)||1;
   const scope=tier>=5?'Global':$('hist-aw-scope').value;
+  const compRegion=scope==='Regional'?$('hist-aw-region').value:'';
   const position=$('hist-aw-pos').value;
   saveState();
-  playerHistory.unshift({id:Date.now()+Math.floor(Math.random()*999), refId:null, player:name, team:p.TeamName==='none'?'':p.TeamName, kind, event, tier, scope, position, month:monthCounter});
+  playerHistory.unshift({id:Date.now()+Math.floor(Math.random()*999), refId:null, player:name, team:p.TeamName==='none'?'':p.TeamName, kind, event, tier, scope, compRegion, position, month:monthCounter});
   addLog(`🏛 HISTORY: ${kind} at ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for ${name}.`,'good');
   $('hist-aw-event').value='';
   renderHistory(); updateAll();
@@ -2777,32 +3157,40 @@ function renderGlobalDeals(){
 function renderFoAchievements(team){
   const evBox=$('fo-ach-events'), awBox=$('fo-ach-awards'); if (!evBox||!awBox) return;
   const evs=teamHistory.filter(e=>e.team===team);
-  evBox.innerHTML = evs.length ? evs.map(e=>`
+  evBox.innerHTML = evs.length ? evs.map(e=>{
+    const L = teamHistoryLines(e);
+    return `
     <div class="pm-hist-entry">
-      <div class="pm-hist-medal">${e.position==='Winner'?'🥇':e.position==='Second'?'🥈':'🥉'}</div>
+      ${L.medal}
       <div class="pm-hist-body">
-        <div class="pm-hist-title">${e.event}${Number(e.tier)>=5?' <span class="badge badge-yellow" style="margin-left:5px;">MAJOR</span>':''}</div>
-        <div class="pm-hist-meta">${histStars(e.tier)} · ${e.scope} · ${e.position} · Pool ${fmtK(e.prizePool)} · Won <span style="color:var(--green);">${fmtK(e.wonAmount)}</span> · Month ${e.month}</div>
+        <div class="pm-hist-title">${L.line1}${Number(e.tier)>=5?' <span class="badge badge-yellow" style="margin-left:5px;">MAJOR</span>':''}</div>
+        <div class="pm-hist-meta">${L.line2}</div>
+        ${L.needsRegion ? compRegionPickerHTML('team', e.id) : ''}
       </div>
       <div class="pm-hist-acts">
         <button class="fo-ico" title="Edit this title" onclick="openAchEditTeam('${e.id}')"><svg class="ico" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
         <button class="fo-ico" title="Delete entry" onclick="deleteTeamEvent('${e.id}')"><svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
       </div>
-    </div>`).join('') : '<div class="pm-hist-empty">No achievements recorded for this team yet.</div>';
+    </div>`;
+  }).join('') : '<div class="pm-hist-empty">No achievements recorded for this team yet.</div>';
   const rosterNames=new Set(players.filter(p=>p.TeamName===team).map(p=>String(p.PlayerName)));
   const awards=playerHistory.filter(h=>h.kind!=='EVENT'&&rosterNames.has(h.player));
-  awBox.innerHTML = awards.length ? awards.map(h=>`
+  awBox.innerHTML = awards.length ? awards.map(h=>{
+    const L = playerHistoryLines(h);
+    return `
     <div class="pm-hist-entry">
-      <div class="pm-hist-medal">${h.kind==='MVP'?'🥇':h.kind==='EVP'?'🥈':'🥉'}</div>
+      ${L.medal}
       <div class="pm-hist-body">
-        <div class="pm-hist-title">${h.player} <span style="color:var(--text-dim); font-weight:500;">— ${h.kind} · ${h.event}</span></div>
-        <div class="pm-hist-meta">${histStars(h.tier)} · ${h.scope} · ${h.position} · Month ${h.month}</div>
+        <div class="pm-hist-title">${h.player} <span style="color:var(--text-dim); font-weight:500;">— ${L.line1}</span></div>
+        <div class="pm-hist-meta">${L.line2}</div>
+        ${L.needsRegion ? compRegionPickerHTML('player', h.id) : ''}
       </div>
       <div class="pm-hist-acts">
         <button class="fo-ico" title="Edit this medal" onclick="openAchEditAward('${h.id}')"><svg class="ico" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
         <button class="fo-ico" title="Delete entry" onclick="deletePlayerAward('${h.id}')"><svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
       </div>
-    </div>`).join('') : '<div class="pm-hist-empty">No individual awards recorded for this roster.</div>';
+    </div>`;
+  }).join('') : '<div class="pm-hist-empty">No individual awards recorded for this roster.</div>';
 }
 function openAchModal(){
   achEditRef=null; setAchMode('create');
@@ -2857,6 +3245,8 @@ function openAchEditTeam(id){
   $('hist-ev-tier').value  = String(Number(e.tier) || 1);
   histTierChanged('ev');
   if (Number(e.tier) < 5) $('hist-ev-scope').value = e.scope || 'Global';
+  toggleHistRegion('ev');
+  if ($('hist-ev-region')) $('hist-ev-region').value = e.compRegion || 'Europe';
   $('hist-ev-pos').value   = e.position || 'Winner';
   $('hist-ev-pool').value  = e.prizePool || '';
   $('hist-ev-won').value   = e.wonAmount || '';
@@ -2869,12 +3259,15 @@ function openAchEditAward(id){
   const h = playerHistory.find(x=>String(x.id)===String(id));
   if (!h) return alert('That entry no longer exists.');
   if (h.kind === 'EVENT') return alert('This entry comes from a team title \u2014 edit it from the team achievement above.');
+  if (h.kind === 'BADGE') return alert('This is a 🏅 Badge grant \u2014 edit or delete it from the Badges panel.');
   populateHistoryControls();
   $('hist-aw-player').value = h.player;
   $('hist-aw-kind').value   = h.kind;
   $('hist-aw-tier').value   = String(Number(h.tier) || 1);
   histTierChanged('aw');
   if (Number(h.tier) < 5) $('hist-aw-scope').value = h.scope || 'Global';
+  toggleHistRegion('aw');
+  if ($('hist-aw-region')) $('hist-aw-region').value = h.compRegion || 'Europe';
   $('hist-aw-pos').value    = h.position || 'Winner';
   $('hist-aw-event').value  = h.event || '';
   achEditRef = { kind:'award', id:String(h.id) };
@@ -2896,6 +3289,7 @@ function saveTeamAchievement(){
   const event     = ($('hist-ev-name').value||'').trim();
   const tier      = Number($('hist-ev-tier').value) || 1;
   const scope     = tier >= 5 ? 'Global' : $('hist-ev-scope').value;
+  const compRegion = scope==='Regional' ? $('hist-ev-region').value : '';
   const position  = $('hist-ev-pos').value;
   const prizePool = parseFloat($('hist-ev-pool').value) || 0;
   const wonAmount = parseFloat($('hist-ev-won').value) || 0;
@@ -2908,12 +3302,12 @@ function saveTeamAchievement(){
     + `Linked player entries will be rebuilt from ${team}'s ${starters.length} current starter(s).\n`
     + `RECORD-ONLY \u2014 no money moves.`)) return;
   saveState();
-  rec.team = team; rec.event = event; rec.tier = tier; rec.scope = scope;
+  rec.team = team; rec.event = event; rec.tier = tier; rec.scope = scope; rec.compRegion = compRegion;
   rec.position = position; rec.prizePool = prizePool; rec.wonAmount = wonAmount;
   /* unconditional re-fan-out: drop every linked row, rebuild against current starters */
   playerHistory = playerHistory.filter(h=>String(h.refId) !== String(rec.id));
   starters.forEach(p=>playerHistory.unshift({ id:rec.id+'-'+String(p.PlayerName), refId:rec.id,
-    player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, position, month:rec.month }));
+    player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:rec.month }));
   addLog(`\u270e HISTORY EDIT: ${team} \u2014 "${event}" (${histStars(tier)}, ${scope}, ${position}) updated \u00b7 re-synced to ${starters.length} starter(s).`,'warn');
   closeAchModal(); renderHistory(); updateAll();
 }
@@ -2926,13 +3320,14 @@ function savePlayerAward(){
   const event    = ($('hist-aw-event').value||'').trim();
   const tier     = Number($('hist-aw-tier').value) || 1;
   const scope    = tier >= 5 ? 'Global' : $('hist-aw-scope').value;
+  const compRegion = scope==='Regional' ? $('hist-aw-region').value : '';
   const position = $('hist-aw-pos').value;
   if (!event) return alert('Enter the event name.');
   if (!confirm(`Save changes to ${rec.player}'s medal?\n${rec.kind} \u00b7 "${rec.event}"\n`
     + `\u2192 ${kind} \u00b7 "${event}" (${histStars(tier)} \u00b7 ${scope} \u00b7 ${position})\n`
     + `Log entry only \u2014 medal counters and prize money in \u2699 OPS are NOT changed.`)) return;
   saveState();
-  rec.kind = kind; rec.event = event; rec.tier = tier; rec.scope = scope; rec.position = position;
+  rec.kind = kind; rec.event = event; rec.tier = tier; rec.scope = scope; rec.compRegion = compRegion; rec.position = position;
   addLog(`\u270e HISTORY EDIT: ${rec.player} \u2014 ${kind} at "${event}" (${histStars(tier)}, ${scope}, ${position}) updated.`,'warn');
   closeAchModal(); renderHistory(); updateAll();
 }
@@ -2941,22 +3336,30 @@ function medalGlyph(kind){ return kind==='EVENT'?'🏆':kind==='MVP'?'🥇':kind
 function playerHistPanelHTML(pn){
   const hist=playerHistory.filter(h=>h.player===pn);
   if (!hist.length) return `<div class="pm-hist-empty">No events or awards recorded yet.<br>Add them in Front Office &rarr; Achievements.</div>`;
-  return hist.map(h=>`
+  return hist.map(h=>{
+    const L = playerHistoryLines(h);
+    return `
     <div class="pm-hist-entry">
-      <div class="pm-hist-medal">${medalGlyph(h.kind)}</div>
+      ${L.medal}
       <div class="pm-hist-body">
-        <div class="pm-hist-title">${h.event}${h.kind!=='EVENT'?' · '+h.kind:''}</div>
-        <div class="pm-hist-meta">${histStars(h.tier)} · ${h.scope} · ${h.position}${h.team?' · '+h.team:''} · Month ${h.month}</div>
+        <div class="pm-hist-title">${L.line1}</div>
+        <div class="pm-hist-meta">${L.line2}</div>
+        ${L.needsRegion ? compRegionPickerHTML('player', h.id) : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function playerHistEntriesHTML(pn){
   const hist=playerHistory.filter(h=>h.player===pn);
-  return hist.length ? hist.map(h=>`
+  return hist.length ? hist.map(h=>{
+    const L = playerHistoryLines(h);
+    return `
     <div class="list-row" style="padding:4px 0;">
-      <div><div class="name" style="font-size:11px;">${h.kind==='EVENT'?'🏆':h.kind==='MVP'?'🥇':h.kind==='EVP'?'🥈':'🥉'} ${h.event}${h.kind!=='EVENT'?' — '+h.kind:''}</div>
-      <div class="meta" style="font-size:9px;">${histStars(h.tier)} · ${h.scope} · ${h.position}${h.team?' · '+h.team:''} · Month ${h.month}</div></div>
-    </div>`).join('') : '<div class="fo-empty" style="padding:4px 0;">No recorded events or awards yet — use ▣ OFFICE → 🏆 ACHIEVEMENTS → ➕ RECORD.</div>';
+      <div><div class="name" style="font-size:11px;">${L.line1}</div>
+      <div class="meta" style="font-size:9px;">${L.line2}</div>
+      ${L.needsRegion ? compRegionPickerHTML('player', h.id) : ''}</div>
+    </div>`;
+  }).join('') : '<div class="fo-empty" style="padding:4px 0;">No recorded events or awards yet — use ▣ OFFICE → 🏆 ACHIEVEMENTS → ➕ RECORD.</div>';
 }
 function togglePlayerHist(btn, pn){
   const host=btn.closest('.list-row, .fo-player'); if (!host) return;
@@ -2989,8 +3392,8 @@ function renderTransactions(){
 }
 function loadHistoryWB(wb){
   const sheet=n=>wb.Sheets[n]?XLSX.utils.sheet_to_json(wb.Sheets[n]):[];
-  teamHistory=sheet('TeamHistory').filter(r=>r.event).map(r=>({id:r.id||Date.now()+Math.random(), team:String(r.team||''), event:String(r.event||''), tier:Number(r.tier)||1, scope:normScope(r.scope), position:String(r.position||'Winner'), prizePool:Number(r.prizePool)||0, wonAmount:Number(r.wonAmount)||0, month:Number(r.month)||1}));
-  playerHistory=sheet('PlayerHistory').filter(r=>r.player&&r.event).map(r=>({id:r.id||Date.now()+Math.random(), refId:r.refId||null, player:String(r.player||''), team:String(r.team||''), kind:String(r.kind||'EVENT'), event:String(r.event||''), tier:Number(r.tier)||1, scope:normScope(r.scope), position:String(r.position||'Winner'), month:Number(r.month)||1}));
+  teamHistory=sheet('TeamHistory').filter(r=>r.event).map(r=>({id:r.id||Date.now()+Math.random(), team:String(r.team||''), event:String(r.event||''), tier:Number(r.tier)||1, scope:normScope(r.scope), compRegion:String(r.compRegion||''), position:String(r.position||'Winner'), prizePool:Number(r.prizePool)||0, wonAmount:Number(r.wonAmount)||0, month:Number(r.month)||1, kind:String(r.kind||'EVENT'), awardKey:String(r.awardKey||'')||null, note:String(r.note||'')}));
+  playerHistory=sheet('PlayerHistory').filter(r=>r.player&&r.event).map(r=>({id:r.id||Date.now()+Math.random(), refId:r.refId||null, player:String(r.player||''), team:String(r.team||''), kind:String(r.kind||'EVENT'), event:String(r.event||''), tier:Number(r.tier)||1, scope:normScope(r.scope), compRegion:String(r.compRegion||''), position:String(r.position||'Winner'), month:Number(r.month)||1, awardKey:String(r.awardKey||'')||null, note:String(r.note||'')}));
   transactions=sheet('Transactions').filter(r=>r.type).map(r=>({id:r.id||Date.now()+Math.random(), month:Number(r.month)||1, type:String(r.type||''), playerName:String(r.playerName||''), from:String(r.from||''), to:String(r.to||''), amount:Number(r.amount)||0, note:String(r.note||'')}));
   transferHistory=sheet('Deals').filter(r=>r.playerName).map(r=>({id:r.id||Date.now()+Math.random(), buyer:String(r.buyer||''), seller:String(r.seller||''), playerName:String(r.playerName||''), amount:Number(r.amount)||0, status:String(r.status||''), month:Number(r.month)||1}));
   const meta=sheet('Meta');
@@ -2998,7 +3401,7 @@ function loadHistoryWB(wb){
 }
 
 function getFormScore(p) {
-  return ((p.MVP||0)*10) + ((p.EVP||0)*5) + ((p.VP||0)*2) + ((p.Titles||0)*1);
+  return ((p.MVP||0)*10) + ((p.EVP||0)*5) + ((p.VP||0)*2) + ((p.Titles||0)*1) + (p.BadgeScore||0);
 }
 
 function canAddBench(team) {
@@ -3017,14 +3420,18 @@ function teamLabel(t){ return t==='none' ? 'No Team' : t; }
 function teamHistPanelHTML(teamName){
   const evs=teamHistory.filter(e=>e.team===teamName);
   if (!evs.length) return `<div class="pm-hist-empty">No events recorded yet.<br>Add them in Front Office &rarr; Achievements.</div>`;
-  return evs.slice().sort((a,b)=>(b.month||0)-(a.month||0)).map(e=>`
+  return evs.slice().sort((a,b)=>(b.month||0)-(a.month||0)).map(e=>{
+    const L = teamHistoryLines(e);
+    return `
     <div class="pm-hist-entry">
-      <div class="pm-hist-medal">${e.position==='Winner'?'🥇':e.position==='Second'?'🥈':'🥉'}</div>
+      ${L.medal}
       <div class="pm-hist-body">
-        <div class="pm-hist-title">${e.event}${Number(e.tier)>=5?' <span class="badge badge-yellow" style="margin-left:4px;">MAJOR</span>':''}</div>
-        <div class="pm-hist-meta">${histStars(e.tier)} · ${e.scope} · ${e.position} · Pool ${fmtK(e.prizePool)} · Won <span style="color:var(--green);">${fmtK(e.wonAmount)}</span> · Month ${e.month}</div>
+        <div class="pm-hist-title">${L.line1}${Number(e.tier)>=5?' <span class="badge badge-yellow" style="margin-left:4px;">MAJOR</span>':''}</div>
+        <div class="pm-hist-meta">${L.line2}</div>
+        ${L.needsRegion ? compRegionPickerHTML('team', e.id) : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function openTeamProfile(teamName){
   const team=finances.find(t=>t.TeamName===teamName);
@@ -3351,15 +3758,165 @@ function populateDropdowns() {
   $('reset-team-select').innerHTML = opts;
   $('major-team-select').innerHTML = opts;
   $('clubshare-team-select').innerHTML = opts;
+  $('grant-team-select').innerHTML = opts;
   const mktOpts = `<option value="all">All Teams</option><option value="my_roster">🛡 My Roster</option><option value="offers">🔥 On Sale</option>` + opts;
   $('market-team-filter').innerHTML = mktOpts;
   const dashSel = $('dash-team-select');
   const cur = dashSel.value;
   dashSel.innerHTML = opts;
   if (cur && finances.some(t=>t.TeamName===cur)) dashSel.value=cur;
-  $('perf-player-select').innerHTML = players.map(p=>`<option value="${String(p.PlayerName)}">${String(p.PlayerName)} (${p.TeamName})</option>`).join('');
+  const playerOpts = players.map(p=>`<option value="${String(p.PlayerName)}">${String(p.PlayerName)} (${p.TeamName})</option>`).join('');
+  $('perf-player-select').innerHTML = playerOpts;
+  $('grant-player-select').innerHTML = playerOpts;
   populateRegionCountryFilters();
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   🏅 BADGES PANEL — Award Registry (icons + score) & Grant Badge
+═══════════════════════════════════════════════════════════════════ */
+/* Only these categories are grantable here — competition placements
+   (Major/Global/Regional) keep going through ⚙ OPS so money & Titles
+   stay wired to their existing mechanics. */
+const GRANTABLE_CATEGORIES = new Set([
+  'Top IGL','Top Awper','Top Star Player','Top Entry Fragger','Top Anchor','Top Rifler',
+  'Player of the Year','Top Team of the Year'
+]);
+
+function renderBadgesPanel(){
+  if (!$('grant-award-select')) return;
+  const opts = Object.keys(awardsConfig)
+    .filter(k=>GRANTABLE_CATEGORIES.has(awardsConfig[k].category))
+    .map(k=>`<option value="${k}">${awardsConfig[k].label}</option>`);
+  $('grant-award-select').innerHTML = opts.join('');
+  onGrantAwardChange();
+  if (!$('grant-month').value) $('grant-month').value = monthCounter;
+  renderAwardRegistry();
+  renderRecentGrants();
+}
+
+function onGrantAwardChange(){
+  const key = $('grant-award-select').value;
+  const a = getAward(key);
+  const isTeam = a && a.appliesTo === 'team';
+  $('grant-player-wrap').style.display = isTeam ? 'none' : '';
+  $('grant-team-wrap').style.display = isTeam ? '' : 'none';
+  const prev = $('grant-score-preview');
+  if (!a) { prev.textContent=''; return; }
+  prev.textContent = a.affectsScore
+    ? `+${a.scoreValue} score for the player receiving this badge.`
+    : `No score change — trophy only.`;
+}
+
+function grantBadge(){
+  const key = $('grant-award-select').value;
+  const a = getAward(key);
+  if (!a) return alert('Pick an award.');
+  const month = Number($('grant-month').value) || monthCounter;
+  const note = ($('grant-note').value||'').trim();
+  const event = ($('grant-event-name').value||'').trim() || a.label;
+  if (a.appliesTo === 'team') {
+    const team = $('grant-team-select').value;
+    if (!team) return alert('Pick a team.');
+    if (!confirm(`Grant "${a.label}" to ${team}?\nTrophy only — this does not add score for the team or any player.`)) return;
+    saveState();
+    teamHistory.unshift({ id:Date.now()+Math.floor(Math.random()*999), team, event, tier:0, scope:'', compRegion:'', position:'', prizePool:0, wonAmount:0, month, kind:'BADGE', awardKey:key, note });
+    addLog(`🏅 ${team} awarded "${a.label}"${note?' — '+note:''}.`,'good');
+  } else {
+    const pName = $('grant-player-select').value;
+    const p = players.find(x=>String(x.PlayerName)===pName);
+    if (!p) return alert('Pick a player.');
+    const scoreMsg = a.affectsScore ? ` +${a.scoreValue} score.` : ' No score change.';
+    if (!confirm(`Grant "${a.label}" to ${pName}?${scoreMsg}`)) return;
+    saveState();
+    playerHistory.unshift({ id:Date.now()+Math.floor(Math.random()*999), refId:null, player:pName, team:p.TeamName==='none'?'':p.TeamName, kind:'BADGE', event, tier:0, scope:'', compRegion:'', position:'', month, awardKey:key, note });
+    if (a.affectsScore) p.BadgeScore = (p.BadgeScore||0) + Number(a.scoreValue||0);
+    addLog(`🏅 ${pName} awarded "${a.label}"${note?' — '+note:''}.${scoreMsg}`,'good');
+  }
+  $('grant-event-name').value=''; $('grant-note').value='';
+  renderBadgesPanel(); renderHistory(); updateAll();
+}
+
+function renderRecentGrants(){
+  const box = $('badges-recent-grants'); if (!box) return;
+  const teamGrants = teamHistory.filter(e=>e.kind==='BADGE').map(e=>({...e, _type:'team', _label:e.team}));
+  const playerGrants = playerHistory.filter(h=>h.kind==='BADGE').map(h=>({...h, _type:'player', _label:h.player}));
+  const all = [...teamGrants, ...playerGrants].sort((a,b)=>(b.month||0)-(a.month||0)).slice(0,30);
+  box.innerHTML = all.length ? all.map(g=>{
+    const a = getAward(g.awardKey);
+    return `<div class="pm-hist-entry">
+      ${awardMedalHTML(g.awardKey, 20)}
+      <div class="pm-hist-body">
+        <div class="pm-hist-title">${g._label} <span style="color:var(--text-dim); font-weight:500;">— ${a?a.label:g.event}</span></div>
+        <div class="pm-hist-meta">${g.note?g.note+' · ':''}Month ${g.month}</div>
+      </div>
+      <div class="pm-hist-acts">
+        <button class="fo-ico fo-ico-danger" title="Delete grant" onclick="${g._type==='team'?`deleteTeamEvent('${g.id}')`:`deletePlayerAward('${g.id}')`}"><svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+      </div>
+    </div>`;
+  }).join('') : '<div class="pm-hist-empty">No badges granted yet.</div>';
+}
+
+function renderAwardRegistry(){
+  const box = $('award-registry-list'); if (!box) return;
+  const categories = [];
+  Object.keys(awardsConfig).forEach(k=>{
+    const cat = awardsConfig[k].category;
+    if (!categories.includes(cat)) categories.push(cat);
+  });
+  box.innerHTML = categories.map(cat=>{
+    const keys = Object.keys(awardsConfig).filter(k=>awardsConfig[k].category===cat);
+    const rows = keys.map(k=>{
+      const a = awardsConfig[k];
+      const sub = a.label.split('\u2014').pop().trim();
+      const iconInner = a.icon ? `<img src="${a.icon}" alt="">` : AWARD_TIER_FALLBACK_GLYPH[a.tierColor];
+      const scoreControl = a.system
+        ? `<div class="award-locked-note">Scored via ⚙ OPS</div>`
+        : a.appliesTo === 'team'
+          ? `<div class="award-locked-note">🚫 Trophy only</div>`
+          : `<div class="award-row-score">
+              <label class="award-toggle" title="Affects player score">
+                <input type="checkbox" ${a.affectsScore?'checked':''} onchange="setAwardAffectsScore('${k}',this.checked)"><span></span>
+              </label>
+              <input type="number" value="${a.scoreValue}" ${a.affectsScore?'':'disabled'} onchange="setAwardScoreValue('${k}',this.value)">
+            </div>`;
+      return `<div class="award-row">
+        <div class="award-row-icon ${awardTierClass(a.tierColor)}" title="Click to upload icon">
+          ${iconInner}
+          <input type="file" accept="image/*" onchange="setAwardIcon('${k}',this)">
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div class="award-row-label">${sub}</div>
+          <div class="award-row-sub">${a.appliesTo==='team'?'Team':'Player'} badge${a.icon?' · icon set':''}</div>
+        </div>
+        ${scoreControl}
+      </div>`;
+    }).join('');
+    return `<div class="award-registry-group">
+      <div class="award-registry-group-title">${cat}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+function setAwardIcon(key, input){
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    awardsConfig[key].icon = ev.target.result;
+    addLog(`🖼 Icon updated for "${awardsConfig[key].label}" — applies everywhere it's used.`,'good');
+    renderAwardRegistry(); updateAll();
+  };
+  r.readAsDataURL(file);
+}
+function setAwardAffectsScore(key, checked){
+  awardsConfig[key].affectsScore = !!checked;
+  renderAwardRegistry();
+}
+function setAwardScoreValue(key, val){
+  awardsConfig[key].scoreValue = Number(val)||0;
+}
+
 
 
 
@@ -4151,17 +4708,27 @@ function opsEventScope(tier){
   const el = $('ops-event-scope');
   return normScope((el && el.value) || 'Global');
 }
+function opsEventRegion(tier, scope){
+  if (Number(tier) >= 5 || scope !== 'Regional') return '';
+  const el = $('ops-event-region');
+  return (el && el.value) || 'Europe';
+}
+function toggleOpsRegion(){
+  const wrap = $('ops-event-region-wrap');
+  if (wrap) wrap.style.display = ($('ops-event-scope').value === 'Regional') ? '' : 'none';
+}
 
 /* ═══ TOURNAMENT & AWARDS ═══ */
 function distributeTourneyPrize() {
   const amt=parseFloat($('prize-amount').value), tName=$('tourney-team-select').value;
   const team=finances.find(t=>t.TeamName===tName);
   if (!amt||!team) return;
-  const place  = $('ops-prize-place').value;                 // none | Winner | Second | Third
+  const place  = $('ops-prize-place').value;                 // none | Winner | Second | Third | Fourth
   const rating = Number($('ops-prize-rating').value) || 1;
   const podium = place !== 'none';
   const event  = opsEventName();
   const scope  = opsEventScope(rating);
+  const compRegion = opsEventRegion(rating, scope);
   // a podium finish writes history, so it must carry a real event name
   if (podium && !event) return alert('Enter the EVENT / TOURNAMENT NAME — it is written into the team and player history.');
   saveState(); team.CurrentBank+=amt*0.6;
@@ -4172,12 +4739,11 @@ function distributeTourneyPrize() {
   if (podium) {
     // Mirror the finish into team + player history so it surfaces in the Achievements panel & persists to history.xlsx
     const id=Date.now()+Math.floor(Math.random()*999);
-    teamHistory.unshift({id, team:tName, event, tier:rating, scope, position:place, prizePool:amt, wonAmount:amt*0.6, month:monthCounter});
-    starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team:tName, kind:'EVENT', event, tier:rating, scope, position:place, month:monthCounter}));
+    teamHistory.unshift({id, team:tName, event, tier:rating, scope, compRegion, position:place, prizePool:amt, wonAmount:amt*0.6, month:monthCounter, kind:'EVENT'});
+    starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team:tName, kind:'EVENT', event, tier:rating, scope, compRegion, position:place, month:monthCounter}));
   }
-  const medal = place==='Winner'?'🥇':place==='Second'?'🥈':place==='Third'?'🥉':'';
   const histMsg = podium
-    ? ` · ${medal} ${place==='Winner'?'1st':place==='Second'?'2nd':'3rd'} at ${event} (${histStars(rating)}, ${scope}) recorded for the team and ${starters.length} starter(s)${place==='Winner'?' + 🏆 Title medals':''}.`
+    ? ` · ${positionLabel(place)} at ${event} (${histStars(rating)}, ${scope}) recorded for the team and ${starters.length} starter(s)${place==='Winner'?' + 🏆 Title medals':''}.`
     : ' · no placement — money only, nothing recorded in history.';
   addLog(`🏆 ${tName} received ${fmt(amt)}! Bank +${fmt(amt*0.6)}, starters +${fmt(share)} MV each.${histMsg}`,'good'); updateAll();
 }
@@ -4190,6 +4756,7 @@ function applyIndividualPerformance() {
   const tierNum={ss:5, s:4, a:3, b:2, c:1}[tierKey]||3;
   const event=opsEventName();
   const scope=opsEventScope(tierNum);
+  const compRegion=opsEventRegion(tierNum, scope);
   // this always writes a history row, so the event name is mandatory
   if (!event) return alert('Enter the EVENT / TOURNAMENT NAME — it is written into the player history.');
   saveState();
@@ -4202,7 +4769,7 @@ function applyIndividualPerformance() {
   else if (type==='evp') p.EVP=(p.EVP||0)+1;
   else p.VP=(p.VP||0)+1;
   // Mirror the grant into the player's history log so it surfaces in the Achievements panel & persists to history.xlsx
-  playerHistory.unshift({id:Date.now()+Math.floor(Math.random()*999), refId:null, player:pName, team:p.TeamName==='none'?'':p.TeamName, kind:type.toUpperCase(), event, tier:tierNum, scope, position:'Winner', month:monthCounter});
+  playerHistory.unshift({id:Date.now()+Math.floor(Math.random()*999), refId:null, player:pName, team:p.TeamName==='none'?'':p.TeamName, kind:type.toUpperCase(), event, tier:tierNum, scope, compRegion, position:'Winner', month:monthCounter});
   addLog(`⭐ ${pName} awarded ${type.toUpperCase()} at ${event} (${histStars(tierNum)}, ${scope}) — +${fmt(reward)} MV & prize pool, medal granted.`,'good'); updateAll();
 }
 
@@ -4316,6 +4883,7 @@ function exportExcels() {
     'Total VP': p['Total VP'] || 0,
     'Total Titles': p['Total Titles'] || 0,
     'Previous MV': p['Previous MV'] || 0,
+    'BadgeScore': p.BadgeScore || 0,
     'Country': p.Country || '',
     'Region': getPlayerMacroRegion(p),
     'Major Winner': p['Major Winner'] || 0,
@@ -4341,8 +4909,8 @@ function exportExcels() {
   const wb1=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb1,XLSX.utils.json_to_sheet(fData),'Finances'); XLSX.writeFile(wb1,'finances_updated.xlsx');
   const wb2=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb2,XLSX.utils.json_to_sheet(pData),'Players'); XLSX.writeFile(wb2,'players_updated.xlsx');
   // History workbook: achievements, awards & transactions survive between sessions
-  const hData=teamHistory.map(e=>({id:e.id, team:e.team, event:e.event, tier:e.tier, scope:e.scope, position:e.position, prizePool:e.prizePool, wonAmount:e.wonAmount, month:e.month}));
-  const aData=playerHistory.map(h=>({id:h.id, refId:h.refId||'', player:h.player, team:h.team, kind:h.kind, event:h.event, tier:h.tier, scope:h.scope, position:h.position, month:h.month}));
+  const hData=teamHistory.map(e=>({id:e.id, team:e.team, event:e.event, tier:e.tier, scope:e.scope, compRegion:e.compRegion||'', position:e.position, prizePool:e.prizePool, wonAmount:e.wonAmount, month:e.month, kind:e.kind||'EVENT', awardKey:e.awardKey||'', note:e.note||''}));
+  const aData=playerHistory.map(h=>({id:h.id, refId:h.refId||'', player:h.player, team:h.team, kind:h.kind, event:h.event, tier:h.tier, scope:h.scope, compRegion:h.compRegion||'', position:h.position, month:h.month, awardKey:h.awardKey||'', note:h.note||''}));
   const tData=transactions.map(t=>({id:t.id, month:t.month, type:t.type, playerName:t.playerName, from:t.from, to:t.to, amount:t.amount, note:t.note}));
   const dData=transferHistory.map(o=>({id:o.id, playerName:o.playerName, buyer:o.buyer, seller:o.seller, amount:o.amount, status:o.status, month:o.month||1}));
   const metaData=[{monthCounter: monthCounter}];
@@ -4353,7 +4921,19 @@ function exportExcels() {
   XLSX.utils.book_append_sheet(wb3,XLSX.utils.json_to_sheet(dData),'Deals');
   XLSX.utils.book_append_sheet(wb3,XLSX.utils.json_to_sheet(metaData),'Meta');
   XLSX.writeFile(wb3,'history_updated.xlsx');
-  addLog('📥 Exported finances_updated.xlsx, players_updated.xlsx & history_updated.xlsx (deals + month persisted).','good');
+  exportAwardsJSON();
+  addLog('📥 Exported finances_updated.xlsx, players_updated.xlsx, history_updated.xlsx & awards_updated.json.','good');
+}
+
+/* Downloads the current award registry (icons + score config) as a standalone JSON,
+   the same shape accepted by the AWARDS.JSON upload box / assets/awards.json. */
+function exportAwardsJSON(){
+  const blob = new Blob([JSON.stringify(awardsConfig, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'awards_updated.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 /* ═══ LOG ═══ */
