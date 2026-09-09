@@ -1208,7 +1208,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
           </div>
           <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:10px; line-height:1.6;">
             Upload each trophy's image once — every place it's used in the app updates instantly. Toggle whether it affects player score and by how much. Team-scoped badges never score, by design.<br>
-            Edits live for this session only — use 📥 EXPORT (Operations panel) to save <code>awards_updated.json</code>, then re-upload it next time.
+            Edits live for this session only — use 📥 EXPORT (Operations panel) to save <code>awards.json</code>, then re-upload it next time.
           </div>
           <div id="award-registry-list" class="scroll-list" style="max-height:640px;"></div>
         </div>
@@ -1469,7 +1469,7 @@ function getTeamLogo(teamName, size) {
    One config object drives every trophy icon + its score effect,
    shared app-wide. Ships with sensible defaults (68 award slots);
    upload AWARDS.JSON to restore your own icons/values, and "Save All"
-   exports awards_updated.json so edits carry over between sessions.
+   exports awards.json so edits carry over between sessions.
 ═══════════════════════════════════════════════════════════════════ */
 /* Bundled default icon for the Major Winner trophy — replace anytime via
    the 🏅 Badges → Award Registry icon uploader; every place this badge
@@ -4971,7 +4971,7 @@ function exportExcels() {
   XLSX.utils.book_append_sheet(wb3,XLSX.utils.json_to_sheet(metaData),'Meta');
   XLSX.writeFile(wb3,'history_updated.xlsx');
   exportAwardsJSON();
-  addLog('📥 Exported finances_updated.xlsx, players_updated.xlsx, history_updated.xlsx & awards_updated.json.','good');
+  addLog('📥 Exported finances_updated.xlsx, players_updated.xlsx, history_updated.xlsx & awards.json.','good');
 }
 
 /* Downloads the current award registry (icons + score config) as a standalone JSON,
@@ -4980,7 +4980,7 @@ function exportAwardsJSON(){
   const blob = new Blob([JSON.stringify(awardsConfig, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'awards_updated.json';
+  a.href = url; a.download = 'awards.json';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
