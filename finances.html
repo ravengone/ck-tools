@@ -409,14 +409,9 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .pm-stat .l{font-family:var(--font-data);font-size:9.5px;color:var(--text-dim);letter-spacing:.4px;margin-top:5px;text-transform:uppercase;}
 .pm-medal-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
 .pm-medal{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:12px 14px;text-align:center;flex:1;min-width:80px;}
-.pm-medal .icon{font-size:21px;}
+.pm-medal .icon{font-size:25px;}
 .pm-medal .cnt{font-family:var(--font-data);font-size:17px;font-weight:700;margin-top:4px;}
 .pm-medal .lbl{font-family:var(--font-data);font-size:9px;color:var(--text-dim);letter-spacing:.4px;margin-top:2px;text-transform:uppercase;}
-.pm-mv-compare{display:flex;align-items:center;gap:12px;margin-top:8px;}
-.pm-mv-compare .mv-box{background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:13px 15px;flex:1;text-align:center;}
-.pm-mv-compare .mv-box .v{font-family:var(--font-data);font-size:17px;font-weight:700;}
-.pm-mv-compare .mv-box .l{font-family:var(--font-data);font-size:9px;color:var(--text-dim);margin-top:4px;text-transform:uppercase;letter-spacing:.4px;}
-.pm-mv-compare .mv-arrow{font-family:var(--font-display);font-size:18px;color:var(--text-faint);}
 @media (max-width:760px){.pm-split{grid-template-columns:1fr;}.pm-col-history{border-left:none;border-top:1px solid var(--border);}}
 /* ── Player Profile — enlarged variant (opened on click, room to breathe) ── */
 .player-modal-xl{width:1520px;max-width:98vw;max-height:95vh;}
@@ -435,15 +430,10 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .player-modal-xl .pm-stat .v{font-size:27px;}
 .player-modal-xl .pm-stat .l{font-size:12px;}
 .player-modal-xl .pm-medal-row{gap:14px;margin-top:9px;}
-.player-modal-xl .pm-medal{padding:18px 18px;border-radius:14px;min-width:112px;}
-.player-modal-xl .pm-medal .icon{font-size:30px;}
+.player-modal-xl .pm-medal{padding:20px 18px;border-radius:14px;min-width:112px;}
+.player-modal-xl .pm-medal .icon{font-size:44px;}
 .player-modal-xl .pm-medal .cnt{font-size:24px;margin-top:6px;}
 .player-modal-xl .pm-medal .lbl{font-size:11.5px;margin-top:4px;}
-.player-modal-xl .pm-mv-compare{gap:16px;margin-top:12px;}
-.player-modal-xl .pm-mv-compare .mv-box{padding:18px 20px;border-radius:14px;}
-.player-modal-xl .pm-mv-compare .mv-box .v{font-size:24px;}
-.player-modal-xl .pm-mv-compare .mv-box .l{font-size:11.5px;}
-.player-modal-xl .pm-mv-compare .mv-arrow{font-size:26px;}
 .player-modal-xl .pm-hist-head{padding:24px 28px 18px;font-size:15px;gap:12px;}
 .player-modal-xl .pm-hist-head svg.ico{width:20px;height:20px;}
 .player-modal-xl .pm-hist-count{font-size:13px;}
@@ -1184,8 +1174,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             <select class="nx-select" id="reset-team-select"></select>
           </div>
 
-          <button class="btn btn-orange btn-full" onclick="applyBailout()" style="margin-bottom:8px;">💊 BANKRUPT BAILOUT (+$25k + 50% Sponsor Boost)</button>
-          <button class="btn btn-red btn-full" onclick="applySeasonReset()">🔁 GLOBAL SEASON RESET (−30% MV, Accumulate Totals)</button>
+          <button class="btn btn-orange btn-full" onclick="applyBailout()">💊 BANKRUPT BAILOUT (+$25k + 50% Sponsor Boost)</button>
 
           <hr class="sep">
           <div class="card-title">📁 DATA MANAGEMENT</div>
@@ -1503,7 +1492,7 @@ document.addEventListener('keydown', (e) => {
 let finances = [], players = [], history = [];
 let transferHistory = [], negotiations = [], clauseTalks = [];
 let teamHistory = [], playerHistory = [], transactions = [];
-const SALARY_BAND = 0.10; // ±10% wage band around fair salary (MarketValue/10)
+const SALARY_BAND = 0.10; // ±10% wage band around fair salary (see SALARY_TIERS)
 let monthCounter = 1;
 let finLoaded = false, plyLoaded = false;
 let teamLogos = {}; // { teamName: logoUrl }
@@ -2027,12 +2016,7 @@ function normalizePlayers(arr) {
     row.EVP = Number(row.EVP || row['EVP']) || 0;
     row.VP = Number(row.VP || row['VP']) || 0;
     row.Titles = Number(row.Titles || row['Titles']) || 0;
-    row['Total MVP'] = Number(row['Total MVP']) || 0;
-    row['Total EVP'] = Number(row['Total EVP']) || 0;
-    row['Total VP'] = Number(row['Total VP']) || 0;
-    row['Total Titles'] = Number(row['Total Titles']) || 0;
     row['Major Winner'] = Number(row['Major Winner']) || 0;
-    row['Previous MV'] = Number(row['Previous MV']) || 0;
     row.BadgeScore = Number(row.BadgeScore || row['Badge Score']) || 0; // score granted by 🏅 Badges (role awards, Player of the Year, etc.)
     row.ContractMonths = Number(row.ContractMonths || row['ContractMonths']) || 0;
     row.Country = String(row.Country || row['Country'] || '').trim();
@@ -2587,7 +2571,7 @@ function loadDemoData() {
   ];
   const roles=['igl','rifler','entry fragger','star player','awper','anchor'];
   const countries=['south korea','sweden','brazil','germany','united states','france','canada','japan'];
-  const mk=(team,names,mvs,rost,con)=>names.map((n,i)=>({PlayerName:n,TeamName:team,'Market Value':mvs[i],'Prize Pool':Math.round(mvs[i]*0.3),Roster:rost[i],Role:roles[i%5],Country:countries[i%countries.length],MVP:Math.max(0,4-i)+1,EVP:3-(i%3),VP:5-(i%4),Titles:(i%3),'Total MVP':10+i,'Total EVP':8,'Total VP':12,'Total Titles':2,'Major Winner':i===0?1:0,'Previous MV':Math.round(mvs[i]*0.92),ContractMonths:con[i]}));
+  const mk=(team,names,mvs,rost,con)=>names.map((n,i)=>({PlayerName:n,TeamName:team,'Market Value':mvs[i],'Prize Pool':Math.round(mvs[i]*0.3),Roster:rost[i],Role:roles[i%5],Country:countries[i%countries.length],MVP:Math.max(0,4-i)+1,EVP:3-(i%3),VP:5-(i%4),Titles:(i%3),'Major Winner':i===0?1:0,ContractMonths:con[i]}));
   let P=[];
   P=P.concat(mk('Sentinel GG',['Vyper','Nova','Krios','Echo','Drift','Riftn'],[48200,42000,39500,28900,31200,14500],['Starter','Starter','Starter','Starter','Starter','Bench'],[14,11,8,6,3,9]));
   P=P.concat(mk('Apex Dynasty',['Titan','Blaze','Surge','Onyx','Vault','Pulse'],[61000,55000,49000,44000,38000,20000],['Starter','Starter','Starter','Starter','Starter','Bench'],[18,16,12,10,7,12]));
@@ -2625,8 +2609,34 @@ window.addEventListener('resize', () => {
 
 const escN = n => String(n).replace(/'/g, "\\'");
 
-function getFairSalary(p){ return (p.MarketValue||0)*0.10; }
-function getPlayerSalary(p){ return (p.Salary>0) ? p.Salary : getFairSalary(p); } // legacy fallback: MV/10
+/* ── SALARY MODEL ─────────────────────────────────────────────────────
+   Fair monthly salary scales with Market Value on a tapering, tiered
+   curve. Salary keeps climbing as MV rises, but each tier hands out a
+   smaller increase per MV dollar than the tier before it — the more
+   expensive the player, the less they gain per extra dollar of MV —
+   so a $1,000,000 player never costs anywhere close to $100,000/mo. */
+const SALARY_TIERS = [
+  { mvFrom:0,       mvTo:1000,      salFrom:100,   salTo:1000  },
+  { mvFrom:1000,    mvTo:10000,     salFrom:1000,  salTo:5000  },
+  { mvFrom:10000,   mvTo:50000,     salFrom:5000,  salTo:8000  },
+  { mvFrom:50000,   mvTo:200000,    salFrom:8000,  salTo:11000 },
+  { mvFrom:200000,  mvTo:1000000,   salFrom:11000, salTo:14000 },
+  { mvFrom:1000000, mvTo:5000000,   salFrom:14000, salTo:15000 },
+];
+const SALARY_CAP = 15000; // hard ceiling — MV beyond the top tier no longer raises salary
+
+function getFairSalary(p){
+  const mv = p.MarketValue||0;
+  if (mv <= 0) return 0;
+  for (const t of SALARY_TIERS) {
+    if (mv <= t.mvTo) {
+      const ratio = (mv - t.mvFrom) / (t.mvTo - t.mvFrom);
+      return Math.round(t.salFrom + ratio * (t.salTo - t.salFrom));
+    }
+  }
+  return SALARY_CAP;
+}
+function getPlayerSalary(p){ return (p.Salary>0) ? p.Salary : getFairSalary(p); } // legacy fallback: tiered MV curve
 function isLegacyContract(p){ return p.TeamName!=='none' && !(p.Salary>0); }
 function isUserManaged(p){ return String(p.Managed||'').toLowerCase()==='user'; }
 
@@ -3743,15 +3753,6 @@ function openPlayerProfile(name) {
   const sal = getPlayerSalary(p);
   const routes = getAcquisitionRoutes(p);
   const routeTxt = p.TeamName==='none' ? 'FREE AGENT' : (routes.length ? routes.map(r=>(ROUTE_ICON[r.key]||'')+' '+fmtK(r.price)).join(' · ') : (p.OpenToOffers>0 ? '📬 OPEN TO OFFERS' : '🔒 LOCKED'));
-  const prevMV = p['Previous MV']||0;
-  const mvDiff = (p.MarketValue||0) - prevMV;
-  const hasPrev = prevMV > 0;
-
-  // Career totals (already accumulated + current season)
-  const totalMVP = (p['Total MVP']||0) + (p.MVP||0);
-  const totalEVP = (p['Total EVP']||0) + (p.EVP||0);
-  const totalVP  = (p['Total VP']||0)  + (p.VP||0);
-  const totalTitles = (p['Total Titles']||0) + (p.Titles||0);
 
   const overlay = document.createElement('div');
   overlay.className = 'player-modal-overlay';
@@ -3788,32 +3789,12 @@ function openPlayerProfile(name) {
             <div class="pm-stat"><div class="v" style="color:var(--yellow)">${form}</div><div class="l">Form Score</div></div>
           </div>
 
-          ${hasPrev ? `
-          <div class="pm-section-title">Market Value vs Previous Season</div>
-          <div class="pm-mv-compare">
-            <div class="mv-box"><div class="v" style="color:var(--text-dim)">${fmt(prevMV)}</div><div class="l">Previous</div></div>
-            <div class="mv-arrow">→</div>
-            <div class="mv-box"><div class="v" style="color:var(--cyan)">${fmt(p.MarketValue||0)}</div><div class="l">Current</div></div>
-            <div class="mv-box" style="border-color:${mvDiff>=0?'var(--green)':'var(--red)'};">
-              <div class="v" style="color:${mvDiff>=0?'var(--green)':'var(--red)'}">${mvDiff>=0?'+':''}${fmt(mvDiff)}</div><div class="l">Change</div>
-            </div>
-          </div>
-          ` : ''}
-
-          <div class="pm-section-title">Current Season Medals</div>
+          <div class="pm-section-title">Achievements</div>
           <div class="pm-medal-row">
-            <div class="pm-medal"><div class="icon"><span class="medal-ic medal-ic-mvp"></span></div><div class="cnt" style="color:var(--yellow)">${p.MVP||0}</div><div class="lbl">MVP</div></div>
+            <div class="pm-medal" style="border-color:var(--yellow);"><div class="icon"><span class="medal-ic medal-ic-mvp"></span></div><div class="cnt" style="color:var(--yellow)">${p.MVP||0}</div><div class="lbl">MVP</div></div>
             <div class="pm-medal"><div class="icon"><span class="medal-ic medal-ic-evp"></span></div><div class="cnt" style="color:#b0bec5">${p.EVP||0}</div><div class="lbl">EVP</div></div>
             <div class="pm-medal"><div class="icon"><span class="medal-ic medal-ic-vp"></span></div><div class="cnt" style="color:#ff7043">${p.VP||0}</div><div class="lbl">VP</div></div>
-            <div class="pm-medal"><div class="icon"><span class="medal-ic medal-ic-trophy"></span></div><div class="cnt" style="color:var(--cyan)">${p.Titles||0}</div><div class="lbl">Titles</div></div>
-          </div>
-
-          <div class="pm-section-title">Career Total (All Seasons)</div>
-          <div class="pm-medal-row">
-            <div class="pm-medal" style="border-color:var(--yellow);"><div class="icon"><span class="medal-ic medal-ic-mvp"></span></div><div class="cnt" style="color:var(--yellow)">${totalMVP}</div><div class="lbl">Total MVP</div></div>
-            <div class="pm-medal"><div class="icon"><span class="medal-ic medal-ic-evp"></span></div><div class="cnt" style="color:#b0bec5">${totalEVP}</div><div class="lbl">Total EVP</div></div>
-            <div class="pm-medal"><div class="icon"><span class="medal-ic medal-ic-vp"></span></div><div class="cnt" style="color:#ff7043">${totalVP}</div><div class="lbl">Total VP</div></div>
-            <div class="pm-medal" style="border-color:var(--cyan);"><div class="icon"><span class="medal-ic medal-ic-trophy"></span></div><div class="cnt" style="color:var(--cyan)">${totalTitles}</div><div class="lbl">Total Titles</div></div>
+            <div class="pm-medal" style="border-color:var(--cyan);"><div class="icon"><span class="medal-ic medal-ic-trophy"></span></div><div class="cnt" style="color:var(--cyan)">${p.Titles||0}</div><div class="lbl">Titles</div></div>
           </div>
 
           <div class="pm-section-title">Prize Pool</div>
@@ -4153,7 +4134,7 @@ function updateCommand() {
     <div class="list-row">
       <div>
         <div class="name" style="cursor:pointer; text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:3px;" onclick="openPlayerProfile('${String(p.PlayerName).replace(/'/g,"\\'")}')">${p.Country?`<span title="${p.Country}" style="margin-right:4px;display:inline-flex;align-items:center;">${getCountryFlag(p.Country, 16)}</span>`:''}${String(p.PlayerName)}</div>
-        <div class="meta">${p.Roster} • ${roleBadges(p)}Contract: ${p.ContractMonths}m • ${fmt(p.MarketValue*0.10)}/mo ${medals(p)}</div>
+        <div class="meta">${p.Roster} • ${roleBadges(p)}Contract: ${p.ContractMonths}m • ${fmt(getPlayerSalary(p))}/mo ${medals(p)}</div>
       </div>
       <div style="display:flex; gap:4px; flex-shrink:0;">
         <button class="btn btn-ghost btn-sm" title="Event & award history" onclick="togglePlayerHist(this,'${String(p.PlayerName).replace(/'/g,"\\'")}')">🏛</button>
@@ -4460,9 +4441,9 @@ function refreshMarket() {
     const isDisc=p.OnSale>0;
     const buyout=p.TeamName==='none'?0:(direct?direct.price:(p.ReleaseClause>0?p.ReleaseClause:0)); // effective acquisition price (0 = FA or LOCKED)
     const sal=getPlayerSalary(p), six=sal*6;
-    // Calculate total medals and titles
-    const totalTitles=(p['Total Titles']||0)+(p.Titles||0);
-    const totalMedals=(p['Total MVP']||0)+(p.MVP||0)+(p['Total EVP']||0)+(p.EVP||0)+(p['Total VP']||0)+(p.VP||0);
+    // Titles and medals (single running total now, no season split)
+    const totalTitles=p.Titles||0;
+    const totalMedals=(p.MVP||0)+(p.EVP||0)+(p.VP||0);
     const prizePool=p.PrizePool||0;
     return {...p, pn, routes, isDisc, buyout, sal, six, totalTitles, totalMedals, prizePool};
   }).filter(p=>{
@@ -4934,25 +4915,6 @@ function applyBailout() {
   }
 }
 
-function applySeasonReset() {
-  if (confirm('GLOBAL SEASON RESET:\n- Accumulates medals into Total MVP/EVP/VP/Titles\n- Saves current MV as Previous MV\n- Wipes season medals (MVP, EVP, VP, Titles)\n- Cuts all MV by 30%\n\nThis cannot be undone. Continue?')) {
-    saveState();
-    players.forEach(p=>{
-      // Accumulate season medals into career totals
-      p['Total MVP'] = (p['Total MVP']||0) + (p.MVP||0);
-      p['Total EVP'] = (p['Total EVP']||0) + (p.EVP||0);
-      p['Total VP']  = (p['Total VP']||0)  + (p.VP||0);
-      p['Total Titles'] = (p['Total Titles']||0) + (p.Titles||0);
-      // Save current MV before cutting
-      p['Previous MV'] = p.MarketValue||0;
-      // Apply season reset
-      p.MarketValue *= 0.7;
-      p.MVP = p.EVP = p.VP = p.Titles = 0;
-    });
-    monthCounter=1; addLog('🔁 Season reset applied. Totals accumulated, Previous MV saved. New season begins.','warn'); updateAll();
-  }
-}
-
 /* ═══ UNDO & EXPORT ═══ */
 function saveState() {
   if (history.length>=5) history.shift();
@@ -4979,11 +4941,6 @@ function exportExcels() {
     'EVP': p.EVP || 0,
     'VP': p.VP || 0,
     'Titles': p.Titles || 0,
-    'Total MVP': p['Total MVP'] || 0,
-    'Total EVP': p['Total EVP'] || 0,
-    'Total VP': p['Total VP'] || 0,
-    'Total Titles': p['Total Titles'] || 0,
-    'Previous MV': p['Previous MV'] || 0,
     'BadgeScore': p.BadgeScore || 0,
     'Country': p.Country || '',
     'Region': getPlayerMacroRegion(p),
