@@ -353,9 +353,9 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .pm-hist-head svg.ico{width:16px;height:16px;color:var(--cyan);}
 .pm-hist-count{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--text-faint);font-weight:400;letter-spacing:0;}
 .pm-hist-scroll{overflow-y:auto;padding:12px 18px 20px;flex:1;}
-.pm-hist-entry{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--border);}
+.pm-hist-entry{display:flex;gap:16px;padding:13px 0;border-bottom:1px solid var(--border);align-items:center;}
 .pm-hist-entry:last-child{border-bottom:none;}
-.pm-hist-medal{width:34px;height:34px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.pm-hist-medal{width:56px;height:56px;border-radius:14px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden;}
 .pm-hist-body{flex:1;min-width:0;}
 .pm-hist-title{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--text);}
 .pm-hist-meta{font-family:var(--font-data);font-size:10.5px;color:var(--text-dim);margin-top:4px;line-height:1.6;}
@@ -378,7 +378,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .award-registry-group-title{font-family:var(--font-display);font-size:9.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--text-dim);margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 .award-row{display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid var(--border);}
 .award-row:last-child{border-bottom:none;}
-.award-row-icon{width:68px;height:68px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;}
+.award-row-icon{width:104px;height:104px;border-radius:18px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:46px;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;}
 .award-row-icon img{width:100%;height:100%;object-fit:contain;}
 .award-row-icon input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
 .award-row-label{flex:1;min-width:0;font-family:var(--font-ui);font-size:11px;color:var(--text);font-weight:600;}
@@ -440,8 +440,8 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .player-modal-xl .pm-hist-head svg.ico{width:20px;height:20px;}
 .player-modal-xl .pm-hist-count{font-size:13px;}
 .player-modal-xl .pm-hist-scroll{padding:18px 26px 28px;}
-.player-modal-xl .pm-hist-entry{gap:16px;padding:18px 0;}
-.player-modal-xl .pm-hist-medal{width:48px;height:48px;border-radius:12px;font-size:22px;}
+.player-modal-xl .pm-hist-entry{gap:22px;padding:20px 0;}
+.player-modal-xl .pm-hist-medal{width:116px;height:116px;border-radius:26px;font-size:54px;}
 .player-modal-xl .pm-hist-title{font-size:16px;}
 .player-modal-xl .pm-hist-meta{font-size:12.5px;margin-top:6px;}
 .player-modal-xl .pm-hist-empty{font-size:14px;padding:32px 6px;}
@@ -1642,10 +1642,11 @@ const AWARD_TIER_POS_CLASS = { gold:'award-pos-gold', silver:'award-pos-silver',
 
 /* One "medal box" — the uploaded icon when present, else a color-coded glyph fallback. */
 function awardMedalHTML(key, sizePx){
-  sizePx = sizePx || 22;
   const a = getAward(key);
   const tier = a ? a.tierColor : 'none';
-  const inner = (a && a.icon) ? `<img src="${a.icon}" alt="" style="width:${sizePx}px;height:${sizePx}px;">` : (AWARD_TIER_FALLBACK_GLYPH[tier]||'🏆');
+  // Image fills its .pm-hist-medal box (sized purely by CSS, base vs the
+  // enlarged .player-modal-xl variant) so this scales with context automatically.
+  const inner = (a && a.icon) ? `<img src="${a.icon}" alt="" style="width:100%;height:100%;object-fit:contain;">` : (AWARD_TIER_FALLBACK_GLYPH[tier]||'🏆');
   return `<div class="pm-hist-medal ${awardTierClass(tier)}">${inner}</div>`;
 }
 /* Bare inline icon — no box, for swapping an emoji mid-sentence (e.g. "👑 1× Major Winner"). */
@@ -3764,7 +3765,7 @@ function openPlayerProfile(name) {
 
           ${(p['Major Winner']||0) > 0 ? `
           <div class="pm-major-banner" style="text-align:center; padding:12px; margin-bottom:18px; background:var(--yellow-dim,rgba(230,197,106,0.12)); border:1px solid var(--yellow); border-radius:11px; font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--yellow); letter-spacing:.5px;">
-            ${awardIconImg('major_winner', 20, '👑')} ${p['Major Winner']}× Major Winner
+            ${awardIconImg('major_winner', 30, '👑')} ${p['Major Winner']}× Major Winner
           </div>
           ` : ''}
 
