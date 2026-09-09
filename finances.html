@@ -624,7 +624,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
     <button class="nav-tab" onclick="showPanel('p-compare', this)"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>Compare</button>
     <button class="nav-tab" onclick="showPanel('p-league', this)"><svg class="ico" viewBox="0 0 24 24"><path d="M6 4h12v3a6 6 0 0 1-12 0z"/><path d="M6 5H3v1a3 3 0 0 0 3 3"/><path d="M18 5h3v1a3 3 0 0 1-3 3"/><path d="M12 13v4"/><path d="M8 21h8"/><path d="M9 21v-2h6v2"/></svg>League</button>
     <button class="nav-tab" onclick="showPanel('p-history', this); renderHistory()"><svg class="ico" viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg>History</button>
-    <button class="nav-tab" onclick="showPanel('p-ops', this)"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Operations <span class="badge" id="alert-badge" style="display:none">!</span></button>
+    <button class="nav-tab" onclick="showPanel('p-ops', this); renderAchIconSquares()"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Operations <span class="badge" id="alert-badge" style="display:none">!</span></button>
     <button class="nav-tab" onclick="showPanel('p-badges', this); renderBadgesPanel()"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3h8v4a4 4 0 0 1-8 0V3z"/><path d="M8 4H4v2a4 4 0 0 0 4 4"/><path d="M16 4h4v2a4 4 0 0 1-4 4"/><path d="M12 11v4"/><path d="M9 19h6"/><path d="M10 15h4l1 4H9l1-4z"/></svg>Badges</button>
   </div>
 
@@ -1089,6 +1089,11 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             60% → Team Bank&nbsp;&nbsp;|&nbsp;&nbsp;40% → Starter MV split<br>
             Placement 1st–8th → history for team + active roster<br><span class="medal-ic medal-ic-trophy"></span> Title counter: 1st place only
           </div>
+          <div class="form-label" style="margin-bottom:6px;">TROPHY IMAGE OVERRIDE (OPTIONAL)</div>
+          <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); margin:-2px 0 10px; line-height:1.5;">
+            Shared with 🏅 Badges → Record Achievement — upload once, it stays loaded for every placement (here or there) until you clear or replace it. Empty square = keep the normal Award Registry icon. Applied to the PLACEMENT selected above at the moment you distribute.
+          </div>
+          <div class="ach-icon-row" id="ops-icon-squares" style="margin-bottom:14px;"></div>
           <button class="btn btn-green btn-full" onclick="distributeTourneyPrize()">DISTRIBUTE PRIZE</button>
 
           <hr class="sep">
@@ -1544,7 +1549,7 @@ function loadAwardsConfig(data){
   achIconStaging = { winner:'', second:'', third:'', fourth:'', ...((data && data.__achIconStaging) || {}) };
   historyIconsMap = (data && data.__historyIcons) || {};
   applyHistoryIconsMap(historyIconsMap);
-  if ($('ach-icon-squares')) renderAchIconSquares();
+  renderAchIconSquares();
 }
 
 function getAward(key){ return awardsConfig[key] || null; }
@@ -1620,12 +1625,15 @@ let achIconStaging = { winner:'', second:'', third:'', fourth:'' };
    base64 images can blow past Excel's per-cell character limit there). */
 let historyIconsMap = {};
 
+/* Every place these staging squares are shown — Record Achievement modal
+   AND Operations → Tournament Engine — share the same achIconStaging state,
+   so uploading in one keeps the other in sync automatically. */
+const ACH_ICON_CONTAINER_IDS = ['ach-icon-squares', 'ops-icon-squares'];
 function renderAchIconSquares(){
-  const box = $('ach-icon-squares'); if (!box) return;
-  box.innerHTML = ACH_ICON_SLOTS.map(s=>{
+  const html = ACH_ICON_SLOTS.map(s=>{
     const icon = achIconStaging[s.field];
     return `<div class="ach-icon-square">
-      <div class="ach-icon-box" title="Click to upload — reused for every ${s.label} team achievement until you clear or replace it">
+      <div class="ach-icon-box" title="Click to upload — reused for every ${s.label} placement (Record Achievement or Operations) until you clear or replace it">
         ${icon ? `<img src="${icon}" alt="">` : `<span class="ach-icon-default">DEFAULT</span>`}
         <input type="file" accept="image/*" onchange="setAchIconStaging('${s.field}', this)">
       </div>
@@ -1633,6 +1641,7 @@ function renderAchIconSquares(){
       ${icon ? `<button type="button" class="ach-icon-clear" onclick="clearAchIconStaging('${s.field}')">\u2715 clear \u2014 use default</button>` : ''}
     </div>`;
   }).join('');
+  ACH_ICON_CONTAINER_IDS.forEach(id=>{ const box=$(id); if (box) box.innerHTML = html; });
 }
 function setAchIconStaging(field, input){
   const file = input.files && input.files[0];
@@ -4317,11 +4326,13 @@ function distributeTourneyPrize() {
   if (podium) {
     // Mirror the finish into team + player history so it surfaces in the Achievements panel & persists to history.xlsx
     const id=Date.now()+Math.floor(Math.random()*999);
-    teamHistory.unshift({id, team:tName, event, tier:rating, scope, compRegion, position:place, prizePool:amt, wonAmount:amt*0.6, month:monthCounter, kind:'EVENT'});
-    starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team:tName, kind:'EVENT', event, tier:rating, scope, compRegion, position:place, month:monthCounter}));
+    const customIcon = stagedIconForPosition(place);
+    teamHistory.unshift({id, team:tName, event, tier:rating, scope, compRegion, position:place, prizePool:amt, wonAmount:amt*0.6, month:monthCounter, kind:'EVENT', customIcon});
+    starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team:tName, kind:'EVENT', event, tier:rating, scope, compRegion, position:place, month:monthCounter, customIcon}));
+    if (customIcon) historyIconsMap[id] = customIcon; else delete historyIconsMap[id];
   }
   const histMsg = podium
-    ? ` · ${positionLabel(place)} at ${event} (${histStars(rating)}, ${scope}) recorded for the team and ${starters.length} starter(s)${place==='Winner'?' + <span class="medal-ic medal-ic-trophy"></span> Title medals':''}.`
+    ? ` · ${positionLabel(place)} at ${event} (${histStars(rating)}, ${scope}) recorded for the team and ${starters.length} starter(s)${place==='Winner'?' + <span class="medal-ic medal-ic-trophy"></span> Title medals':''}${stagedIconForPosition(place)?' + custom trophy image':''}.`
     : ' · no placement — money only, nothing recorded in history.';
   addLog(`<span class="medal-ic medal-ic-trophy"></span> ${tName} received ${fmt(amt)}! Bank +${fmt(amt*0.6)}, starters +${fmt(share)} MV each.${histMsg}`,'good'); updateAll();
 }
