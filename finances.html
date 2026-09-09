@@ -1260,7 +1260,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 </svg></div>
       <div class="pm-head-main">
         <div class="pm-name" id="ach-modal-title">Record Achievement</div>
-        <div class="pm-sub" id="ach-modal-sub">Record-only — no money moves here. Team events also write to every starter's personal history.</div>
+        <div class="pm-sub" id="ach-modal-sub">Record-only — no money moves here. Team events also write to every checked player's personal history.</div>
       </div>
     </div>
     <div class="pm-split" style="grid-template-columns:1fr 1fr;">
@@ -1268,7 +1268,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
         <div class="ach-edit-flag" id="ach-ev-flag">✎ EDITING EXISTING TITLE</div>
         <div class="pm-section-title">Team Achievement</div>
         <div class="g2" style="gap:10px; margin-bottom:10px;">
-          <div class="form-group"><div class="form-label">Team</div><select class="nx-select" id="hist-ev-team"></select></div>
+          <div class="form-group"><div class="form-label">Team</div><select class="nx-select" id="hist-ev-team" onchange="achTeamChanged()"></select></div>
           <div class="form-group"><div class="form-label">Event Name</div><input type="text" class="nx-input" id="hist-ev-name" placeholder="e.g. Blast Premier Fall"></div>
         </div>
         <div class="g3" style="gap:10px; margin-bottom:10px;">
@@ -1305,6 +1305,19 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             </select>
           </div>
         </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <div class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>APPLY TO PLAYERS</span>
+            <span style="display:flex; gap:6px;">
+              <button type="button" class="btn btn-ghost btn-sm" style="padding:2px 8px; font-size:9px;" onclick="achSelectAllPlayers(true)">ALL</button>
+              <button type="button" class="btn btn-ghost btn-sm" style="padding:2px 8px; font-size:9px;" onclick="achSelectAllPlayers(false)">NONE</button>
+            </span>
+          </div>
+          <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); margin:2px 0 6px; line-height:1.5;">
+            Only the checked players get this entry written to their personal history — untick anyone who wasn't on the roster for this event (e.g. a new signing after a roster change). Team totals aren't affected either way.
+          </div>
+          <div id="ach-ev-players" style="max-height:140px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:6px 8px;"></div>
+        </div>
         <div class="g2" style="gap:10px; margin-bottom:16px;">
           <div class="form-group"><div class="form-label">Event Prize Pool ($)</div><input type="number" class="nx-input" id="hist-ev-pool" placeholder="0.00"></div>
           <div class="form-group"><div class="form-label">Team Winnings ($)</div><input type="number" class="nx-input" id="hist-ev-won" placeholder="0.00"></div>
@@ -1314,7 +1327,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
           Not tied to this event name — upload once, it stays loaded for every placement you record until you clear or replace it. Empty square = keep the normal Award Registry icon. Applied to the Position selected above at the moment you submit.
         </div>
         <div class="ach-icon-row" id="ach-icon-squares" style="margin-bottom:16px;"></div>
-        <button class="btn btn-yellow btn-full" id="ach-ev-submit" onclick="submitTeamAchievement()">Add to History — Team + Starters</button>
+        <button class="btn btn-yellow btn-full" id="ach-ev-submit" onclick="submitTeamAchievement()">Add to History — Team + Selected Players</button>
         <button class="btn btn-ghost btn-full" id="ach-ev-cancel" style="display:none; margin-top:8px;" onclick="cancelAchEdit()">✕ CANCEL EDIT</button>
       </div>
       <div class="pm-col" id="ach-col-award" style="border-left:1px solid var(--border);">
@@ -2861,6 +2874,37 @@ function populateHistoryControls(){
   ['hist-ev-team'].forEach(id=>{ const el=$(id); if (!el) return; const cur=el.value; el.innerHTML=opts; if (cur&&finances.some(t=>t.TeamName===cur)) el.value=cur; });
   const dl=$('hist-player-list'); if (dl) dl.innerHTML=players.map(p=>`<option value="${String(p.PlayerName)}">`).join('');
 }
+
+/* ── APPLY TO PLAYERS — lets a team-achievement pick exactly who it
+   writes to, instead of blindly fanning out to every current starter.
+   Needed because rosters change: a new signing shouldn't retroactively
+   get credit for a title won before they joined. ─────────────────── */
+function renderAchPlayerCheckboxes(team, checkedNames){
+  const box=$('ach-ev-players'); if (!box) return;
+  const squad=players.filter(p=>p.TeamName===team)
+    .sort((a,b)=> (a.Roster==='Starter'?0:1)-(b.Roster==='Starter'?0:1) || String(a.PlayerName).localeCompare(String(b.PlayerName)));
+  const checked = checkedNames ? new Set(checkedNames) : new Set(squad.filter(p=>p.Roster==='Starter').map(p=>String(p.PlayerName)));
+  box.innerHTML = squad.length ? squad.map(p=>{
+    const n=String(p.PlayerName), isStarter=p.Roster==='Starter';
+    return `<label style="display:flex; align-items:center; gap:7px; font-family:var(--font-data); font-size:10.5px; padding:3px 0; cursor:pointer;">
+      <input type="checkbox" value="${n}" ${checked.has(n)?'checked':''}>
+      <span style="flex:1;">${n}</span>
+      <span style="color:var(--text-dim); font-size:9px;">${isStarter?'STARTER':'BENCH'}</span>
+    </label>`;
+  }).join('') : '<div class="fo-empty" style="padding:2px 0;">No players on this team.</div>';
+}
+function achTeamChanged(){ renderAchPlayerCheckboxes($('hist-ev-team').value); }
+function achSelectAllPlayers(state){
+  const box=$('ach-ev-players'); if (!box) return;
+  box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=state);
+}
+function getAchSelectedPlayers(team){
+  const box=$('ach-ev-players');
+  const names = box ? Array.from(box.querySelectorAll('input[type=checkbox]:checked')).map(cb=>cb.value) : null;
+  if (!names) return players.filter(p=>p.TeamName===team && p.Roster==='Starter'); // fallback if the box isn't rendered
+  const set=new Set(names);
+  return players.filter(p=>p.TeamName===team && set.has(String(p.PlayerName)));
+}
 function applyTeamAchievement(){
   const team=$('hist-ev-team').value;
   const event=($('hist-ev-name').value||'').trim();
@@ -2872,15 +2916,15 @@ function applyTeamAchievement(){
   const wonAmount=parseFloat($('hist-ev-won').value)||0;
   if (!team) return alert('Select a team.');
   if (!event) return alert('Enter the event name.');
-  const starters=players.filter(p=>p.TeamName===team&&p.Roster==='Starter');
-  if (!confirm(`Record "${event}" (${histStars(tier)} · ${scope} · ${position}) for ${team}?\nPrize pool ${fmt(prizePool)} · team won ${fmt(wonAmount)}.\nThe event is also written to ${starters.length} active-roster player(s).\nRECORD-ONLY — no money moves (use ⚙ OPS for payouts).`)) return;
+  const starters=getAchSelectedPlayers(team);
+  if (!confirm(`Record "${event}" (${histStars(tier)} · ${scope} · ${position}) for ${team}?\nPrize pool ${fmt(prizePool)} · team won ${fmt(wonAmount)}.\nThe event is also written to ${starters.length} selected player(s).\nRECORD-ONLY — no money moves (use ⚙ OPS for payouts).`)) return;
   saveState();
   const id=Date.now()+Math.floor(Math.random()*999);
   const customIcon = stagedIconForPosition(position);
   teamHistory.unshift({id, team, event, tier, scope, compRegion, position, prizePool, wonAmount, month:monthCounter, kind:'EVENT', customIcon});
   starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:monthCounter, customIcon}));
   if (customIcon) historyIconsMap[id] = customIcon; else delete historyIconsMap[id];
-  addLog(`🏛 HISTORY: ${team} — ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for the team and ${starters.length} starter(s).${customIcon?' Custom trophy image applied.':''}`,'good');
+  addLog(`🏛 HISTORY: ${team} — ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for the team and ${starters.length} selected player(s).${customIcon?' Custom trophy image applied.':''}`,'good');
   $('hist-ev-name').value=''; $('hist-ev-pool').value=''; $('hist-ev-won').value='';
   renderHistory(); updateAll();
 }
@@ -2972,6 +3016,7 @@ function openAchModal(){
   renderAchIconSquares();
   const at=$('dash-team-select').value;
   const sel=$('hist-ev-team'); if (sel && at && finances.some(t=>t.TeamName===at)) sel.value=at;
+  renderAchPlayerCheckboxes(sel ? sel.value : '');
   $('ach-modal-overlay').classList.add('active');
 }
 function closeAchModal(){ achEditRef=null; setAchMode('create'); $('ach-modal-overlay').classList.remove('active'); }
@@ -2993,15 +3038,15 @@ function setAchMode(mode, kind){
   $('ach-aw-flag').classList.toggle('on', editing && kind === 'award');
   $('ach-ev-cancel').style.display = (editing && kind === 'team') ? '' : 'none';
   $('ach-aw-cancel').style.display = (editing && kind === 'award') ? '' : 'none';
-  $('ach-ev-submit').textContent = (editing && kind === 'team') ? '\ud83d\udcbe SAVE CHANGES' : 'Add to History \u2014 Team + Starters';
+  $('ach-ev-submit').textContent = (editing && kind === 'team') ? '\ud83d\udcbe SAVE CHANGES' : 'Add to History \u2014 Team + Selected Players';
   $('ach-aw-submit').textContent = (editing && kind === 'award') ? '\ud83d\udcbe SAVE CHANGES' : 'Add Award to Player History';
   /* the player an award belongs to is frozen while editing */
   const pin = $('hist-aw-player'); if (pin) pin.disabled = (editing && kind === 'award');
   if (title) title.textContent = !editing ? 'Record Achievement' : (kind === 'team' ? 'Edit Team Achievement' : 'Edit Player Award');
   if (sub) sub.textContent = !editing
-    ? 'Record-only \u2014 no money moves here. Team events also write to every starter\'s personal history.'
+    ? 'Record-only \u2014 no money moves here. Team events also write to every checked player\'s personal history.'
     : (kind === 'team'
-        ? 'Saving re-syncs the linked player entries to the selected team\'s current starters. No money moves.'
+        ? 'Saving re-syncs the linked player entries to exactly the players checked below. No money moves.'
         : 'Log entry only \u2014 medal counters and prize money in \u2699 OPS are not affected.');
 }
 
@@ -3026,6 +3071,8 @@ function openAchEditTeam(id){
   $('hist-ev-pool').value  = e.prizePool || '';
   $('hist-ev-won').value   = e.wonAmount || '';
   renderAchIconSquares();
+  const linkedNames = playerHistory.filter(h=>String(h.refId)===String(e.id)).map(h=>h.player);
+  renderAchPlayerCheckboxes(e.team, linkedNames);
   achEditRef = { kind:'team', id:String(e.id) };
   setAchMode('edit','team');
   $('ach-modal-overlay').classList.add('active');
@@ -3071,11 +3118,11 @@ function saveTeamAchievement(){
   const wonAmount = parseFloat($('hist-ev-won').value) || 0;
   if (!team)  return alert('Select a team.');
   if (!event) return alert('Enter the event name.');
-  const starters = players.filter(p=>p.TeamName===team && p.Roster==='Starter');
+  const starters = getAchSelectedPlayers(team);
   const moved = rec.team !== team;
   if (!confirm(`Save changes to this title?\n"${rec.event}" \u2192 "${event}" (${histStars(tier)} \u00b7 ${scope} \u00b7 ${position})\n`
     + `Team: ${rec.team}${moved ? ' \u2192 ' + team : ''}\n`
-    + `Linked player entries will be rebuilt from ${team}'s ${starters.length} current starter(s).\n`
+    + `Linked player entries will be rebuilt from the ${starters.length} player(s) checked below.\n`
     + `RECORD-ONLY \u2014 no money moves.`)) return;
   saveState();
   const customIcon = stagedIconForPosition(position);
@@ -3086,7 +3133,7 @@ function saveTeamAchievement(){
   playerHistory = playerHistory.filter(h=>String(h.refId) !== String(rec.id));
   starters.forEach(p=>playerHistory.unshift({ id:rec.id+'-'+String(p.PlayerName), refId:rec.id,
     player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:rec.month, customIcon }));
-  addLog(`\u270e HISTORY EDIT: ${team} \u2014 "${event}" (${histStars(tier)}, ${scope}, ${position}) updated \u00b7 re-synced to ${starters.length} starter(s).${customIcon?' Custom trophy image applied.':''}`,'warn');
+  addLog(`\u270e HISTORY EDIT: ${team} \u2014 "${event}" (${histStars(tier)}, ${scope}, ${position}) updated \u00b7 re-synced to ${starters.length} selected player(s).${customIcon?' Custom trophy image applied.':''}`,'warn');
   closeAchModal(); renderHistory(); updateAll();
 }
 
