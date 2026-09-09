@@ -365,16 +365,6 @@ body::before {
 .side-pill-value.up { color: var(--good); }
 .side-pill-value.down { color: var(--bad); }
 
-/* ─── Iframe embedded panels ─── */
-.panel-iframe {
-  width: 100%;
-  height: calc(100vh + 600px);
-  min-height: 1200px;
-  border: none;
-  border-radius: 12px;
-  background: var(--bg);
-}
-
 /* ═══════════════════════════════════════
    MAIN CONTENT
 ═══════════════════════════════════════ */

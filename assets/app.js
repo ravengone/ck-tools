@@ -76,10 +76,7 @@ const PANEL_TITLES = {
   legends: 'Legends Hall',
   'pro-analyses': 'Pro Analyses',
   'seeding': 'Seeding',
-  'events': 'Events',
-  'finances': 'Finances',
-  'database': 'Database',
-  'events-org': 'Events Organizer'
+  'events': 'Events'
 };
 
 function switchPanel(name) {
@@ -90,12 +87,6 @@ function switchPanel(name) {
   const nav = $(`[data-panel="${name}"]`);
   if (nav) nav.classList.add('active');
   $('#pageTitle').textContent = PANEL_TITLES[name] || name;
-
-  // Lazy-load iframes
-  const iframe = panel && panel.querySelector('iframe.panel-iframe');
-  if (iframe && !iframe.src && iframe.dataset.src) {
-    iframe.src = iframe.dataset.src;
-  }
 }
 
 /* ════════════════════════════════════════
