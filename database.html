@@ -194,6 +194,41 @@ body::after {
   flex-wrap: wrap;
 }
 
+/* ─── SITES MENU — jumps between the standalone tools (each is its own
+   full page, no iframes). Click the button, or anywhere inside the open
+   menu, to close it again. ─── */
+.topbar-nav { position: relative; }
+.topbar-nav-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 230px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-bright);
+  z-index: 600;
+  padding: 6px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity .15s, transform .15s, visibility .15s;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.55);
+}
+.topbar-nav.open .topbar-nav-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+.topbar-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  transition: background .15s, color .15s;
+}
+.topbar-nav-item:hover { background: rgba(0,229,204,0.08); color: var(--cyan); }
+.topbar-nav-item.active { color: var(--cyan); background: rgba(0,229,204,0.06); border-left: 2px solid var(--cyan); }
+.topbar-nav-item .ic { width: 16px; text-align: center; flex-shrink: 0; }
+
 /* ─── ALERTS ─── */
 #alerts { min-height: 42px; margin: 8px 0 12px; }
 .alert-msg {
@@ -922,7 +957,16 @@ input[type="file"] { cursor: pointer; }
       <button class="btn" id="btnReload">⟳ Reload</button>
       <button class="btn btn-purple" id="btnAI">◈ Analysis</button>
       <button class="btn btn-cyan" id="btnDownload">↓ Export Excel</button>
-      <button class="btn" id="btnBackToMenu">← Menu</button>
+      <button class="btn" id="btnBackToMenu" style="display:none;">← Menu</button>
+      <div class="topbar-nav" id="topbar-nav">
+        <button class="btn" id="topbar-nav-btn" onclick="toggleSitesMenu(event)" title="Switch site">☰ Sites ▾</button>
+        <div class="topbar-nav-menu" id="topbar-nav-menu" onclick="closeSitesMenu()">
+          <a href="index.html" class="topbar-nav-item"><span class="ic">▤</span>Dashboard / Portal</a>
+          <a href="finances.html" class="topbar-nav-item"><span class="ic">💰</span>Finances</a>
+          <a href="database.html" class="topbar-nav-item active"><span class="ic">🗄</span>Database</a>
+          <a href="events.html" class="topbar-nav-item"><span class="ic">🏆</span>Events Organizer</a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1563,10 +1607,25 @@ function goMenu(){
   window.location.assign(new URL("index.html",window.location.href).href);
 }
 document.getElementById("btnBackToMenu").addEventListener("click",e=>{e.preventDefault();goMenu();});
+
+/* ─── SITES MENU — this is its own full page (no iframes); the menu just
+   links across to the other standalone tools. ─── */
+function toggleSitesMenu(e){
+  if (e) e.stopPropagation();
+  document.getElementById("topbar-nav").classList.toggle("open");
+}
+function closeSitesMenu(){
+  document.getElementById("topbar-nav").classList.remove("open");
+}
+document.addEventListener("click",e=>{
+  const nav=document.getElementById("topbar-nav");
+  if(nav && nav.classList.contains("open") && !nav.contains(e.target)) nav.classList.remove("open");
+});
 document.addEventListener("keydown",e=>{
   const t=(e.target?.tagName||"").toUpperCase();
   if(["INPUT","SELECT","TEXTAREA"].includes(t)) return;
   if(e.key==="0"){e.preventDefault();goMenu();}
+  if(e.key==="Escape"){closeSitesMenu();}
 },{capture:true});
 
 /* ═══════════════════════════════════════════════════════════

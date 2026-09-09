@@ -81,14 +81,14 @@
 
       <span class="sidebar-divider"></span>
       <span class="sidebar-section">Manage</span>
-      <a class="nav-item" data-panel="finances" onclick="switchPanel('finances');return false" href="#">
-        <span class="nav-icon">10</span><span class="nav-label">Finances</span>
+      <a class="nav-item" href="finances.html" title="Opens as its own full page">
+        <span class="nav-icon">10</span><span class="nav-label">Finances ↗</span>
       </a>
-      <a class="nav-item" data-panel="database" onclick="switchPanel('database');return false" href="#">
-        <span class="nav-icon">11</span><span class="nav-label">Database</span>
+      <a class="nav-item" href="database.html" title="Opens as its own full page">
+        <span class="nav-icon">11</span><span class="nav-label">Database ↗</span>
       </a>
-      <a class="nav-item" data-panel="events-org" onclick="switchPanel('events-org');return false" href="#">
-        <span class="nav-icon">12</span><span class="nav-label">Organizer</span>
+      <a class="nav-item" href="events.html" title="Opens as its own full page">
+        <span class="nav-icon">12</span><span class="nav-label">Organizer ↗</span>
       </a>
 
       <span class="sidebar-divider"></span>
@@ -550,9 +550,13 @@
                   <label class="form-label">Year</label>
                   <select class="form-control" id="paFilterYear"><option value="">All Years</option></select>
                 </div>
-                <div class="form-group pa-filter-group" style="display:flex; align-items:flex-end;">
-                  <div class="pa-match-count" id="paMatchCount">0 matches</div>
+                <div class="form-group pa-filter-group">
+                  <label class="form-label">Details</label>
+                  <select class="form-control" id="paFilterDetails"><option value="">All Details</option></select>
                 </div>
+              </div>
+              <div style="display:flex; justify-content:flex-end; margin-top:8px">
+                <div class="pa-match-count" id="paMatchCount">0 matches</div>
               </div>
 
               <!-- HISTORY TABLE -->
@@ -560,10 +564,10 @@
                 <table id="paHistoryTable">
                   <thead><tr>
                     <th>Date</th><th>Team 1</th><th class="center">Result</th><th>Team 2</th>
-                    <th>Map</th><th>Event</th><th class="center">Outcome</th>
+                    <th>Map</th><th>Event</th><th>Details</th><th class="center">Outcome</th>
                   </tr></thead>
                   <tbody id="paHistoryBody">
-                    <tr><td colspan="7" class="empty-state">Load history.xlsx to see matches.</td></tr>
+                    <tr><td colspan="8" class="empty-state">Load history.xlsx to see matches.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -692,27 +696,6 @@
           <div class="empty-state">Loading events from <strong>kz-events-backup.json</strong>…</div>
         </div>
 
-      </div>
-
-      <!-- ═══════════════════════════════════════
-           FINANCES (iframe)
-      ═══════════════════════════════════════ -->
-      <div class="panel" id="panel-finances">
-        <iframe class="panel-iframe" id="iframe-finances" data-src="finances.html"></iframe>
-      </div>
-
-      <!-- ═══════════════════════════════════════
-           DATABASE (iframe)
-      ═══════════════════════════════════════ -->
-      <div class="panel" id="panel-database">
-        <iframe class="panel-iframe" id="iframe-database" data-src="database.html"></iframe>
-      </div>
-
-      <!-- ═══════════════════════════════════════
-           EVENTS ORGANIZER (iframe)
-      ═══════════════════════════════════════ -->
-      <div class="panel" id="panel-events-org">
-        <iframe class="panel-iframe" id="iframe-events-org" data-src="events.html"></iframe>
       </div>
 
     </div><!-- /panels -->

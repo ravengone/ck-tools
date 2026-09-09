@@ -365,16 +365,6 @@ body::before {
 .side-pill-value.up { color: var(--good); }
 .side-pill-value.down { color: var(--bad); }
 
-/* ─── Iframe embedded panels ─── */
-.panel-iframe {
-  width: 100%;
-  height: calc(100vh + 600px);
-  min-height: 1200px;
-  border: none;
-  border-radius: 12px;
-  background: var(--bg);
-}
-
 /* ═══════════════════════════════════════
    MAIN CONTENT
 ═══════════════════════════════════════ */
@@ -2514,6 +2504,8 @@ canvas { width: 100% !important; }
 
 .ev-result-value.gold-text { color: var(--gold); }
 .ev-result-value.silver-text { color: var(--silver); }
+.ev-result-value.bronze-text { color: var(--bronze); }
+.ev-result-value.steel-text { color: var(--muted); }
 
 .ev-card-medals {
   display: flex;
@@ -2735,6 +2727,70 @@ canvas { width: 100% !important; }
   .ev-modal-grid { grid-template-columns: 1fr; }
 }
 
+/* Final Standings — edit form */
+.ev-standing-tier {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: var(--bg2);
+}
+.ev-standing-tier-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 36px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.ev-standing-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ev-standing-team-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 32px;
+  gap: 8px;
+  align-items: center;
+}
+.ev-btn-remove-tier {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+  background: rgba(163,57,44,0.06); border: 1px solid rgba(163,57,44,0.2);
+  color: rgba(163,57,44,0.7); font-size: 13px;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.ev-btn-remove-tier:hover { background: rgba(163,57,44,0.15); border-color: rgba(163,57,44,0.4); color: var(--bad); }
+.ev-btn-remove-team-row {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+  background: none; border: 1px solid var(--border); color: var(--muted2);
+  font-size: 12px; transition: color .15s, border-color .15s;
+}
+.ev-btn-remove-team-row:hover { color: var(--danger, #e74c3c); border-color: var(--danger, #e74c3c); }
+.ev-btn-add-team {
+  padding: 6px 14px; border-radius: 6px;
+  border: 1px dashed var(--border-bright);
+  background: rgba(28,26,23,0.02);
+  color: var(--muted); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .15s; margin-top: 4px;
+}
+.ev-btn-add-team:hover { background: rgba(140,47,36,0.08); border-color: var(--accent); color: var(--accent); }
+.ev-btn-add-tier {
+  padding: 8px 16px; border-radius: 8px;
+  border: 1px dashed var(--border-bright);
+  background: rgba(28,26,23,0.02);
+  color: var(--muted); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all .15s; margin-top: 4px;
+}
+.ev-btn-add-tier:hover { background: rgba(140,47,36,0.08); border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 600px) {
+  .ev-standing-tier-header { grid-template-columns: 1fr 1fr; }
+  .ev-standing-tier-header .ev-btn-remove-tier { grid-column: 1 / -1; justify-self: end; }
+  .ev-standing-team-row { grid-template-columns: 1fr; }
+}
+
 .ev-modal-footer {
   padding: 14px 22px;
   border-top: 1px solid var(--border);
@@ -2907,9 +2963,43 @@ canvas { width: 100% !important; }
 }
 .evd-result-place { font-size: 11px; color: var(--muted); font-weight: 600; }
 .evd-result-team { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.evd-result-pill.gold-text .evd-result-team { color: var(--gold); }
+.evd-result-pill.silver-text .evd-result-team { color: var(--silver); }
+.evd-result-pill.bronze-text .evd-result-team { color: var(--bronze); }
+.evd-result-pill.steel-text .evd-result-team { color: var(--muted); }
 
 /* Medal cards */
 .evd-medals-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Final Standings grid (full participant list, HLTV-style) */
+.evd-standings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.evd-standing-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 16px 10px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  text-align: center;
+}
+.evd-standing-cell.evd-standing-first {
+  background: rgba(169,132,46,0.08);
+  box-shadow: inset 0 3px 0 var(--gold);
+}
+.evd-standing-logo { width: 40px; height: 40px; object-fit: contain; }
+.evd-standing-logo-empty { visibility: hidden; }
+.evd-standing-name { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--fg); line-height: 1.25; }
+.evd-standing-place { font-size: 11px; font-weight: 700; color: var(--muted); }
+.evd-standing-place.gold-text { color: var(--gold); }
+.evd-standing-place.silver-text { color: var(--silver); }
+.evd-standing-place.bronze-text { color: var(--bronze); }
+.evd-standing-place.steel-text { color: var(--muted); }
+.evd-standing-prize { font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: 600; }
 .evd-medal-card {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 12px 16px; border-radius: 10px;

@@ -76,10 +76,7 @@ const PANEL_TITLES = {
   legends: 'Legends Hall',
   'pro-analyses': 'Pro Analyses',
   'seeding': 'Seeding',
-  'events': 'Events',
-  'finances': 'Finances',
-  'database': 'Database',
-  'events-org': 'Events Organizer'
+  'events': 'Events'
 };
 
 function switchPanel(name) {
@@ -90,12 +87,6 @@ function switchPanel(name) {
   const nav = $(`[data-panel="${name}"]`);
   if (nav) nav.classList.add('active');
   $('#pageTitle').textContent = PANEL_TITLES[name] || name;
-
-  // Lazy-load iframes
-  const iframe = panel && panel.querySelector('iframe.panel-iframe');
-  if (iframe && !iframe.src && iframe.dataset.src) {
-    iframe.src = iframe.dataset.src;
-  }
 }
 
 /* ════════════════════════════════════════
@@ -1238,6 +1229,7 @@ function parseHistoryData(rows) {
     const map = String(r['Map'] ?? r['map'] ?? '').trim();
     const result = String(r['Result'] ?? r['result'] ?? '').trim();
     const event = String(r['Event'] ?? r['event'] ?? '').trim();
+    const details = String(r['Details'] ?? r['details'] ?? '').trim();
     let dateRaw = r['Date'] ?? r['date'] ?? '';
     if (!team1 || !team2 || !result) continue;
 
@@ -1264,7 +1256,7 @@ function parseHistoryData(rows) {
     let winner = score1 > score2 ? team1 : score2 > score1 ? team2 : 'Draw';
 
     data.push({
-      team1, team2, map, result, event, dateStr, dateObj,
+      team1, team2, map, result, event, details, dateStr, dateObj,
       score1, score2, winner,
       month: dateObj ? dateObj.getMonth() + 1 : 0,
       year: dateObj ? dateObj.getFullYear() : 0
@@ -1293,6 +1285,12 @@ function getAllMapsFromHistory() {
 function getAllEventsFromHistory() {
   const set = new Set();
   historyData.forEach(m => { if (m.event) set.add(m.event); });
+  return Array.from(set).sort();
+}
+
+function getAllDetailsFromHistory() {
+  const set = new Set();
+  historyData.forEach(m => { if (m.details) set.add(m.details); });
   return Array.from(set).sort();
 }
 
@@ -1375,6 +1373,7 @@ function initProAnalyses() {
   // Populate filter dropdowns
   const maps = getAllMapsFromHistory();
   const events = getAllEventsFromHistory();
+  const details = getAllDetailsFromHistory();
   const months = getAllMonthsFromHistory();
   const years = getAllYearsFromHistory();
 
@@ -1389,6 +1388,9 @@ function initProAnalyses() {
 
   const eventSel = document.getElementById('paFilterEvent');
   eventSel.innerHTML = '<option value="">All Events</option>' + events.map(e => `<option value="${escHtml(e)}">${escHtml(e)}</option>`).join('');
+
+  const detailsSel = document.getElementById('paFilterDetails');
+  detailsSel.innerHTML = '<option value="">All Details</option>' + details.map(d => `<option value="${escHtml(d)}">${escHtml(d)}</option>`).join('');
 
   const monthSel = document.getElementById('paFilterMonth');
   monthSel.innerHTML = '<option value="">All Months</option>' + months.map(m => `<option value="${m}">${MONTH_NAMES[m]}</option>`).join('');
@@ -1408,7 +1410,7 @@ function initProAnalyses() {
     setupAutocomplete('h2hTeamB', 'h2hTeamBSugg', allTeams, null);
 
     // Filter listeners
-    ['paFilterMap', 'paFilterEvent', 'paFilterMonth', 'paFilterYear'].forEach(id => {
+    ['paFilterMap', 'paFilterEvent', 'paFilterDetails', 'paFilterMonth', 'paFilterYear'].forEach(id => {
       document.getElementById(id).addEventListener('change', renderHistoryTable);
     });
     document.getElementById('paFilterDate').addEventListener('change', renderHistoryTable);
@@ -1427,6 +1429,7 @@ function initProAnalyses() {
       document.getElementById('paFilterOpponent').value = '';
       document.getElementById('paFilterMap').value = '';
       document.getElementById('paFilterEvent').value = '';
+      document.getElementById('paFilterDetails').value = '';
       document.getElementById('paFilterDate').value = '';
       document.getElementById('paFilterMonth').value = '';
       document.getElementById('paFilterYear').value = '';
@@ -1471,6 +1474,7 @@ function getFilteredHistory() {
   const opp = paFilteredOpponent.trim();
   const map = document.getElementById('paFilterMap').value;
   const event = document.getElementById('paFilterEvent').value;
+  const details = document.getElementById('paFilterDetails').value;
   const date = document.getElementById('paFilterDate').value;
   const month = document.getElementById('paFilterMonth').value;
   const year = document.getElementById('paFilterYear').value;
@@ -1485,6 +1489,7 @@ function getFilteredHistory() {
     }
     if (map && m.map !== map) return false;
     if (event && m.event !== event) return false;
+    if (details && m.details !== details) return false;
     if (date && m.dateStr !== date) return false;
     if (month && m.month !== parseInt(month)) return false;
     if (year && m.year !== parseInt(year)) return false;
@@ -1502,7 +1507,7 @@ function renderHistoryTable() {
   if (badge) badge.textContent = historyData.length ? historyData.length : '';
 
   if (!filtered.length) {
-    body.innerHTML = '<tr><td colspan="7" class="empty-state">No matches found for current filters.</td></tr>';
+    body.innerHTML = '<tr><td colspan="8" class="empty-state">No matches found for current filters.</td></tr>';
     return;
   }
 
@@ -1552,6 +1557,7 @@ function renderHistoryTable() {
       <td>${t2Html}</td>
       <td><span class="pa-map-badge">${escHtml(m.map)}</span></td>
       <td class="text-xs">${escHtml(m.event)}</td>
+      <td class="text-xs">${escHtml(m.details)}</td>
       <td class="center">${outcomeHtml}</td>
     </tr>`;
   }).join('');
@@ -2564,13 +2570,25 @@ function renderEventsGrid() {
         html += `<div class="ev-card-result">`;
         if (e.trophy) html += `<div class="ev-card-trophy-wrap"><img src="${escHtml(e.trophy)}" alt="🏆" onerror="this.textContent='🏆'"></div>`;
         else html += `<div class="ev-card-trophy-wrap">🏆</div>`;
-        html += `<div><div class="ev-result-label">Winner</div><div class="ev-result-value gold-text">${escHtml(e.winner)}</div></div>`;
+        html += `<div><div class="ev-result-label">Winner</div><div class="ev-result-value gold-text"><span class="team-name-with-logo">${teamLogoImgHtml(e.winner, 'team-logo-sm')}${escHtml(e.winner)}</span></div></div>`;
         html += `</div>`;
       }
       if (e.second) {
         html += `<div class="ev-card-result" style="border-color:rgba(154,160,171,0.15)">`;
         html += `<div class="ev-card-trophy-wrap">🥈</div>`;
-        html += `<div><div class="ev-result-label">2nd Place</div><div class="ev-result-value silver-text">${escHtml(e.second)}</div></div>`;
+        html += `<div><div class="ev-result-label">2nd Place</div><div class="ev-result-value silver-text"><span class="team-name-with-logo">${teamLogoImgHtml(e.second, 'team-logo-sm')}${escHtml(e.second)}</span></div></div>`;
+        html += `</div>`;
+      }
+      if (e.third) {
+        html += `<div class="ev-card-result" style="border-color:rgba(176,122,67,0.15)">`;
+        html += `<div class="ev-card-trophy-wrap">🥉</div>`;
+        html += `<div><div class="ev-result-label">3rd Place</div><div class="ev-result-value bronze-text"><span class="team-name-with-logo">${teamLogoImgHtml(e.third, 'team-logo-sm')}${escHtml(e.third)}</span></div></div>`;
+        html += `</div>`;
+      }
+      if (e.fourth) {
+        html += `<div class="ev-card-result" style="border-color:rgba(138,130,117,0.15)">`;
+        html += `<div class="ev-card-trophy-wrap">4️⃣</div>`;
+        html += `<div><div class="ev-result-label">4th Place</div><div class="ev-result-value steel-text"><span class="team-name-with-logo">${teamLogoImgHtml(e.fourth, 'team-logo-sm')}${escHtml(e.fourth)}</span></div></div>`;
         html += `</div>`;
       }
       // Medals
@@ -2654,10 +2672,12 @@ function openEventDetails(idx) {
   }
 
   // Results section
-  if ((e.status || '').toLowerCase() === 'finished' && (e.winner || e.second)) {
+  if ((e.status || '').toLowerCase() === 'finished' && (e.winner || e.second || e.third || e.fourth)) {
     body += `<div class="evd-section evd-results-row">`;
-    if (e.winner) body += `<div class="evd-result-pill gold-text"><span class="evd-result-place">🏆 1st Place</span><span class="evd-result-team">${escHtml(e.winner)}</span></div>`;
-    if (e.second) body += `<div class="evd-result-pill silver-text"><span class="evd-result-place">🥈 2nd Place</span><span class="evd-result-team">${escHtml(e.second)}</span></div>`;
+    if (e.winner) body += `<div class="evd-result-pill gold-text"><span class="evd-result-place">🏆 1st Place</span><span class="evd-result-team team-name-with-logo">${teamLogoImgHtml(e.winner, 'team-logo-md')}${escHtml(e.winner)}</span></div>`;
+    if (e.second) body += `<div class="evd-result-pill silver-text"><span class="evd-result-place">🥈 2nd Place</span><span class="evd-result-team team-name-with-logo">${teamLogoImgHtml(e.second, 'team-logo-md')}${escHtml(e.second)}</span></div>`;
+    if (e.third) body += `<div class="evd-result-pill bronze-text"><span class="evd-result-place">🥉 3rd Place</span><span class="evd-result-team team-name-with-logo">${teamLogoImgHtml(e.third, 'team-logo-md')}${escHtml(e.third)}</span></div>`;
+    if (e.fourth) body += `<div class="evd-result-pill steel-text"><span class="evd-result-place">4️⃣ 4th Place</span><span class="evd-result-team team-name-with-logo">${teamLogoImgHtml(e.fourth, 'team-logo-md')}${escHtml(e.fourth)}</span></div>`;
     body += `</div>`;
     // Player medals
     const medals = [];
@@ -2693,6 +2713,31 @@ function openEventDetails(idx) {
       }
     });
     body += `</div></div>`;
+  }
+
+  // Final Standings — full participant grid (all teams + placement + prize)
+  if ((e.status || '').toLowerCase() === 'finished') {
+    const tiers = e.standings || [];
+    const anyTeams = tiers.some(t => (t.teams || []).some(tm => tm && tm.name));
+    if (anyTeams) {
+      body += `<div class="evd-section"><div class="evd-section-title">🏆 Final Standings</div><div class="evd-standings-grid">`;
+      tiers.forEach((tier, ti) => {
+        const rankCls = ti === 0 ? 'gold-text' : ti === 1 ? 'silver-text' : ti === 2 ? 'bronze-text' : 'steel-text';
+        (tier.teams || []).forEach(t => {
+          if (!t || !t.name) return;
+          const logoUrl = t.logo || getTeamLogoUrl(t.name);
+          body += `<div class="evd-standing-cell ${ti === 0 ? 'evd-standing-first' : ''}">`;
+          body += logoUrl
+            ? `<img class="evd-standing-logo" src="${escHtml(logoUrl)}" alt="" onerror="this.style.display='none'">`
+            : `<div class="evd-standing-logo evd-standing-logo-empty"></div>`;
+          body += `<div class="evd-standing-name">${escHtml(t.name)}</div>`;
+          if (tier.label) body += `<div class="evd-standing-place ${rankCls}">${escHtml(tier.label)}</div>`;
+          if (tier.prize) body += `<div class="evd-standing-prize">${escHtml(tier.prize)}</div>`;
+          body += `</div>`;
+        });
+      });
+      body += `</div></div>`;
+    }
   }
 
   // Playoff section
@@ -2866,6 +2911,8 @@ function openEventModal(editIdx = -1) {
     } else {
       document.getElementById('evmWinner').value = e.winner || '';
       document.getElementById('evmSecond').value = e.second || '';
+      document.getElementById('evmThird').value = e.third || '';
+      document.getElementById('evmFourth').value = e.fourth || '';
       document.getElementById('evmMVP').value = e.mvp || '';
       document.getElementById('evmEVP').value = e.evp || '';
       document.getElementById('evmVP').value = e.vp || '';
@@ -2890,9 +2937,15 @@ function openEventModal(editIdx = -1) {
     // Playoff teams & bracket
     loadPlayoffTeamsEdit(e.playoffTeams || []);
     loadPlayoffBracketEdit(e.playoffTeams || [], e.playoffBracket || {}, e.playoffPlayers || {});
+
+    // Final standings (all teams, independent of Winner/2nd/3rd/4th)
+    ensureStandingsSection();
+    renderStandingsEdit(e.standings || []);
   } else {
     loadPlayoffTeamsEdit([]);
     loadPlayoffBracketEdit([], {}, {});
+    ensureStandingsSection();
+    renderStandingsEdit([]);
   }
 
   // Always reset file picker
@@ -2911,7 +2964,7 @@ function closeEventModal() {
 function clearEventModal() {
   ['evmName','evmDriveLink','evmPrizePool','evmLogo','evmTrophy','evmCity','evmCountry',
    'evmFlag','evmTeamCount','evmStage','evmNext1','evmNext2','evmNext3',
-   'evmWinner','evmSecond','evmMVP','evmEVP','evmVP',
+   'evmWinner','evmSecond','evmThird','evmFourth','evmMVP','evmEVP','evmVP',
    'evmPrize1st','evmPrize2nd','evmPrize34','evmPrize58','evmPrize911','evmPrize1216','evmPrize1724',
    'evmPrizeMVP','evmPrizeEVP','evmPrizeVP'].forEach(id => {
     const el = document.getElementById(id);
@@ -2939,6 +2992,219 @@ function updateEventLogoPreview() {
   }
   img.src = url;
   img.style.display = '';
+}
+
+/* ─── Inject 3rd/4th Place fields next to "2nd Place" in the Add/Edit modal ───
+   The form markup itself lives in index.html (not included here), so instead
+   of requiring an HTML edit, we clone the "2nd Place" field's structure at
+   runtime and insert two more right after it. Safe to call multiple times —
+   it's a no-op once the fields exist. */
+function ensurePlacementFields() {
+  if (document.getElementById('evmThird')) return;
+  const secondInput = document.getElementById('evmSecond');
+  if (!secondInput) return;
+  const secondGroup = secondInput.closest('.form-group') || secondInput.parentElement;
+  if (!secondGroup) return;
+
+  const makeGroup = (id, labelText) => {
+    const group = document.createElement('div');
+    group.className = secondGroup.className || 'form-group';
+    const label = document.createElement('label');
+    label.className = 'form-label';
+    label.textContent = labelText;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control';
+    input.id = id;
+    input.placeholder = 'Team name';
+    group.appendChild(label);
+    group.appendChild(input);
+    return group;
+  };
+
+  const thirdGroup = makeGroup('evmThird', '3rd Place');
+  const fourthGroup = makeGroup('evmFourth', '4th Place');
+  secondGroup.insertAdjacentElement('afterend', thirdGroup);
+  thirdGroup.insertAdjacentElement('afterend', fourthGroup);
+}
+ensurePlacementFields();
+
+/* ════════════════════════════════════════
+   FINAL STANDINGS — full participant grid
+   (all teams that played, grouped by placement tier, each with
+   its own name + logo, independent of Winner/2nd/3rd/4th above)
+════════════════════════════════════════ */
+let evStandingsState = []; // [{ label, prize, teams: [{name, logo}] }]
+
+/* Injects the "Final Standings" section into the Add/Edit modal, appended
+   as the last block of the scrollable form body. Safe to call multiple
+   times — no-op once it exists. */
+function ensureStandingsSection() {
+  if (document.getElementById('evmStandingsSection')) return;
+  const body = document.querySelector('#evModalOverlay .ev-modal-body');
+  if (!body) return;
+
+  const section = document.createElement('div');
+  section.className = 'evd-section';
+  section.id = 'evmStandingsSection';
+  section.style.marginTop = '18px';
+  section.innerHTML = `
+    <div class="evd-section-title">🏆 Final Standings (all teams)</div>
+    <div id="evmStandingsList"></div>
+    <button type="button" class="ev-btn-add-tier" id="evmAddTierBtn">+ Add Placement Tier</button>
+  `;
+  body.appendChild(section);
+
+  document.getElementById('evmAddTierBtn').addEventListener('click', addStandingTier);
+}
+ensureStandingsSection();
+
+/* Reads the current DOM state of the standings editor back into an array.
+   Used both for saving and as a "resync before mutate" step before any
+   add/remove, so in-progress typing is never lost. Empty tiers (no label,
+   no prize, no teams) are dropped. */
+function collectStandingsFromDOM() {
+  const tierEls = document.querySelectorAll('#evmStandingsList .ev-standing-tier');
+  const tiers = [];
+  tierEls.forEach(tierEl => {
+    const label = tierEl.querySelector('.ev-standing-tier-label')?.value.trim() || '';
+    const prize = tierEl.querySelector('.ev-standing-tier-prize')?.value.trim() || '';
+    const teams = [];
+    tierEl.querySelectorAll('.ev-standing-team-row').forEach(rowEl => {
+      const name = rowEl.querySelector('.ev-standing-team-name')?.value.trim() || '';
+      const logo = rowEl.querySelector('.ev-standing-team-logo')?.value.trim() || '';
+      if (name || logo) teams.push({ name, logo });
+    });
+    if (label || prize || teams.length) tiers.push({ label, prize, teams });
+  });
+  return tiers;
+}
+
+/* Sets the editor to a given list of tiers (used when opening Add/Edit). */
+function renderStandingsEdit(tiers) {
+  evStandingsState = (tiers && tiers.length) ? tiers.map(t => ({
+    label: t.label || '', prize: t.prize || '', teams: (t.teams || []).map(tm => ({ name: tm.name || '', logo: tm.logo || '' }))
+  })) : [];
+  renderStandingsEditHtml();
+}
+
+function renderStandingsEditHtml() {
+  const container = document.getElementById('evmStandingsList');
+  if (!container) return;
+  let html = '';
+  evStandingsState.forEach((tier, ti) => {
+    html += `<div class="ev-standing-tier" data-tier-idx="${ti}">
+      <div class="ev-standing-tier-header">
+        <input class="form-control ev-standing-tier-label" type="text" placeholder="Label (e.g. 4th-8th)" value="${escHtml(tier.label || '')}">
+        <input class="form-control ev-standing-tier-prize" type="text" placeholder="Prize (optional)" value="${escHtml(tier.prize || '')}">
+        <button type="button" class="ev-btn-remove-tier" data-remove-tier="${ti}" title="Remove tier">🗑</button>
+      </div>
+      <div class="ev-standing-teams">`;
+    (tier.teams || []).forEach((t, tj) => {
+      const hasLogo = !!(t.logo);
+      html += `<div class="ev-standing-team-row" data-tier-idx="${ti}" data-team-idx="${tj}">
+        <input class="form-control ev-standing-team-name" type="text" placeholder="Team name" value="${escHtml(t.name || '')}">
+        <div class="ev-pt-logo-wrap">
+          <input class="form-control ev-pt-logo ev-standing-team-logo" type="text" placeholder="Logo URL" value="${escHtml(t.logo || '')}">
+          <label class="ev-pt-upload-btn" title="Upload image from computer">
+            📁
+            <input type="file" accept="image/*" class="ev-standing-team-upload" style="display:none;">
+          </label>
+          <button type="button" class="ev-pt-clear-btn ev-standing-team-clear" title="Clear logo" style="${hasLogo ? '' : 'display:none;'}">✕</button>
+          <img class="ev-pt-logo-preview ev-standing-team-preview" src="${hasLogo ? escHtml(t.logo) : ''}" alt="" style="${hasLogo ? '' : 'display:none;'}" onerror="this.style.display='none'">
+        </div>
+        <button type="button" class="ev-btn-remove-team-row" data-remove-team title="Remove team">✕</button>
+      </div>`;
+    });
+    html += `</div>
+      <button type="button" class="ev-btn-add-team" data-add-team="${ti}">+ Add Team</button>
+    </div>`;
+  });
+  container.innerHTML = html;
+  wireStandingsEditEvents();
+}
+
+function wireStandingsEditEvents() {
+  const container = document.getElementById('evmStandingsList');
+  if (!container) return;
+
+  container.querySelectorAll('[data-remove-tier]').forEach(btn => {
+    btn.addEventListener('click', () => removeStandingTier(parseInt(btn.getAttribute('data-remove-tier'))));
+  });
+  container.querySelectorAll('[data-add-team]').forEach(btn => {
+    btn.addEventListener('click', () => addStandingTeam(parseInt(btn.getAttribute('data-add-team'))));
+  });
+
+  container.querySelectorAll('.ev-standing-team-row').forEach(row => {
+    const removeBtn = row.querySelector('[data-remove-team]');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => {
+        const ti = parseInt(row.getAttribute('data-tier-idx'));
+        const tj = parseInt(row.getAttribute('data-team-idx'));
+        removeStandingTeam(ti, tj);
+      });
+    }
+
+    // Logo upload / URL / clear — handled locally on this row only, no
+    // full re-render needed (keeps focus + all other rows' typing intact).
+    const fileInp = row.querySelector('.ev-standing-team-upload');
+    const logoInput = row.querySelector('.ev-standing-team-logo');
+    const preview = row.querySelector('.ev-standing-team-preview');
+    const clearBtn = row.querySelector('.ev-standing-team-clear');
+    const updatePreview = () => {
+      const val = logoInput ? logoInput.value.trim() : '';
+      if (preview) { preview.src = val || ''; preview.style.display = val ? '' : 'none'; }
+      if (clearBtn) clearBtn.style.display = val ? '' : 'none';
+    };
+    if (fileInp) {
+      fileInp.addEventListener('change', () => {
+        const file = fileInp.files && fileInp.files[0];
+        if (!file) return;
+        if (!file.type || !file.type.startsWith('image/')) {
+          alert('Please select an image file.');
+          fileInp.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (logoInput) logoInput.value = String(reader.result || '');
+          updatePreview();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (logoInput) logoInput.value = '';
+        if (fileInp) fileInp.value = '';
+        updatePreview();
+      });
+    }
+    if (logoInput) logoInput.addEventListener('input', updatePreview);
+  });
+}
+
+function addStandingTier() {
+  evStandingsState = collectStandingsFromDOM();
+  evStandingsState.push({ label: '', prize: '', teams: [{ name: '', logo: '' }] });
+  renderStandingsEditHtml();
+}
+function removeStandingTier(ti) {
+  evStandingsState = collectStandingsFromDOM();
+  evStandingsState.splice(ti, 1);
+  renderStandingsEditHtml();
+}
+function addStandingTeam(ti) {
+  evStandingsState = collectStandingsFromDOM();
+  if (!evStandingsState[ti]) return;
+  evStandingsState[ti].teams.push({ name: '', logo: '' });
+  renderStandingsEditHtml();
+}
+function removeStandingTeam(ti, tj) {
+  evStandingsState = collectStandingsFromDOM();
+  if (!evStandingsState[ti]) return;
+  evStandingsState[ti].teams.splice(tj, 1);
+  renderStandingsEditHtml();
 }
 
 function toggleStatusFields() {
@@ -2971,10 +3237,12 @@ function saveEvent() {
     ev.nextMatch1 = document.getElementById('evmNext1').value.trim();
     ev.nextMatch2 = document.getElementById('evmNext2').value.trim();
     ev.nextMatch3 = document.getElementById('evmNext3').value.trim();
-    ev.winner = ''; ev.second = ''; ev.mvp = ''; ev.evp = ''; ev.vp = '';
+    ev.winner = ''; ev.second = ''; ev.third = ''; ev.fourth = ''; ev.mvp = ''; ev.evp = ''; ev.vp = '';
   } else {
     ev.winner = document.getElementById('evmWinner').value.trim();
     ev.second = document.getElementById('evmSecond').value.trim();
+    ev.third = document.getElementById('evmThird').value.trim();
+    ev.fourth = document.getElementById('evmFourth').value.trim();
     ev.mvp = document.getElementById('evmMVP').value.trim();
     ev.evp = document.getElementById('evmEVP').value.trim();
     ev.vp = document.getElementById('evmVP').value.trim();
@@ -3007,6 +3275,9 @@ function saveEvent() {
 
   // Playoff players
   ev.playoffPlayers = collectPlayoffPlayers(ev.playoffTeams);
+
+  // Final standings (all teams, independent of Winner/2nd/3rd/4th)
+  ev.standings = collectStandingsFromDOM();
 
   if (!ev.name) {
     alert('Event name is required.');

@@ -148,6 +148,50 @@ body::after {
     font-weight: 500;
 }
 
+/* === SITES MENU — jumps between the standalone tools (each is its own
+   full page, no iframes). Click the button, or anywhere inside the open
+   menu, to close it again. === */
+.topbar-nav { position: relative; margin-left: 16px; }
+.topbar-nav-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all .2s;
+}
+.topbar-nav-btn:hover, .topbar-nav.open .topbar-nav-btn { color: var(--accent-cyan); border-color: var(--accent-cyan); background: rgba(0,212,255,0.08); }
+.topbar-nav-menu {
+    position: absolute; top: calc(100% + 10px); right: 0;
+    min-width: 230px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-active);
+    border-radius: 10px;
+    padding: 6px;
+    z-index: 1100;
+    opacity: 0; visibility: hidden; transform: translateY(-6px);
+    transition: opacity .15s, transform .15s, visibility .15s;
+    box-shadow: 0 16px 44px rgba(0,0,0,0.6);
+}
+.topbar-nav.open .topbar-nav-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+.topbar-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
+    border-radius: 6px;
+    transition: background .15s, color .15s;
+}
+.topbar-nav-item:hover { background: rgba(0,212,255,0.08); color: var(--text-primary); }
+.topbar-nav-item.active { color: var(--accent-cyan); background: rgba(0,212,255,0.08); }
+.topbar-nav-item .ic { width: 16px; text-align: center; flex-shrink: 0; }
+
 .status-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
@@ -983,6 +1027,15 @@ body::after {
     <div class="header-status">
         <div class="status-dot"></div>
         <span id="teamCountHeader">0 Teams</span>
+    </div>
+    <div class="topbar-nav" id="topbar-nav">
+        <button class="topbar-nav-btn" id="topbar-nav-btn" onclick="toggleSitesMenu(event)" title="Switch site">☰ Sites ▾</button>
+        <div class="topbar-nav-menu" id="topbar-nav-menu" onclick="closeSitesMenu()">
+            <a href="index.html" class="topbar-nav-item"><span class="ic">▤</span>Dashboard / Portal</a>
+            <a href="finances.html" class="topbar-nav-item"><span class="ic">💰</span>Finances</a>
+            <a href="database.html" class="topbar-nav-item"><span class="ic">🗄</span>Database</a>
+            <a href="events.html" class="topbar-nav-item active"><span class="ic">🏆</span>Events Organizer</a>
+        </div>
     </div>
 </header>
 
@@ -2507,6 +2560,23 @@ document.getElementById('eventModal').addEventListener('click', function(e) {
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeModal();
+});
+
+/* === SITES MENU — this is its own full page (no iframes); the menu
+   just links across to the other standalone tools. === */
+function toggleSitesMenu(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('topbar-nav').classList.toggle('open');
+}
+function closeSitesMenu() {
+    document.getElementById('topbar-nav').classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+    const nav = document.getElementById('topbar-nav');
+    if (nav && nav.classList.contains('open') && !nav.contains(e.target)) nav.classList.remove('open');
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSitesMenu();
 });
 </script>
 </body>

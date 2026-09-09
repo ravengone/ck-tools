@@ -2,4 +2,4 @@
 
 2 - Add every match on history.xlsx
 
-3 - The old ranking.html will now be named old.html. The old old.html will be "ranking - [number]" and will be saved on archives. Paste the new ranking.html on the folder
+3 - The old ranking.html will now be named old.html. The old old.html will be "r[number]" and will be saved on archives. Paste the new ranking.html on the folder. Also update the manifes.json file so the rank can be able to read the file
