@@ -1028,7 +1028,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
         <div class="card green">
           <div class="card-title"><span class="medal-ic medal-ic-trophy"></span> TOURNAMENT ENGINE</div>
           <div class="alert-item info" style="margin-bottom:10px; font-size:10.5px; font-family:var(--font-data);">
-            📌 EVENT CONTEXT — shared by 💰 PRIZE and ⭐ INDIVIDUAL AWARDS.<br>5⭐ / Tier SS entries are always recorded as Global.
+            📌 EVENT CONTEXT — shared by 💰 PRIZE, ⭐ INDIVIDUAL AWARDS and 👑 MAJOR CHAMPION.<br>5⭐ / Tier SS entries are always recorded as Global.
           </div>
           <div class="form-group" style="margin-bottom:8px;">
             <div class="form-label">EVENT / TOURNAMENT NAME</div>
@@ -1133,7 +1133,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             <select class="nx-select" id="major-team-select"></select>
           </div>
           <div class="alert-item info" style="margin-bottom:10px; font-size:11px; font-family:var(--font-data);">
-            Trophy only — no prize money. Awards +1 <span class="medal-ic medal-ic-trophy"></span> Major Trophy to all 5 starters on the active roster.
+            Trophy only — no prize money. Awards +1 <span class="medal-ic medal-ic-trophy"></span> Major Trophy to all 5 starters on the active roster.<br>Uses the EVENT / TOURNAMENT NAME above — written permanently to each player's own history, so it survives future roster/team changes.
           </div>
           <button class="btn btn-yellow btn-full" onclick="applyMajorTrophy()">👑 CROWN MAJOR CHAMPION</button>
 
@@ -2683,6 +2683,7 @@ function renderFoSquad(at){
         ${p.OpenToOffers>0?`<button class="fo-tag fo-tag-btn" style="--c:var(--green)" title="OPEN TO OFFERS — clubs can bid a fee directly. Click to protect again." onclick="toggleOpenToOffers('${e}')">📬 OPEN TO OFFERS</button>`:((!p.Buyout&&!p.ReleaseClause&&!p.OnSale)?`<button class="fo-tag fo-tag-btn" style="--c:var(--text-dim)" title="PROTECTED — untouchable. Click to set OPEN TO OFFERS so clubs can bid a fee directly (no clause / no sale listing needed)." onclick="toggleOpenToOffers('${e}')">🔒 PROTECTED</button>`:'')}
       </div>
       <div class="fo-player-actions">
+        <button class="fo-ico" title="Edit player data manually — team not included, use transfers for that" onclick="openPlayerEditModal('${e}')">✎</button>
         <button class="fo-ico" title="Toggle Starter / Bench" onclick="toggleRoster('${e}')">🔄</button>
         <button class="fo-ico" title="Set / remove buyout" onclick="setPlayerBuyout('${e}')">⚡</button>
         <button class="fo-ico" title="Set / remove release clause" onclick="setPlayerClause('${e}')">🔑</button>
@@ -3413,14 +3414,133 @@ function getRiskIndex(teamName) {
 }
 
 /* MEDALS HTML */
+/* Major Trophy count, personal to the player and resilient to data loss:
+   reads the stored counter but never shows LESS than what the player's own
+   (name-keyed, team-independent) history log can prove — so even if the raw
+   counter field is ever corrupted or overwritten again, the trophy still shows. */
+function getMajorWins(p){
+  const stored = Number(p['Major Winner'])||0;
+  const pn = String(p.PlayerName);
+  const fromHistory = playerHistory.filter(h=>h.player===pn && h.kind==='EVENT' && Number(h.tier)>=5 && h.position==='Winner').length;
+  return Math.max(stored, fromHistory);
+}
 function medals(p) {
   let s='';
   if (p.MVP) s+=`<span class="badge badge-yellow"><span class="medal-ic medal-ic-mvp"></span>${p.MVP}</span> `;
   if (p.EVP) s+=`<span class="badge badge-ghost"><span class="medal-ic medal-ic-evp"></span>${p.EVP}</span> `;
   if (p.VP) s+=`<span class="badge badge-ghost"><span class="medal-ic medal-ic-vp"></span>${p.VP}</span> `;
   if (p.Titles) s+=`<span class="badge badge-cyan"><span class="medal-ic medal-ic-trophy"></span>${p.Titles}</span> `;
-  if (p['Major Winner']) s+=`<span class="badge badge-yellow" style="border:1px solid #00000033;">${awardIconImg('major_winner', 12, '👑')}${p['Major Winner']}</span> `;
+  const majors = getMajorWins(p);
+  if (majors) s+=`<span class="badge badge-yellow" style="border:1px solid #00000033;">${awardIconImg('major_winner', 12, '👑')}${majors}</span> `;
   return s;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ✎ MANUAL PLAYER EDITOR — direct patch tool for a single player's
+   own data. Deliberately does NOT touch TeamName (transfers only
+   happen through Front Office / Market, so business logic like fees,
+   contracts and negotiations never gets bypassed). Everything here is
+   scoped to the player personally, which is also why it's the right
+   place to hand-correct award counters if they were ever lost.
+═══════════════════════════════════════════════════════════════════ */
+function openPlayerEditModal(name){
+  const p = players.find(x=>String(x.PlayerName)===name);
+  if (!p) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'player-modal-overlay';
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  const roleList = (p.roleList && p.roleList.length) ? p.roleList : parseRoleList(p.Role);
+  const rosterOpts = ['Starter','Bench'].map(r=>`<option value="${r}" ${p.Roster===r?'selected':''}>${r}</option>`).join('');
+  const roleChecks = ROLE_OPTIONS.map(r=>`
+    <label style="display:flex;align-items:center;gap:6px;font-family:var(--font-data);font-size:11px;padding:4px 0;cursor:pointer;">
+      <input type="checkbox" class="pedit-role" value="${r.value}" ${roleList.includes(r.value)?'checked':''}>
+      <span>${r.label}</span>
+    </label>`).join('');
+  const en = escN(String(p.PlayerName));
+
+  overlay.innerHTML = `
+    <div class="player-modal" style="width:640px;">
+      <button class="pm-close" onclick="this.closest('.player-modal-overlay').remove()">&times;</button>
+      <div class="pm-header">
+        <div class="pm-head-main">
+          <div class="pm-name">✎ Edit Player — ${String(p.PlayerName)}</div>
+          <div class="pm-sub" style="color:var(--text-dim); margin-top:6px; line-height:1.5;">
+            Currently on <b>${p.TeamName==='none'?'FREE AGENCY':p.TeamName}</b> (${p.TeamName==='none'?'—':p.Roster||'—'}).
+            Team &amp; transfers are <b>not</b> editable here — use Front Office for that. This tool patches the player's own profile, financial and award data directly, for manual corrections.
+          </div>
+        </div>
+      </div>
+      <div class="pm-col" style="max-height:64vh; overflow-y:auto; padding:24px 26px;">
+
+        <div class="pm-section-title">Profile</div>
+        <div class="g2" style="margin-bottom:14px;">
+          <div class="form-group"><div class="form-label">Country</div><input type="text" class="nx-input" id="pedit-country" value="${(p.Country||'').replace(/"/g,'&quot;')}" placeholder="e.g. Brazil"></div>
+          <div class="form-group"><div class="form-label">Squad Slot</div><select class="nx-select" id="pedit-roster">${rosterOpts}</select></div>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <div class="form-label">Tactical Role(s)</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px 14px;">${roleChecks}</div>
+        </div>
+
+        <div class="pm-section-title">Financials</div>
+        <div class="g2" style="margin-bottom:18px;">
+          <div class="form-group"><div class="form-label">Market Value</div><input type="number" class="nx-input" id="pedit-mv" value="${p.MarketValue||0}"></div>
+          <div class="form-group"><div class="form-label">Prize Pool</div><input type="number" class="nx-input" id="pedit-pp" value="${p.PrizePool||0}"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <div class="form-label">Contract Months</div>
+          <input type="number" class="nx-input" id="pedit-cm" value="${p.ContractMonths||0}">
+        </div>
+
+        <div class="pm-section-title">Achievements &amp; Awards</div>
+        <div class="alert-item info" style="margin-bottom:12px; font-size:10.5px; font-family:var(--font-data);">
+          These counters are personal to ${String(p.PlayerName)} and are unaffected by team/roster changes. Use this only for manual corrections — normal grants should go through Front Office → Achievements or Operations → Tournament Engine, which also log a permanent history entry.
+        </div>
+        <div class="g2" style="margin-bottom:10px;">
+          <div class="form-group"><div class="form-label">MVP</div><input type="number" class="nx-input" id="pedit-mvp" value="${p.MVP||0}"></div>
+          <div class="form-group"><div class="form-label">EVP</div><input type="number" class="nx-input" id="pedit-evp" value="${p.EVP||0}"></div>
+        </div>
+        <div class="g2" style="margin-bottom:10px;">
+          <div class="form-group"><div class="form-label">VP</div><input type="number" class="nx-input" id="pedit-vp" value="${p.VP||0}"></div>
+          <div class="form-group"><div class="form-label">Titles</div><input type="number" class="nx-input" id="pedit-titles" value="${p.Titles||0}"></div>
+        </div>
+        <div class="g2" style="margin-bottom:22px;">
+          <div class="form-group"><div class="form-label">👑 Major Winner</div><input type="number" class="nx-input" id="pedit-major" value="${getMajorWins(p)}"></div>
+          <div class="form-group"><div class="form-label">Badge Score</div><input type="number" class="nx-input" id="pedit-badge" value="${p.BadgeScore||0}"></div>
+        </div>
+
+        <button class="btn btn-yellow btn-full" onclick="savePlayerEdit('${en}')">💾 SAVE CHANGES</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function savePlayerEdit(name){
+  const p = players.find(x=>String(x.PlayerName)===name);
+  if (!p) return;
+  const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? 0 : v; };
+  saveState();
+  p.Country = ($('pedit-country').value||'').trim();
+  p.Region = getCountryRegion(p.Country) || 'Unknown';
+  p.Roster = $('pedit-roster').value;
+  const roles = Array.from(document.querySelectorAll('.pedit-role:checked')).map(cb=>cb.value);
+  p.roleList = roles;
+  p.Role = roles.join('|');
+  p.MarketValue = num('pedit-mv');
+  p.PrizePool = num('pedit-pp');
+  p.ContractMonths = num('pedit-cm');
+  p.MVP = num('pedit-mvp');
+  p.EVP = num('pedit-evp');
+  p.VP = num('pedit-vp');
+  p.Titles = num('pedit-titles');
+  p['Major Winner'] = num('pedit-major');
+  p.BadgeScore = num('pedit-badge');
+  addLog(`✎ EDITED: ${name} — profile & stats manually updated (team untouched).`,'warn');
+  document.querySelectorAll('.player-modal-overlay').forEach(o=>o.remove());
+  updateAll();
+  openPlayerProfile(name);
 }
 
 /* ROLE BADGES HTML — one chip per tactical role the player has (pipe-separated) */
@@ -3446,10 +3566,12 @@ function openPlayerProfile(name) {
 
   const histCount = playerHistory.filter(h=>h.player===String(p.PlayerName)).length;
   const crest = p.TeamName==='none' ? `<span class="xfer-mono" style="color:var(--text-faint);font-size:13px;">FA</span>` : crestInner(p.TeamName);
+  const en = escN(String(p.PlayerName));
 
   overlay.innerHTML = `
     <div class="player-modal player-modal-xl">
       <button class="pm-close" onclick="this.closest('.player-modal-overlay').remove()">&times;</button>
+      <button class="pm-close" style="right:74px;" title="Edit player data manually (team not included)" onclick="openPlayerEditModal('${en}')"><svg class="ico" viewBox="0 0 24 24" width="18" height="18"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
       <div class="pm-header">
         <div class="pm-crest">${crest}</div>
         <div class="pm-head-main">
@@ -3461,9 +3583,9 @@ function openPlayerProfile(name) {
       <div class="pm-split">
         <div class="pm-col">
 
-          ${(p['Major Winner']||0) > 0 ? `
+          ${getMajorWins(p) > 0 ? `
           <div class="pm-major-banner" style="text-align:center; padding:12px; margin-bottom:18px; background:var(--yellow-dim,rgba(230,197,106,0.12)); border:1px solid var(--yellow); border-radius:11px; font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--yellow); letter-spacing:.5px;">
-            ${awardIconImg('major_winner', 30, '👑')} ${p['Major Winner']}× Major Winner
+            ${awardIconImg('major_winner', 30, '👑')} ${getMajorWins(p)}× Major Winner
           </div>
           ` : ''}
 
@@ -4413,9 +4535,24 @@ function applyMajorTrophy() {
   const tName=$('major-team-select').value;
   const starters=players.filter(p=>p.TeamName===tName && p.Roster==='Starter');
   if (!tName || !starters.length) return;
+  const event=opsEventName();
+  // BUGFIX: this used to only bump p['Major Winner'] in memory, with zero history
+  // record. That number lived nowhere else, so if it was ever lost (bad reload,
+  // manual spreadsheet edit, a player moving teams and the row getting rebuilt)
+  // the trophy vanished with no trace. Now it writes a real, name-keyed history
+  // entry — same pattern as PRIZE and INDIVIDUAL AWARDS — so it's tied to the
+  // player personally and survives roster/team changes.
+  if (!event) return alert('Enter the EVENT / TOURNAMENT NAME above — it is written into each player\'s permanent history so the trophy survives roster changes.');
   saveState();
-  starters.forEach(p=>{ p['Major Winner']=(p['Major Winner']||0)+1; });
-  addLog(`👑 ${tName} CROWNED MAJOR CHAMPION! All ${starters.length} active starters awarded a Major Trophy.`,'good'); updateAll();
+  const id=Date.now()+Math.floor(Math.random()*999);
+  const customIcon = stagedIconForPosition('Winner');
+  teamHistory.unshift({id, team:tName, event, tier:5, scope:'Global', compRegion:'', position:'Winner', prizePool:0, wonAmount:0, month:monthCounter, kind:'EVENT', customIcon});
+  starters.forEach(p=>{
+    p['Major Winner']=(p['Major Winner']||0)+1;
+    playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team:tName, kind:'EVENT', event, tier:5, scope:'Global', compRegion:'', position:'Winner', month:monthCounter, customIcon});
+  });
+  if (customIcon) historyIconsMap[id] = customIcon; else delete historyIconsMap[id];
+  addLog(`👑 ${tName} CROWNED MAJOR CHAMPION at "${event}"! All ${starters.length} active starters awarded a Major Trophy — recorded permanently in each player's own history.`,'good'); updateAll();
 }
 
 function applyClubShare() {
@@ -4498,7 +4635,7 @@ function exportExcels() {
     'BadgeScore': p.BadgeScore || 0,
     'Country': p.Country || '',
     'Region': getPlayerMacroRegion(p),
-    'Major Winner': p['Major Winner'] || 0,
+    'Major Winner': getMajorWins(p),
     'Salary': p.Salary || 0,
     'Buyout': p.Buyout || 0,
     'ReleaseClause': p.ReleaseClause || 0,
