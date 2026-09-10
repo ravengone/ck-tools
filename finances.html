@@ -1306,6 +1306,17 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             </select>
           </div>
         </div>
+        <div class="form-group" id="hist-ev-apply-team-row" style="margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:9px 12px;">
+          <div>
+            <div class="form-label" style="margin-bottom:2px;">APPLY FOR TEAM</div>
+            <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); line-height:1.4;">
+              On: also credits the team above (goes in its trophy case). Off: only the checked player(s) below get this in their personal history — the team isn't credited. Useful for crediting a player who has since transferred, without giving their old or new team a trophy they didn't actually win.
+            </div>
+          </div>
+          <label class="award-toggle" title="Also credit the selected team's trophy case" style="margin-left:4px;">
+            <input type="checkbox" id="hist-ev-apply-team" checked onchange="achApplyTeamToggled()"><span></span>
+          </label>
+        </div>
         <div class="form-group" style="margin-bottom:16px;">
           <div class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
             <span>APPLY TO PLAYERS</span>
@@ -2925,6 +2936,13 @@ function renderAchPlayerCheckboxes(team, checkedNames){
   }).join('') : '<div class="fo-empty" style="padding:2px 0;">No players on this team.</div>';
 }
 function achTeamChanged(){ renderAchPlayerCheckboxes($('hist-ev-team').value); }
+function achApplyTeamToggled(){
+  const cb=$('hist-ev-apply-team'), btn=$('ach-ev-submit');
+  if (!cb || !btn) return;
+  /* only relabel in create mode — edit mode keeps its own "SAVE CHANGES" label */
+  if (achEditRef && achEditRef.kind==='team') return;
+  btn.textContent = cb.checked ? 'Add to History — Team + Selected Players' : 'Add to History — Selected Players Only';
+}
 function achSelectAllPlayers(state){
   const box=$('ach-ev-players'); if (!box) return;
   box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=state);
@@ -2945,17 +2963,28 @@ function applyTeamAchievement(){
   const position=$('hist-ev-pos').value;
   const prizePool=parseFloat($('hist-ev-pool').value)||0;
   const wonAmount=parseFloat($('hist-ev-won').value)||0;
+  const applyToTeam=$('hist-ev-apply-team')?$('hist-ev-apply-team').checked:true;
   if (!team) return alert('Select a team.');
   if (!event) return alert('Enter the event name.');
   const starters=getAchSelectedPlayers(team);
-  if (!confirm(`Record "${event}" (${histStars(tier)} · ${scope} · ${position}) for ${team}?\nPrize pool ${fmt(prizePool)} · team won ${fmt(wonAmount)}.\nThe event is also written to ${starters.length} selected player(s).\nRECORD-ONLY — no money moves (use ⚙ OPS for payouts).`)) return;
+  if (!starters.length) return alert(applyToTeam ? 'Check at least one player, or the event will have no players linked.' : 'Check at least one player \u2014 with "Apply for team" off, players are the only thing this entry records.');
+  const confirmMsg = applyToTeam
+    ? `Record "${event}" (${histStars(tier)} · ${scope} · ${position}) for ${team}?\nPrize pool ${fmt(prizePool)} · team won ${fmt(wonAmount)}.\nThe event is also written to ${starters.length} selected player(s).\nRECORD-ONLY — no money moves (use ⚙ OPS for payouts).`
+    : `Record "${event}" (${histStars(tier)} · ${scope} · ${position}) for ${starters.length} selected player(s) only?\n${team} will NOT be credited \u2014 no trophy is added to its case, only to the checked player(s)' personal history.\nRECORD-ONLY — no money moves (use ⚙ OPS for payouts).`;
+  if (!confirm(confirmMsg)) return;
   saveState();
   const id=Date.now()+Math.floor(Math.random()*999);
   const customIcon = stagedIconForPosition(position);
-  teamHistory.unshift({id, team, event, tier, scope, compRegion, position, prizePool, wonAmount, month:monthCounter, kind:'EVENT', customIcon});
-  starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId:id, player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:monthCounter, customIcon}));
+  if (applyToTeam) {
+    teamHistory.unshift({id, team, event, tier, scope, compRegion, position, prizePool, wonAmount, month:monthCounter, kind:'EVENT', customIcon});
+  }
+  const refId = applyToTeam ? id : null;
+  starters.forEach(p=>playerHistory.unshift({id:id+'-'+String(p.PlayerName), refId, player:String(p.PlayerName), team, kind:'EVENT', event, tier, scope, compRegion, position, month:monthCounter, customIcon}));
   if (customIcon) historyIconsMap[id] = customIcon; else delete historyIconsMap[id];
-  addLog(`🏛 HISTORY: ${team} — ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for the team and ${starters.length} selected player(s).${customIcon?' Custom trophy image applied.':''}`,'good');
+  addLog(applyToTeam
+    ? `🏛 HISTORY: ${team} — ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for the team and ${starters.length} selected player(s).${customIcon?' Custom trophy image applied.':''}`
+    : `🏛 HISTORY: ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for ${starters.length} selected player(s) only \u2014 ${team} not credited.${customIcon?' Custom trophy image applied.':''}`
+  ,'good');
   $('hist-ev-name').value=''; $('hist-ev-pool').value=''; $('hist-ev-won').value='';
   renderHistory(); updateAll();
 }
@@ -3023,14 +3052,19 @@ function renderFoAchievements(team){
     </div>`;
   }).join('') : '<div class="pm-hist-empty">No achievements recorded for this team yet.</div>';
   const rosterNames=new Set(players.filter(p=>p.TeamName===team).map(p=>String(p.PlayerName)));
-  const awards=playerHistory.filter(h=>h.kind!=='EVENT'&&rosterNames.has(h.player));
+  /* Individual awards + any "team not credited" trophies (EVENT-kind rows recorded with
+     "Apply for team" off — refId null, so not linked to a teamHistory row). Those show up
+     here under whichever team the player is CURRENTLY on, without ever counting toward
+     that team's own trophy case above. */
+  const awards=playerHistory.filter(h=>(h.kind!=='EVENT'||!h.refId)&&rosterNames.has(h.player));
   awBox.innerHTML = awards.length ? awards.map(h=>{
     const L = playerHistoryLines(h);
+    const playerOnlyTrophy = h.kind==='EVENT' && !h.refId;
     return `
     <div class="pm-hist-entry">
       ${L.medal}
       <div class="pm-hist-body">
-        <div class="pm-hist-title">${h.player} <span style="color:var(--text-dim); font-weight:500;">— ${L.line1}</span></div>
+        <div class="pm-hist-title">${h.player} <span style="color:var(--text-dim); font-weight:500;">— ${L.line1}</span>${playerOnlyTrophy?' <span class="badge badge-ghost" style="margin-left:5px;" title="Recorded for this player only — team not credited">PLAYER ONLY</span>':''}</div>
         <div class="pm-hist-meta">${L.line2}</div>
         ${L.needsRegion ? compRegionPickerHTML('player', h.id) : ''}
       </div>
@@ -3069,7 +3103,17 @@ function setAchMode(mode, kind){
   $('ach-aw-flag').classList.toggle('on', editing && kind === 'award');
   $('ach-ev-cancel').style.display = (editing && kind === 'team') ? '' : 'none';
   $('ach-aw-cancel').style.display = (editing && kind === 'award') ? '' : 'none';
-  $('ach-ev-submit').textContent = (editing && kind === 'team') ? '\ud83d\udcbe SAVE CHANGES' : 'Add to History \u2014 Team + Selected Players';
+  const applyCb = $('hist-ev-apply-team'), applyRow = $('hist-ev-apply-team-row');
+  if (editing && kind === 'team') {
+    /* an existing team title is always team-credited — lock the toggle on rather than
+       support half-converting it into a player-only entry from the edit form */
+    if (applyCb) { applyCb.checked = true; applyCb.disabled = true; }
+    if (applyRow) applyRow.style.opacity = '.6';
+  } else {
+    if (applyCb) applyCb.disabled = false;
+    if (applyRow) applyRow.style.opacity = '';
+  }
+  $('ach-ev-submit').textContent = (editing && kind === 'team') ? '\ud83d\udcbe SAVE CHANGES' : (applyCb && !applyCb.checked ? 'Add to History \u2014 Selected Players Only' : 'Add to History \u2014 Team + Selected Players');
   $('ach-aw-submit').textContent = (editing && kind === 'award') ? '\ud83d\udcbe SAVE CHANGES' : 'Add Award to Player History';
   /* the player an award belongs to is frozen while editing */
   const pin = $('hist-aw-player'); if (pin) pin.disabled = (editing && kind === 'award');
@@ -3112,7 +3156,8 @@ function openAchEditTeam(id){
 function openAchEditAward(id){
   const h = playerHistory.find(x=>String(x.id)===String(id));
   if (!h) return alert('That entry no longer exists.');
-  if (h.kind === 'EVENT') return alert('This entry comes from a team title \u2014 edit it from the team achievement above.');
+  if (h.kind === 'EVENT' && h.refId) return alert('This entry comes from a team title \u2014 edit it from the team achievement above.');
+  if (h.kind === 'EVENT' && !h.refId) return alert('This is a player-only trophy (team not credited) \u2014 delete it and record it again to change any details.');
   if (h.kind === 'BADGE') return alert('This is a 🏅 Badge grant \u2014 edit or delete it from the Badges panel.');
   populateHistoryControls();
   $('hist-aw-player').value = h.player;
