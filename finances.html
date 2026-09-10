@@ -395,7 +395,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .roster-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
 .roster-card{background:var(--bg3);border:1px solid var(--border);border-radius:13px;padding:18px 14px 15px;text-align:center;transition:border-color .15s,transform .15s;cursor:pointer;}
 .roster-card:hover{border-color:var(--border-hot);transform:translateY(-2px);}
-.roster-card .rc-avatar{width:52px;height:52px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text-dim);border:1px solid var(--border);}
+.roster-card .rc-avatar{width:52px;height:52px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text-dim);border:1px solid var(--border);overflow:hidden;}
 .roster-card .rc-name{font-family:var(--font-display);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .roster-card .rc-role{margin-top:7px;}
 .roster-card .rc-contract{font-family:var(--font-data);font-size:9.5px;color:var(--text-dim);margin-top:6px;}
@@ -406,8 +406,9 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .player-modal-xl{width:1520px;max-width:98vw;max-height:95vh;}
 .player-modal-xl .pm-close{width:42px;height:42px;font-size:26px;top:20px;right:22px;}
 .player-modal-xl .pm-header{padding:34px 40px 28px;gap:26px;}
-.player-modal-xl .pm-crest{width:160px;height:160px;border-radius:32px;}
-.player-modal-xl .pm-crest img{width:132px;height:132px;}
+.player-modal-xl .pm-crest{width:190px;height:190px;border-radius:36px;}
+.player-modal-xl .pm-crest img{width:100%;height:100%;}
+.player-modal-xl .pm-crest .pm-crest-fallback{font-size:40px;}
 .player-modal-xl .pm-name{font-size:34px;gap:14px;}
 .player-modal-xl .pm-sub{font-size:15px;gap:9px;margin-top:9px;}
 .player-modal-xl .badge{font-size:12.5px;padding:4px 12px;border-radius:7px;}
@@ -1430,6 +1431,35 @@ function getTeamLogo(teamName, size) {
   const url = teamLogos[teamName];
   if (!url) return '';
   return `<img src="${url}" alt="${teamName}" title="${teamName}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.25));">`;
+}
+
+/* ── Player photo: looks for assets/players/<PlayerName>.<ext> next to this file.
+   Tries each extension in turn; if none exist, the caller's fallback (the
+   default initial-letter look already used app-wide) is shown instead. ── */
+const PLAYER_PHOTO_EXTS = ['png','jpg','jpeg','webp'];
+function playerPhotoCandidates(name) {
+  const base = 'assets/players/' + encodeURIComponent(String(name).trim());
+  return PLAYER_PHOTO_EXTS.map(ext => `${base}.${ext}`);
+}
+function handlePlayerPhotoError(img) {
+  let candidates = [];
+  try { candidates = JSON.parse(img.dataset.candidates || '[]'); } catch (e) {}
+  const next = (parseInt(img.dataset.idx, 10) || 0) + 1;
+  if (next < candidates.length) {
+    img.dataset.idx = next;
+    img.src = candidates[next];
+  } else {
+    const wrap = img.parentElement;
+    if (wrap) wrap.innerHTML = img.dataset.fallback || '';
+  }
+}
+/* Renders an <img> that auto-checks assets/players/ for a picture of `name`.
+   `fallbackHTML` is shown in place of the image if no picture is found. */
+function playerAvatarImg(name, fallbackHTML, imgStyle) {
+  const candidates = playerPhotoCandidates(name);
+  const fb = String(fallbackHTML || '').replace(/"/g, '&quot;');
+  const alt = String(name).replace(/"/g, '&quot;');
+  return `<img src="${candidates[0]}" data-candidates='${JSON.stringify(candidates)}' data-idx="0" data-fallback="${fb}" alt="${alt}" onerror="handlePlayerPhotoError(this)" style="${imgStyle || ''}">`;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -3565,7 +3595,10 @@ function openPlayerProfile(name) {
   overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
 
   const histCount = playerHistory.filter(h=>h.player===String(p.PlayerName)).length;
-  const crest = p.TeamName==='none' ? `<span class="xfer-mono" style="color:var(--text-faint);font-size:13px;">FA</span>` : crestInner(p.TeamName);
+  const initials = String(p.PlayerName).trim().charAt(0).toUpperCase() || '?';
+  const photoFallback = `<span class="xfer-mono pm-crest-fallback">${initials}</span>`;
+  const crest = playerAvatarImg(p.PlayerName, photoFallback, 'width:100%;height:100%;object-fit:cover;');
+  const teamLogoSmall = p.TeamName==='none' ? '' : getTeamLogo(p.TeamName, 26);
   const en = escN(String(p.PlayerName));
 
   overlay.innerHTML = `
@@ -3575,7 +3608,7 @@ function openPlayerProfile(name) {
       <div class="pm-header">
         <div class="pm-crest">${crest}</div>
         <div class="pm-head-main">
-          <div class="pm-name">${p.Country ? getCountryFlag(p.Country, 30)+' ' : ''}${String(p.PlayerName)} ${medals(p)}</div>
+          <div class="pm-name">${teamLogoSmall ? teamLogoSmall+' ' : ''}${p.Country ? getCountryFlag(p.Country, 30)+' ' : ''}${String(p.PlayerName)} ${medals(p)}</div>
           <div class="pm-sub">${p.TeamName==='none'?'FREE AGENT':p.TeamName} <span style="color:var(--border-strong)">|</span> ${p.Roster} <span style="color:var(--border-strong)">|</span> Contract ${p.ContractMonths||0}m${p.Country ? ' <span style="color:var(--border-strong)">|</span> '+p.Country : ''} <span style="color:var(--border-strong)">|</span> ${playerRegionBadge(p)}</div>
           <div class="pm-sub" style="margin-top:6px;">${roleBadges(p) || '<span style="color:var(--text-faint);">No role assigned</span>'}</div>
         </div>
@@ -3951,7 +3984,7 @@ function updateCommand() {
 
   const rosterCard = p => `
     <div class="roster-card" onclick="openPlayerProfile('${String(p.PlayerName).replace(/'/g,"\\'")}')">
-      <div class="rc-avatar">${String(p.PlayerName).charAt(0).toUpperCase()}</div>
+      <div class="rc-avatar">${playerAvatarImg(p.PlayerName, String(p.PlayerName).charAt(0).toUpperCase(), 'width:100%;height:100%;object-fit:cover;')}</div>
       <div class="rc-name">${p.Country?getCountryFlag(p.Country,14)+' ':''}${String(p.PlayerName)}</div>
       <div class="rc-role">${roleBadges(p) || '<span style="color:var(--text-faint); font-family:var(--font-data); font-size:10px;">No role</span>'}</div>
       <div class="rc-contract">Contract ${p.ContractMonths||0}m</div>
