@@ -1109,16 +1109,18 @@
     "stars": 1,
     "major": "no",
     "region": "global",
-    "status": "Live",
-    "stage": "Stage 1",
-    "nextMatch1": "MOUZ x Lux Tenebris",
-    "nextMatch2": "Astralis x Lynn Vision",
-    "nextMatch3": "Envy x Imperiaç",
-    "winner": "",
-    "second": "",
-    "mvp": "",
-    "evp": "",
-    "vp": "",
+    "status": "Finished",
+    "winner": "Lux Tenebris",
+    "second": "Imperial",
+    "third": "BC.Game",
+    "fourth": "Astralis",
+    "mvp": "kilzys",
+    "evp": "heroghoxxt",
+    "vp": "kyourezzz - s1mple - taco",
+    "stage": "",
+    "nextMatch1": "",
+    "nextMatch2": "",
+    "nextMatch3": "",
     "prizeDistribution": {
       "1st": "",
       "2nd": "",
@@ -1171,40 +1173,40 @@
       "qf": [
         {
           "score1": "0",
-          "score2": "0"
+          "score2": "2"
+        },
+        {
+          "score1": "2",
+          "score2": "1"
         },
         {
           "score1": "0",
-          "score2": "0"
+          "score2": "2"
         },
         {
           "score1": "0",
-          "score2": "0"
-        },
-        {
-          "score1": "0",
-          "score2": "0"
+          "score2": "2"
         }
       ],
       "sf": [
         {
-          "team1": "",
-          "team2": "",
-          "score1": "",
-          "score2": ""
+          "team1": "Lux Tenebris",
+          "team2": "Astralis",
+          "score1": "2",
+          "score2": "0"
         },
         {
-          "team1": "",
-          "team2": "",
-          "score1": "",
-          "score2": ""
+          "team1": "Imperial",
+          "team2": "BC.Game",
+          "score1": "0",
+          "score2": "2"
         }
       ],
       "final": {
-        "team1": "",
-        "team2": "",
-        "score1": "",
-        "score2": ""
+        "team1": "Lux Tenebris",
+        "team2": "Imperial",
+        "score1": "3",
+        "score2": "1"
       }
     },
     "playoffPlayers": {
@@ -1264,6 +1266,7 @@
         "taco",
         "boltz"
       ]
-    }
+    },
+    "standings": []
   }
 ]

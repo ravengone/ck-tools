@@ -1347,7 +1347,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
         <div class="pm-section-title" style="margin-top:0;">Player Award</div>
         <div style="font-family:var(--font-data); font-size:10.5px; color:var(--text-faint); margin:-4px 0 14px; line-height:1.6;">Medals &amp; money are still granted in Operations. This only writes the award to the player's personal history.</div>
         <div class="g2" style="gap:10px; margin-bottom:10px;">
-          <div class="form-group"><div class="form-label">Player</div><input type="text" class="nx-input" id="hist-aw-player" list="hist-player-list" placeholder="Type player name..."><datalist id="hist-player-list"></datalist></div>
+          <div class="form-group"><div class="form-label">Player</div><input type="text" class="nx-input" id="hist-aw-player" list="hist-player-list" placeholder="Type player name..." onchange="achAwardPlayerChanged()"><datalist id="hist-player-list"></datalist></div>
           <div class="form-group"><div class="form-label">Award</div>
             <select class="nx-select" id="hist-aw-kind">
               <option value="MVP">🥇 MVP</option>
@@ -1389,7 +1389,18 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
             </select>
           </div>
         </div>
-        <div class="form-group" style="margin-bottom:16px;"><div class="form-label">Event Name</div><input type="text" class="nx-input" id="hist-aw-event" placeholder="e.g. IEM Cologne"></div>
+        <div class="g2" style="gap:10px; margin-bottom:8px;">
+          <div class="form-group"><div class="form-label">Event Name</div><input type="text" class="nx-input" id="hist-aw-event" placeholder="e.g. IEM Cologne"></div>
+          <div class="form-group"><div class="form-label">Team Won With</div><input type="text" class="nx-input" id="hist-aw-team" list="hist-team-list" placeholder="e.g. Natus Vincere"><datalist id="hist-team-list"></datalist></div>
+        </div>
+        <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); margin:0 0 14px; line-height:1.5;">
+          Free text — pick a current team from the list or type one that no longer exists (disbanded org, old tag) and it is kept exactly as typed. Leave it empty for an award won with no team. This only labels the medal: it never moves the player and never touches any team's trophy case.
+        </div>
+        <div class="form-label" style="margin-bottom:6px;">TROPHY IMAGE FOR THIS AWARD (OPTIONAL)</div>
+        <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); margin:-2px 0 10px; line-height:1.5;">
+          Bound to this one medal only — unlike the placement squares on the left, uploading here changes nothing else. Empty square = keep the normal Award Registry icon.
+        </div>
+        <div class="ach-icon-row" id="aw-icon-square" style="margin-bottom:16px;"></div>
         <button class="btn btn-cyan btn-full" id="ach-aw-submit" onclick="submitPlayerAward()">Add Award to Player History</button>
         <button class="btn btn-ghost btn-full" id="ach-aw-cancel" style="display:none; margin-top:8px;" onclick="cancelAchEdit()">✕ CANCEL EDIT</button>
       </div>
@@ -1713,6 +1724,50 @@ function clearAchIconStaging(field){
   achIconStaging[field] = '';
   renderAchIconSquares();
 }
+/* \u2500\u2500 \ud83d\uddbc PLAYER AWARD \u2014 per-entry trophy image \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+   Deliberately NOT part of achIconStaging: the four squares on the team side are
+   reusable per-placement stamps, while this one is bound to the single medal being
+   recorded or edited. Uploading here can never alter another entry. Baked onto the
+   row as customIcon (which every history renderer already prefers over the registry
+   icon) and mirrored into historyIconsMap so it survives an awards.json round-trip. */
+let awIconDraft = '';
+function renderAwIconSquare(){
+  const box = $('aw-icon-square'); if (!box) return;
+  box.innerHTML = `<div class="ach-icon-square" style="flex:0 0 104px;">
+    <div class="ach-icon-box" title="Click to upload a trophy image for this award only">
+      ${awIconDraft ? `<img src="${awIconDraft}" alt="">` : `<span class="ach-icon-default">DEFAULT</span>`}
+      <input type="file" accept="image/*" onchange="setAwIconDraft(this)">
+    </div>
+    <div class="ach-icon-label">THIS AWARD</div>
+    ${awIconDraft ? `<button type="button" class="ach-icon-clear" onclick="clearAwIconDraft()">\u2715 clear \u2014 use default</button>` : ''}
+  </div>`;
+}
+function setAwIconDraft(input){
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    awIconDraft = ev.target.result;
+    addLog('\ud83d\uddbc Trophy image loaded for this award \u2014 it is applied when you submit.','good');
+    renderAwIconSquare();
+  };
+  r.readAsDataURL(file);
+}
+function clearAwIconDraft(){
+  awIconDraft = '';
+  renderAwIconSquare();
+}
+/* Pre-fills the team box from the chosen player's current squad, so the common case
+   (award won where he is now) needs no typing. Never fires while editing \u2014 the player
+   is frozen there and the stored team must stay untouched unless you change it. */
+function achAwardPlayerChanged(){
+  if (achEditRef && achEditRef.kind === 'award') return;
+  const te = $('hist-aw-team'); if (!te) return;
+  const name = ($('hist-aw-player').value||'').trim();
+  const p = players.find(x=>String(x.PlayerName)===name);
+  te.value = (p && p.TeamName && p.TeamName !== 'none') ? String(p.TeamName) : '';
+}
+
 /* Reads whichever square matches the given position ('Winner'/'Second'/'Third'/'Fourth').
    Returns '' (falsy) if that square is empty, so callers just fall back to the default icon. */
 function stagedIconForPosition(position){
@@ -1725,6 +1780,8 @@ function applyHistoryIconsMap(map){
   if (!map) return;
   teamHistory.forEach(e=>{ if (map[e.id]) e.customIcon = map[e.id]; });
   playerHistory.forEach(h=>{ if (h.refId!=null && map[h.refId]) h.customIcon = map[h.refId]; });
+  /* standalone awards are keyed by their own id (mirrored rows use refId above) */
+  playerHistory.forEach(h=>{ if (h.refId==null && map[h.id]) h.customIcon = map[h.id]; });
 }
 /* Inline "this legacy entry needs a region before it can show its real badge" fix. */
 function compRegionPickerHTML(entryType, id){
@@ -2915,6 +2972,15 @@ function populateHistoryControls(){
   const opts=finances.map(t=>`<option value="${t.TeamName}">${t.TeamName}</option>`).join('');
   ['hist-ev-team'].forEach(id=>{ const el=$(id); if (!el) return; const cur=el.value; el.innerHTML=opts; if (cur&&finances.some(t=>t.TeamName===cur)) el.value=cur; });
   const dl=$('hist-player-list'); if (dl) dl.innerHTML=players.map(p=>`<option value="${String(p.PlayerName)}">`).join('');
+  /* Team suggestions for a player award: current league teams PLUS any team name already
+     used in a recorded medal, so historic/disbanded orgs stay one click away. */
+  const tdl=$('hist-team-list');
+  if (tdl) {
+    const names=new Set(finances.map(t=>String(t.TeamName)).filter(n=>n&&n!=='none'));
+    playerHistory.forEach(h=>{ if (h.team && h.team!=='none') names.add(String(h.team)); });
+    teamHistory.forEach(e=>{ if (e.team && e.team!=='none') names.add(String(e.team)); });
+    tdl.innerHTML=[...names].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${n}">`).join('');
+  }
 }
 
 /* ── APPLY TO PLAYERS — lets a team-achievement pick exactly who it
@@ -2999,10 +3065,17 @@ function applyPlayerAward(){
   const scope=tier>=5?'Global':$('hist-aw-scope').value;
   const compRegion=scope==='Regional'?$('hist-aw-region').value:'';
   const position=$('hist-aw-pos').value;
+  /* typed team wins; blank is respected as "no team" rather than silently refilled */
+  const teamEl=$('hist-aw-team');
+  const team=teamEl ? (teamEl.value||'').trim() : (p.TeamName==='none'?'':String(p.TeamName));
   saveState();
-  playerHistory.unshift({id:Date.now()+Math.floor(Math.random()*999), refId:null, player:name, team:p.TeamName==='none'?'':p.TeamName, kind, event, tier, scope, compRegion, position, month:monthCounter});
-  addLog(`🏛 HISTORY: ${kind} at ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for ${name}.`,'good');
+  const awId=Date.now()+Math.floor(Math.random()*999);
+  const customIcon=awIconDraft||'';
+  playerHistory.unshift({id:awId, refId:null, player:name, team, kind, event, tier, scope, compRegion, position, month:monthCounter, customIcon});
+  if (customIcon) historyIconsMap[awId]=customIcon;
+  addLog(`🏛 HISTORY: ${kind} at ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for ${name}${team?` \u2014 ${team}`:' \u2014 no team'}.${customIcon?' Custom trophy image applied.':''}`,'good');
   $('hist-aw-event').value='';
+  awIconDraft=''; renderAwIconSquare();
   renderHistory(); updateAll();
 }
 function deleteTeamEvent(id){
@@ -3019,6 +3092,7 @@ function deletePlayerAward(id){
   if (!confirm(`Delete ${h.kind} — "${h.event}" from ${h.player}'s history?`)) return;
   saveState();
   playerHistory=playerHistory.filter(x=>String(x.id)!==String(id));
+  delete historyIconsMap[id];
   renderHistory(); updateAll();
 }
 function renderHistory(){
@@ -3079,12 +3153,14 @@ function openAchModal(){
   achEditRef=null; setAchMode('create');
   populateHistoryControls();
   renderAchIconSquares();
+  awIconDraft=''; renderAwIconSquare();
+  if ($('hist-aw-team')) $('hist-aw-team').value='';
   const at=$('dash-team-select').value;
   const sel=$('hist-ev-team'); if (sel && at && finances.some(t=>t.TeamName===at)) sel.value=at;
   renderAchPlayerCheckboxes(sel ? sel.value : '');
   $('ach-modal-overlay').classList.add('active');
 }
-function closeAchModal(){ achEditRef=null; setAchMode('create'); $('ach-modal-overlay').classList.remove('active'); }
+function closeAchModal(){ achEditRef=null; setAchMode('create'); awIconDraft=''; renderAwIconSquare(); $('ach-modal-overlay').classList.remove('active'); }
 
 /* ── ✎ ACHIEVEMENT EDIT MODE ────────────────────────────────
    Reuses the Record Achievement modal. achEditRef holds the row
@@ -3169,6 +3245,9 @@ function openAchEditAward(id){
   if ($('hist-aw-region')) $('hist-aw-region').value = h.compRegion || 'Europe';
   $('hist-aw-pos').value    = h.position || 'Winner';
   $('hist-aw-event').value  = h.event || '';
+  if ($('hist-aw-team')) $('hist-aw-team').value = h.team || '';
+  awIconDraft = h.customIcon || '';
+  renderAwIconSquare();
   achEditRef = { kind:'award', id:String(h.id) };
   setAchMode('edit','award');
   $('ach-modal-overlay').classList.add('active');
@@ -3223,13 +3302,24 @@ function savePlayerAward(){
   const scope    = tier >= 5 ? 'Global' : $('hist-aw-scope').value;
   const compRegion = scope==='Regional' ? $('hist-aw-region').value : '';
   const position = $('hist-aw-pos').value;
+  const teamEl = $('hist-aw-team');
+  const team = teamEl ? (teamEl.value||'').trim() : (rec.team||'');
   if (!event) return alert('Enter the event name.');
+  const oldTeam = rec.team || '';
+  const teamMoved = oldTeam !== team;
+  const oldIcon = rec.customIcon || '';
+  const iconChanged = oldIcon !== awIconDraft;
   if (!confirm(`Save changes to ${rec.player}'s medal?\n${rec.kind} \u00b7 "${rec.event}"\n`
     + `\u2192 ${kind} \u00b7 "${event}" (${histStars(tier)} \u00b7 ${scope} \u00b7 ${position})\n`
+    + (teamMoved ? `Team: ${oldTeam||'(none)'} \u2192 ${team||'(none)'}\n` : `Team: ${team||'(none)'}\n`)
+    + (iconChanged ? (awIconDraft ? `Trophy image: custom image applied to this medal.\n` : `Trophy image: cleared \u2014 back to the Award Registry icon.\n`) : '')
     + `Log entry only \u2014 medal counters and prize money in \u2699 OPS are NOT changed.`)) return;
   saveState();
   rec.kind = kind; rec.event = event; rec.tier = tier; rec.scope = scope; rec.compRegion = compRegion; rec.position = position;
-  addLog(`\u270e HISTORY EDIT: ${rec.player} \u2014 ${kind} at "${event}" (${histStars(tier)}, ${scope}, ${position}) updated.`,'warn');
+  rec.team = team;
+  if (awIconDraft) { rec.customIcon = awIconDraft; historyIconsMap[rec.id] = awIconDraft; }
+  else { delete rec.customIcon; delete historyIconsMap[rec.id]; }
+  addLog(`\u270e HISTORY EDIT: ${rec.player} \u2014 ${kind} at "${event}" (${histStars(tier)}, ${scope}, ${position})${teamMoved?` \u00b7 team ${oldTeam||'(none)'} \u2192 ${team||'(none)'}`:''} updated.${iconChanged?(awIconDraft?' Custom trophy image applied.':' Trophy image cleared.'):''}`,'warn');
   closeAchModal(); renderHistory(); updateAll();
 }
 /* ── 🏛 PLAYER HISTORY — expandable inside any player card ─────── */
@@ -4757,6 +4847,8 @@ function exportExcels() {
 function exportAwardsJSON(){
   const historyIcons = {};
   teamHistory.forEach(e=>{ if (e.customIcon) historyIcons[e.id] = e.customIcon; });
+  /* standalone player awards carry their own image, keyed by their own id */
+  playerHistory.forEach(h=>{ if (h.refId==null && h.customIcon) historyIcons[h.id] = h.customIcon; });
   const out = { ...awardsConfig, __achIconStaging: achIconStaging, __historyIcons: historyIcons };
   const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);

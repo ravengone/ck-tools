@@ -1,8 +1,8 @@
 OLD.xlsx
-BLAST Premier 2026 Seoul Stage 1
+BLAST Premier 2026 Seoul Stage 2
 
 ranking.xlsx
-BLAST Premier 2026 Seoul Stage 2
+BLAST Premier 2026 Seoul Playoffs
 
 
 RANKINGS:
@@ -28,7 +28,7 @@ ranking 18 [Season 0] : FiReLEAGUE Buenos Aires Playoffs
 ranking 19 [Season 0] : Winamax Spanish Circuit 2026 Stage 1
 ranking 20 [Season 0] : Winamax Spanish Circuit 2026 Stage 2
 ranking 21 [Season 0] : Winamax Spanish Circuit 2026 Playoffs
-ranking n [Season 0] : 
+ranking 22 [Season 0] : BLAST Premier 2026 Seoul Stage 1
 ranking n [Season 0] : 
 ranking n [Season 0] : 
 ranking n [Season 0] : 
