@@ -1353,6 +1353,7 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
               <option value="MVP">🥇 MVP</option>
               <option value="EVP">🥈 EVP</option>
               <option value="VP">🥉 VP</option>
+              <option value="EVENT">🏆 Trophy — player only</option>
             </select>
           </div>
         </div>
@@ -3073,7 +3074,7 @@ function applyPlayerAward(){
   const customIcon=awIconDraft||'';
   playerHistory.unshift({id:awId, refId:null, player:name, team, kind, event, tier, scope, compRegion, position, month:monthCounter, customIcon});
   if (customIcon) historyIconsMap[awId]=customIcon;
-  addLog(`🏛 HISTORY: ${kind} at ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for ${name}${team?` \u2014 ${team}`:' \u2014 no team'}.${customIcon?' Custom trophy image applied.':''}`,'good');
+  addLog(`🏛 HISTORY: ${awKindLabel(kind)} at ${event} (${histStars(tier)}, ${scope}, ${position}) recorded for ${name}${team?` \u2014 ${team}`:' \u2014 no team'}${kind==='EVENT'?' \u2014 player only, no team credited':''}.${customIcon?' Custom trophy image applied.':''}`,'good');
   $('hist-aw-event').value='';
   awIconDraft=''; renderAwIconSquare();
   renderHistory(); updateAll();
@@ -3167,6 +3168,15 @@ function closeAchModal(){ achEditRef=null; setAchMode('create'); awIconDraft='';
    under edit; null means we are in normal create mode. */
 let achEditRef = null;
 
+/* 'EVENT' is the stored value for a trophy; everywhere a human reads it, say Trophy. */
+function awKindLabel(k){ return k === 'EVENT' ? 'Trophy' : k; }
+/* true while the row under edit is a player-only trophy rather than an MVP/EVP/VP medal */
+function editingPlayerTrophy(){
+  if (!achEditRef || achEditRef.kind !== 'award') return false;
+  const r = playerHistory.find(x=>String(x.id)===String(achEditRef.id));
+  return !!r && r.kind === 'EVENT' && !r.refId;
+}
+
 function setAchMode(mode, kind){
   const editing = mode === 'edit';
   const title = $('ach-modal-title'), sub = $('ach-modal-sub');
@@ -3193,12 +3203,15 @@ function setAchMode(mode, kind){
   $('ach-aw-submit').textContent = (editing && kind === 'award') ? '\ud83d\udcbe SAVE CHANGES' : 'Add Award to Player History';
   /* the player an award belongs to is frozen while editing */
   const pin = $('hist-aw-player'); if (pin) pin.disabled = (editing && kind === 'award');
-  if (title) title.textContent = !editing ? 'Record Achievement' : (kind === 'team' ? 'Edit Team Achievement' : 'Edit Player Award');
+  const trophy = editing && kind === 'award' && editingPlayerTrophy();
+  if (title) title.textContent = !editing ? 'Record Achievement' : (kind === 'team' ? 'Edit Team Achievement' : (trophy ? 'Edit Player Trophy' : 'Edit Player Award'));
   if (sub) sub.textContent = !editing
     ? 'Record-only \u2014 no money moves here. Team events also write to every checked player\'s personal history.'
     : (kind === 'team'
         ? 'Saving re-syncs the linked player entries to exactly the players checked below. No money moves.'
-        : 'Log entry only \u2014 medal counters and prize money in \u2699 OPS are not affected.');
+        : (trophy
+            ? 'Player-only trophy \u2014 no team is credited, so editing it touches nothing but this player\'s history. The team you type below is a label on the medal.'
+            : 'Log entry only \u2014 medal counters and prize money in \u2699 OPS are not affected.'));
 }
 
 function openAchEditTeam(id){
@@ -3233,8 +3246,9 @@ function openAchEditAward(id){
   const h = playerHistory.find(x=>String(x.id)===String(id));
   if (!h) return alert('That entry no longer exists.');
   if (h.kind === 'EVENT' && h.refId) return alert('This entry comes from a team title \u2014 edit it from the team achievement above.');
-  if (h.kind === 'EVENT' && !h.refId) return alert('This is a player-only trophy (team not credited) \u2014 delete it and record it again to change any details.');
   if (h.kind === 'BADGE') return alert('This is a 🏅 Badge grant \u2014 edit or delete it from the Badges panel.');
+  /* player-only trophies (kind EVENT, refId null) are editable right here: they belong to
+     nobody but this player, so no team row has to be kept in sync when they change. */
   populateHistoryControls();
   $('hist-aw-player').value = h.player;
   $('hist-aw-kind').value   = h.kind;
@@ -3309,8 +3323,9 @@ function savePlayerAward(){
   const teamMoved = oldTeam !== team;
   const oldIcon = rec.customIcon || '';
   const iconChanged = oldIcon !== awIconDraft;
-  if (!confirm(`Save changes to ${rec.player}'s medal?\n${rec.kind} \u00b7 "${rec.event}"\n`
-    + `\u2192 ${kind} \u00b7 "${event}" (${histStars(tier)} \u00b7 ${scope} \u00b7 ${position})\n`
+  const wasTrophy = rec.kind === 'EVENT' && !rec.refId;
+  if (!confirm(`Save changes to ${rec.player}'s ${wasTrophy ? 'trophy' : 'medal'}?\n${awKindLabel(rec.kind)} \u00b7 "${rec.event}"\n`
+    + `\u2192 ${awKindLabel(kind)} \u00b7 "${event}" (${histStars(tier)} \u00b7 ${scope} \u00b7 ${position})\n`
     + (teamMoved ? `Team: ${oldTeam||'(none)'} \u2192 ${team||'(none)'}\n` : `Team: ${team||'(none)'}\n`)
     + (iconChanged ? (awIconDraft ? `Trophy image: custom image applied to this medal.\n` : `Trophy image: cleared \u2014 back to the Award Registry icon.\n`) : '')
     + `Log entry only \u2014 medal counters and prize money in \u2699 OPS are NOT changed.`)) return;
@@ -3319,7 +3334,7 @@ function savePlayerAward(){
   rec.team = team;
   if (awIconDraft) { rec.customIcon = awIconDraft; historyIconsMap[rec.id] = awIconDraft; }
   else { delete rec.customIcon; delete historyIconsMap[rec.id]; }
-  addLog(`\u270e HISTORY EDIT: ${rec.player} \u2014 ${kind} at "${event}" (${histStars(tier)}, ${scope}, ${position})${teamMoved?` \u00b7 team ${oldTeam||'(none)'} \u2192 ${team||'(none)'}`:''} updated.${iconChanged?(awIconDraft?' Custom trophy image applied.':' Trophy image cleared.'):''}`,'warn');
+  addLog(`\u270e HISTORY EDIT: ${rec.player} \u2014 ${awKindLabel(kind)} at "${event}" (${histStars(tier)}, ${scope}, ${position})${teamMoved?` \u00b7 team ${oldTeam||'(none)'} \u2192 ${team||'(none)'}`:''} updated.${iconChanged?(awIconDraft?' Custom trophy image applied.':' Trophy image cleared.'):''}`,'warn');
   closeAchModal(); renderHistory(); updateAll();
 }
 /* ── 🏛 PLAYER HISTORY — expandable inside any player card ─────── */
