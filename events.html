@@ -1193,7 +1193,7 @@ body::after {
         <div class="section-heading">◉ Event History <span class="sub">OPENED EVENTS LOG</span></div>
         <div style="display:flex;gap:12px;margin-bottom:20px;">
             <button class="btn btn-secondary" onclick="clearHistory()">🗑 Clear History</button>
-            <button class="btn btn-secondary" onclick="exportHistory()">📥 Export Log</button>
+            <button class="btn btn-secondary" onclick="exportHistory()">📥 Export Log + Excel</button>
         </div>
         <div class="card">
             <div id="historyList">
@@ -1226,6 +1226,9 @@ let eventHistory = [];
 let majorsThisYear = 0;
 let currentSimDate = new Date();
 let analysisScores = {};
+let rankHeaders = [];        // original column order of ranking.xlsx
+let evtHeaders = [];         // original column order of events.xlsx
+const HISTORY_ASSET_PATH = 'assets/event_history.json';
 
 // Modal state for multi-step flow
 let modalState = {
@@ -1280,6 +1283,9 @@ async function loadData() {
         const rankJson = XLSX.utils.sheet_to_json(rankSheet);
         const evtJson = XLSX.utils.sheet_to_json(evtSheet);
 
+        rankHeaders = (XLSX.utils.sheet_to_json(rankSheet, { header: 1 })[0] || []).map(String);
+        evtHeaders = (XLSX.utils.sheet_to_json(evtSheet, { header: 1 })[0] || []).map(String);
+
         // Parse teams with new star participation columns
         teams = rankJson.map((r, i) => ({
             rank: i + 1,
@@ -1298,7 +1304,9 @@ async function loadData() {
                 3: parseExcelDate(r['3 star']),
                 2: parseExcelDate(r['2 star']),
                 1: parseExcelDate(r['1 star'])
-            }
+            },
+            _raw: r,  // original Excel row, used when exporting
+            _idx: i   // original row position in ranking.xlsx
         })).sort((a, b) => b.points - a.points);
 
         teams.forEach((t, i) => t.rank = i + 1);
@@ -1310,10 +1318,12 @@ async function loadData() {
             stars: parseInt(e.stars || 1),
             lastDate: parseExcelDate(e['last date']),  // from Excel
             format: e.format || 'bracket',
-            type: (e.type || 'global').toLowerCase()
+            type: (e.type || 'global').toLowerCase(),
+            _raw: e   // original Excel row, used when exporting
         }));
 
         loadState();
+        await loadHistoryFromAssets();
         document.getElementById('simDate').value = formatDateInput(currentSimDate);
 
         renderDashboard();
@@ -1380,6 +1390,55 @@ function loadState() {
             }
         }
     } catch(e) {}
+}
+
+// ============================================================
+// AUTO-PULL HISTORY FROM assets/event_history.json
+// Merges with the localStorage history (no duplicates) and rebuilds
+// event last dates + team star participation from the merged log.
+// ============================================================
+async function loadHistoryFromAssets() {
+    let fileHistory;
+    try {
+        const res = await fetch(HISTORY_ASSET_PATH, { cache: 'no-store' });
+        if (!res.ok) return; // no file on the server: keep localStorage only
+        fileHistory = await res.json();
+    } catch (e) {
+        console.warn('Could not load ' + HISTORY_ASSET_PATH + ':', e);
+        return;
+    }
+    if (!Array.isArray(fileHistory)) {
+        console.warn(HISTORY_ASSET_PATH + ' is not an array, ignored');
+        return;
+    }
+
+    const keyOf = h => `${h.date}|${h.event}`;
+    const known = new Set(eventHistory.map(keyOf));
+    let added = 0;
+    fileHistory.forEach(h => {
+        if (!h || !h.date || !h.event) return;
+        if (known.has(keyOf(h))) return;
+        known.add(keyOf(h));
+        eventHistory.push(h);
+        added++;
+    });
+
+    // Rebuild last dates from the full log (keep whichever date is most recent)
+    const isNewer = (a, b) => !b || new Date(a) > new Date(b);
+    eventHistory.forEach(h => {
+        if (isNewer(h.date, eventCooldowns[h.event])) eventCooldowns[h.event] = h.date;
+        if (h.stars <= 4 && Array.isArray(h.teams)) {
+            h.teams.forEach(name => {
+                const team = teams.find(t => t.name === name);
+                if (team && isNewer(h.date, team.starPart[h.stars])) {
+                    team.starPart[h.stars] = h.date;
+                }
+            });
+        }
+    });
+
+    if (added > 0) console.log(`Merged ${added} event(s) from ${HISTORY_ASSET_PATH}`);
+    saveState();
 }
 
 function saveState() {
@@ -2539,6 +2598,7 @@ function clearHistory() {
 }
 
 function exportHistory() {
+    // 1) Log
     const data = JSON.stringify(eventHistory, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -2546,7 +2606,72 @@ function exportHistory() {
     a.href = url;
     a.download = 'event_history.json';
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    // 2) Excel files with updated dates (small delays so browsers don't drop downloads)
+    setTimeout(exportEventsExcel, 400);
+    setTimeout(exportRankingExcel, 800);
+}
+
+// ISO string -> Excel serial date (whole day, same calendar date the app shows)
+function isoToExcelSerial(iso) {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    const utcDay = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    return utcDay / 86400000 + 25569; // 25569 = days from 1899-12-30 to 1970-01-01
+}
+
+// Build a sheet from rows, keeping the original column order and formatting date columns
+function buildSheet(rows, headers, dateCols) {
+    const ws = XLSX.utils.json_to_sheet(rows, { header: headers });
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    headers.forEach((h, c) => {
+        if (!dateCols.includes(h)) return;
+        for (let r = 1; r <= range.e.r; r++) {
+            const cell = ws[XLSX.utils.encode_cell({ r, c })];
+            if (cell && cell.t === 'n') cell.z = 'yyyy-mm-dd';
+        }
+    });
+    ws['!cols'] = headers.map(h => ({ wch: Math.max(12, String(h).length + 2) }));
+    return ws;
+}
+
+function exportEventsExcel() {
+    const headers = evtHeaders.length ? [...evtHeaders] : ['name', 'region', 'stars', 'last date', 'format', 'type'];
+    if (!headers.includes('last date')) headers.push('last date');
+
+    const rows = events.map(evt => {
+        const row = { ...(evt._raw || {}) };
+        const serial = isoToExcelSerial(getEventLastDate(evt));
+        row['last date'] = serial !== null ? serial : '';
+        return row;
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, buildSheet(rows, headers, ['last date']), 'events');
+    XLSX.writeFile(wb, 'events.xlsx');
+}
+
+function exportRankingExcel() {
+    const starCols = ['4 star', '3 star', '2 star', '1 star'];
+    const headers = rankHeaders.length ? [...rankHeaders] : ['Team', 'Points', 'Tier', 'Region'];
+    starCols.forEach(c => { if (!headers.includes(c)) headers.push(c); });
+
+    // Keep the same row order as the original file
+    const ordered = teams.filter(t => t._raw).sort((a, b) => a._idx - b._idx);
+    const rows = ordered.map(team => {
+        const row = { ...team._raw };
+        [4, 3, 2, 1].forEach(s => {
+            const serial = isoToExcelSerial(team.starPart[s]);
+            row[`${s} star`] = serial !== null ? serial : '';
+        });
+        return row;
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, buildSheet(rows, headers, starCols), 'ranking');
+    XLSX.writeFile(wb, 'ranking.xlsx');
 }
 
 // ============================================================
