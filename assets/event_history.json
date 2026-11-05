@@ -68,5 +68,32 @@
     ],
     "format": "bracket",
     "type": "global"
+  },
+  {
+    "date": "2026-08-22T00:00:00.000Z",
+    "event": "European Pro League (continent) Division Season (n)",
+    "stars": 4,
+    "region": "europe",
+    "teamsCount": 16,
+    "teams": [
+      "Iluminar",
+      "Vitality",
+      "Copenhagen Flames",
+      "Fnatic",
+      "Eternal Fire",
+      "Vox Eminor",
+      "Astana Dragons",
+      "Heroic",
+      "Bounty Hunters",
+      "BIG Academy",
+      "ENCE Academy",
+      "Wildcard Academy",
+      "SKYFURY",
+      "Astralis",
+      "FaZe",
+      "True Rippers"
+    ],
+    "format": "bracket",
+    "type": "global"
   }
 ]
