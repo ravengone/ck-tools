@@ -2952,6 +2952,7 @@ function openEventModal(editIdx = -1) {
   const f = document.getElementById('evmLogoFile');
   if (f) f.value = '';
   updateEventLogoPreview();
+  resetEventTrophyUpload();
 
   overlay.classList.add('visible');
 }
@@ -2973,6 +2974,7 @@ function clearEventModal() {
   const f = document.getElementById('evmLogoFile');
   if (f) f.value = '';
   updateEventLogoPreview();
+  resetEventTrophyUpload();
   document.getElementById('evmStars').value = '3';
   document.getElementById('evmMajor').value = 'no';
   document.getElementById('evmRegion').value = 'global';
@@ -2992,6 +2994,117 @@ function updateEventLogoPreview() {
   }
   img.src = url;
   img.style.display = '';
+}
+
+/* ─── Trophy upload / preview helpers ───
+   Mirrors the logo upload UI. The modal markup lives in index.html, so the
+   upload block is injected at runtime under the Trophy URL field (cloned from
+   the logo upload block so it looks identical). Safe to call multiple times. */
+function ensureTrophyUpload() {
+  if (document.getElementById('evmTrophyFile')) return;
+  const trophyInput = document.getElementById('evmTrophy');
+  if (!trophyInput) return;
+
+  let block = null;
+  const logoFile = document.getElementById('evmLogoFile');
+  const logoBlock = logoFile ? logoFile.closest('.ev-logo-upload') : null;
+
+  if (logoBlock) {
+    block = logoBlock.cloneNode(true);
+    const idMap = {
+      evmLogoFile: 'evmTrophyFile',
+      evmLogoClear: 'evmTrophyClear',
+      evmLogoPreview: 'evmTrophyPreview'
+    };
+    block.querySelectorAll('[id]').forEach(el => {
+      if (idMap[el.id]) el.id = idMap[el.id];
+      else el.removeAttribute('id');
+    });
+    block.querySelectorAll('label[for]').forEach(l => {
+      const f = l.getAttribute('for');
+      if (idMap[f]) l.setAttribute('for', idMap[f]);
+    });
+    block.querySelectorAll('.ev-logo-hint').forEach(h => {
+      h.textContent = h.textContent.replace(/logo/g, 'trophy').replace(/Logo/g, 'Trophy');
+    });
+    const fileEl = block.querySelector('#evmTrophyFile');
+    if (fileEl) fileEl.value = '';
+  }
+
+  // Fallback: build the block from the same CSS classes
+  if (!block || !block.querySelector('#evmTrophyFile')) {
+    block = document.createElement('div');
+    block.className = 'ev-logo-upload';
+    block.innerHTML = `
+      <div class="ev-logo-upload-row">
+        <input type="file" id="evmTrophyFile" accept="image/*" class="form-control">
+        <button type="button" class="btn btn-ghost" id="evmTrophyClear">Clear</button>
+      </div>
+      <div class="ev-logo-hint">Upload an image from your device or paste a URL above.</div>`;
+  }
+
+  // Make sure there is a preview image
+  if (!block.querySelector('#evmTrophyPreview')) {
+    const img = document.createElement('img');
+    img.id = 'evmTrophyPreview';
+    img.className = 'ev-logo-preview';
+    img.alt = 'Trophy preview';
+    block.appendChild(img);
+  }
+  const prev = block.querySelector('#evmTrophyPreview');
+  prev.style.display = 'none';
+  prev.removeAttribute('src');
+
+  trophyInput.insertAdjacentElement('afterend', block);
+
+  // Wire up events
+  trophyInput.addEventListener('input', updateEventTrophyPreview);
+
+  const fileInp = document.getElementById('evmTrophyFile');
+  fileInp.addEventListener('change', () => {
+    const file = fileInp.files && fileInp.files[0];
+    if (!file) return;
+    if (!file.type || !file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      fileInp.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.getElementById('evmTrophy').value = String(reader.result || '');
+      updateEventTrophyPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const clearBtn = document.getElementById('evmTrophyClear');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      document.getElementById('evmTrophy').value = '';
+      fileInp.value = '';
+      updateEventTrophyPreview();
+    });
+  }
+}
+
+function updateEventTrophyPreview() {
+  const url = (document.getElementById('evmTrophy')?.value || '').trim();
+  const img = document.getElementById('evmTrophyPreview');
+  if (!img) return;
+  if (!url) {
+    img.style.display = 'none';
+    img.removeAttribute('src');
+    return;
+  }
+  img.src = url;
+  img.style.display = '';
+}
+
+function resetEventTrophyUpload() {
+  const f = document.getElementById('evmTrophyFile');
+  if (f) f.value = '';
+  updateEventTrophyPreview();
 }
 
 /* ─── Inject 3rd/4th Place fields next to "2nd Place" in the Add/Edit modal ───
@@ -3028,6 +3141,7 @@ function ensurePlacementFields() {
   thirdGroup.insertAdjacentElement('afterend', fourthGroup);
 }
 ensurePlacementFields();
+ensureTrophyUpload();
 
 /* ════════════════════════════════════════
    FINAL STANDINGS — full participant grid
