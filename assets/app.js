@@ -2671,6 +2671,18 @@ function openEventDetails(idx) {
     </div>`;
   }
 
+  // Trophy showcase
+  if (e.trophy) {
+    const trophyFinished = (e.status || '').toLowerCase() === 'finished';
+    body += `<div class="evd-section"><div class="evd-section-title">🏆 Trophy</div>`;
+    body += `<div class="evd-trophy-showcase">`;
+    body += `<img class="evd-trophy-img" src="${escHtml(e.trophy)}" alt="Trophy" onerror="this.closest('.evd-section').style.display='none'">`;
+    if (trophyFinished && e.winner) {
+      body += `<div class="evd-trophy-caption">Lifted by <span class="evd-trophy-winner team-name-with-logo">${teamLogoImgHtml(e.winner, 'team-logo-sm')}${escHtml(e.winner)}</span></div>`;
+    }
+    body += `</div></div>`;
+  }
+
   // Results section
   if ((e.status || '').toLowerCase() === 'finished' && (e.winner || e.second || e.third || e.fourth)) {
     body += `<div class="evd-section evd-results-row">`;
