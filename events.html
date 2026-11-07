@@ -1176,7 +1176,7 @@ body::after {
 
     <!-- ========== RULES ========== -->
     <div class="page" id="page-rules">
-        <div class="section-heading">⬢ Invite Rules <span class="sub">RANK-RANGE SYSTEM</span></div>
+        <div class="section-heading">⬢ Invite Rules <span class="sub">TIERED BY STAR LEVEL</span></div>
         <div class="rules-grid stagger" id="rulesGrid"></div>
         <div class="card" style="margin-top:16px;">
             <div class="card-title"><span class="icon">📋</span> DETAILED INVITE LOGIC</div>
@@ -1249,15 +1249,21 @@ const regionMapReverse = {
 };
 
 // ============================================================
-// GLOBAL INVITE RANK RANGES (for ~164 global teams)
+// INVITE RULES (all ranks are inside the event's region;
+// global events use the global ranking)
 // ============================================================
-const GLOBAL_INVITE_RANGES = {
-    4: { min: 1, max: 35 },
-    3: { min: 15, max: 80 },
-    2: { min: 50, max: 160 },
-    1: { min: 100, max: 160 }
+const INVITE_RULES = {
+    TOP_CUTOFF: 16,               // ★4 = top 16; ★1/★2 = everyone below it
+    MAJOR_SIZE: 32,               // ★5 = global top 32
+    MAJOR_STAGES: { champions: [1, 8], legends: [9, 16], challengers: [17, 32] },
+    GROWING_MAX: { global: 64, regional: 40 }, // ★3 "Growing" bracket: #17 → this rank
+    THREE_STAR_TOP_SHARE: 0.4,    // ★3: 40% of spots to the Top bracket, 60% to Growing
+    LOW_TIER_LEAN: 8,             // ★2 leans to the upper part of the pool, ★1 to the lower part
+    NEVER_PLAYED: 100,            // timer score for a team that never played the tier
+    TIMER_PER_DAY: 0.5,           // timer score per day waited
+    TIMER_CAP: 60                 // timer score cap (= 120 days)
 };
-const GLOBAL_TOTAL_REFERENCE = 164; // reference global team count
+const SUGGESTED_TEAM_COUNTS = { 1: 8, 2: 10, 3: 14, 4: 16, 5: 32 };
 
 // ============================================================
 // DATA LOADING
@@ -1519,123 +1525,168 @@ function starPartBadge(dateStr) {
 }
 
 // ============================================================
-// INVITE SYSTEM - Rank-Range Based with Participation Priority
+// INVITE SYSTEM - Tiered by star level, ranked inside the region
+//   ★5  global top 32 (Major stages by rank)
+//   ★4  top 16 of the region, pure ranking
+//   ★3  Top bracket (#1–16) + Growing bracket (#17–64 global / #17–40 regional)
+//   ★2/★1  everyone below #16, rotated by the invite timer
 // ============================================================
-function getInviteRankRange(stars, eventRegion) {
-    if (stars === 5) return null; // Major handled separately
 
-    const globalRange = GLOBAL_INVITE_RANGES[stars];
-    if (!globalRange) return { min: 1, max: 160 };
-
-    if (eventRegion === 'global') {
-        return { ...globalRange };
+// Teams of a region (or all teams for global), sorted by points, with their rank inside it
+function getRegionalRanking(eventRegion) {
+    let eligible = [...teams];
+    if (eventRegion !== 'global') {
+        const regionCodes = regionMapReverse[eventRegion] || [];
+        eligible = teams.filter(t => regionCodes.some(rc => t.region.includes(rc.split('/')[0]) || t.region === rc));
     }
+    eligible.sort((a, b) => b.points - a.points);
+    return eligible.map((team, i) => ({ team, localRank: i + 1 }));
+}
 
-    // For regional events, scale the range proportionally
-    const regionCodes = regionMapReverse[eventRegion] || [];
-    const regionalTeamCount = teams.filter(t =>
-        regionCodes.some(rc => t.region.includes(rc.split('/')[0]) || t.region === rc)
-    ).length;
+// Describes who can be invited for a star level in a region (used for display + selection)
+function getInvitePool(stars, eventRegion) {
+    const ranking = getRegionalRanking(eventRegion);
+    const total = ranking.length;
+    const top = Math.min(INVITE_RULES.TOP_CUTOFF, total);
 
-    if (regionalTeamCount === 0) return { ...globalRange };
+    if (stars === 5) {
+        const max = Math.min(INVITE_RULES.MAJOR_SIZE, teams.length);
+        return { min: 1, max, total: teams.length, label: `#1–${max} global` };
+    }
+    if (stars === 4) {
+        return { min: 1, max: top, total, label: `#1–${top}` };
+    }
+    if (stars === 3) {
+        const growMaxCfg = eventRegion === 'global' ? INVITE_RULES.GROWING_MAX.global : INVITE_RULES.GROWING_MAX.regional;
+        const growMax = Math.min(growMaxCfg, total);
+        return {
+            min: 1, max: growMax, total,
+            top: { min: 1, max: top },
+            growing: { min: top + 1, max: growMax },
+            label: `Top #1–${top} + Growing #${top + 1}–${growMax}`
+        };
+    }
+    // ★1 / ★2
+    return { min: top + 1, max: total, total, label: `#${top + 1}–${total}` };
+}
 
-    const ratio = regionalTeamCount / GLOBAL_TOTAL_REFERENCE;
-    return {
-        min: Math.max(1, Math.round(globalRange.min * ratio)),
-        max: Math.max(Math.round(globalRange.max * ratio), regionalTeamCount)
-    };
+// Deterministic small tiebreaker (0–2) that changes with the sim date
+function inviteTiebreak(teamName) {
+    let h = Math.floor(currentSimDate.getTime() / 86400000);
+    for (let i = 0; i < teamName.length; i++) h = (h * 31 + teamName.charCodeAt(i)) | 0;
+    return (Math.abs(h) % 1000) / 500;
+}
+
+// Invite timer: never played = top priority, otherwise grows with days waited
+function inviteTimerScore(lastPlayed) {
+    if (!lastPlayed) return INVITE_RULES.NEVER_PLAYED;
+    const days = daysBetween(new Date(lastPlayed), currentSimDate);
+    return Math.max(0, Math.min(days * INVITE_RULES.TIMER_PER_DAY, INVITE_RULES.TIMER_CAP));
+}
+
+function streakBonus(streak) {
+    if (streak >= 5) return 15;
+    if (streak >= 3) return 8;
+    if (streak >= 2) return 3;
+    return 0;
+}
+
+// Latest date among the given star tiers (★1/★2 share one timer)
+function latestStarPart(team, starList) {
+    let latest = null;
+    starList.forEach(s => {
+        const d = team.starPart[s];
+        if (d && (!latest || new Date(d) > new Date(latest))) latest = d;
+    });
+    return latest;
 }
 
 function getInvitedTeams(event, teamsCount) {
     const { stars, region } = event;
-
-    // Get eligible teams
-    let eligible = [...teams];
-    if (region !== 'global') {
-        const regionCodes = regionMapReverse[region] || [];
-        eligible = teams.filter(t => regionCodes.some(rc => t.region.includes(rc.split('/')[0]) || t.region === rc));
-    }
-
-    // Sort by points (rank order)
-    eligible.sort((a, b) => b.points - a.points);
-    // Assign local rank
-    eligible.forEach((t, i) => t._localRank = i + 1);
-
     if (stars === 5) return null; // Major handled separately
 
-    const range = getInviteRankRange(stars, region);
+    const ranking = getRegionalRanking(region);
+    const pool = getInvitePool(stars, region);
+    const meta = {}; // teamName -> { localRank, group, lastPlayed }
+    let picked = [];
 
-    // Filter to rank range
-    let pool = eligible.filter(t => t._localRank >= range.min && t._localRank <= range.max);
+    const byPriority = (a, b) => b.priority - a.priority || a.localRank - b.localRank;
 
-    // For 1★ events: also include truly new/unranked teams at bottom
-    if (stars === 1) {
-        const bottomTeams = eligible.filter(t => t._localRank > range.max);
-        pool = [...pool, ...bottomTeams];
+    if (stars === 4) {
+        // Pure ranking: top N (max 16) of the region
+        const n = Math.min(teamsCount, pool.max);
+        picked = ranking.slice(0, n).map(r => ({ ...r, group: 'Top 16', lastPlayed: r.team.starPart[4] }));
+
+    } else if (stars === 3) {
+        const topSlotsWanted = Math.round(teamsCount * INVITE_RULES.THREE_STAR_TOP_SHARE);
+        const growSlotsWanted = teamsCount - topSlotsWanted;
+
+        const topCands = ranking
+            .filter(r => r.localRank <= pool.top.max)
+            .map(r => ({ ...r, group: 'Top', lastPlayed: r.team.starPart[3],
+                priority: inviteTimerScore(r.team.starPart[3]) + inviteTiebreak(r.team.name) }))
+            .sort(byPriority);
+
+        const growCands = ranking
+            .filter(r => r.localRank >= pool.growing.min && r.localRank <= pool.growing.max)
+            .map(r => ({ ...r, group: 'Growing', lastPlayed: r.team.starPart[3],
+                priority: inviteTimerScore(r.team.starPart[3]) + streakBonus(r.team.streak) + inviteTiebreak(r.team.name) }))
+            .sort(byPriority);
+
+        let topPicked = topCands.slice(0, topSlotsWanted);
+        let growPicked = growCands.slice(0, growSlotsWanted);
+
+        // If one bracket is short, the other bracket fills the remaining spots
+        let missing = teamsCount - topPicked.length - growPicked.length;
+        if (missing > 0 && growPicked.length < growSlotsWanted) {
+            topPicked = topCands.slice(0, topPicked.length + missing);
+        } else if (missing > 0 && topPicked.length < topSlotsWanted) {
+            growPicked = growCands.slice(0, growPicked.length + missing);
+        }
+        picked = [...topPicked, ...growPicked];
+
+    } else {
+        // ★1 / ★2: everyone below the top 16, rotated by the shared ★1/★2 timer.
+        // ★2 leans slightly to the upper part of the pool, ★1 to the lower part.
+        const span = Math.max(1, pool.max - pool.min);
+        const cands = ranking
+            .filter(r => r.localRank >= pool.min)
+            .map(r => {
+                const lastPlayed = latestStarPart(r.team, [1, 2]);
+                const position = (r.localRank - pool.min) / span; // 0 = top of pool, 1 = bottom
+                const lean = (stars === 2 ? (1 - position) : position) * INVITE_RULES.LOW_TIER_LEAN;
+                return { ...r, group: stars === 2 ? 'Upper lean' : 'Lower lean', lastPlayed,
+                    priority: inviteTimerScore(lastPlayed) + lean + inviteTiebreak(r.team.name) };
+            })
+            .sort(byPriority);
+        picked = cands.slice(0, teamsCount);
     }
 
-    // Score each team in pool for invite priority
-    const starKey = stars;
-    const scored = pool.map(t => {
-        let priority = 0;
+    picked.forEach(p => { meta[p.team.name] = { localRank: p.localRank, group: p.group, lastPlayed: p.lastPlayed }; });
 
-        // 1) Star participation: how long since they last played this star tier
-        const lastPlayed = t.starPart[starKey];
-        if (!lastPlayed) {
-            priority += 50; // Never played this tier — highest priority
-        } else {
-            const daysSince = daysBetween(new Date(lastPlayed), currentSimDate);
-            priority += Math.min(daysSince * 0.5, 40); // More days = more priority
-        }
-
-        // 2) Streak bonus: rising teams get a boost
-        if (t.streak >= 5) {
-            priority += 15;
-        } else if (t.streak >= 3) {
-            priority += 8;
-        } else if (t.streak >= 2) {
-            priority += 3;
-        }
-
-        // 3) Rank-based weighting: slight preference for appropriate rank position
-        const rankPosition = (t._localRank - range.min) / Math.max(1, range.max - range.min);
-        // For higher-star events, prefer teams closer to the top of the range
-        if (stars >= 3) {
-            priority += (1 - rankPosition) * 10; // top of range gets bonus
-        } else {
-            // For lower-star events, more balanced
-            priority += 5;
-        }
-
-        // 4) Small randomness for variety (seeded by date)
-        const seed = (currentSimDate.getTime() + t.name.charCodeAt(0) * 127) % 100;
-        priority += seed * 0.05;
-
-        return { team: t, priority };
-    });
-
-    // Sort by priority (highest first), take teamsCount
-    scored.sort((a, b) => b.priority - a.priority);
-    let invited = scored.slice(0, teamsCount).map(s => s.team);
-
-    // Sort final list by rank for display
-    invited.sort((a, b) => b.points - a.points);
-    return { teams: invited, stages: null, range };
+    // Final list in ranking order for display
+    picked.sort((a, b) => a.localRank - b.localRank);
+    return { teams: picked.map(p => p.team), meta, stages: null, range: pool };
 }
 
-function getMajorTeams(stage3UserTeams) {
+// ★5 Major: global top 32 split into stages by rank
+//   Stage 1 · Champions (Playoffs)  #1–8
+//   Stage 2 · Legends               #9–16
+//   Stage 3 · Challengers           #17–32 (played first)
+function getMajorTeams() {
     const allSorted = [...teams].sort((a, b) => b.points - a.points);
-    const stage3 = stage3UserTeams.map(name => teams.find(t => t.name === name)).filter(Boolean);
-    const remaining = allSorted.filter(t => !stage3.some(s3 => s3.name === t.name));
-    const stage2 = remaining.slice(0, 8);
-    const stage1 = remaining.slice(8, 24);
+    const S = INVITE_RULES.MAJOR_STAGES;
+    const slice = ([from, to]) => allSorted.slice(from - 1, to);
+    const champions = slice(S.champions);
+    const legends = slice(S.legends);
+    const challengers = slice(S.challengers);
 
     return {
-        teams: [...stage3, ...stage2, ...stage1],
+        teams: [...champions, ...legends, ...challengers],
         stages: {
-            stage1: { name: 'Challengers Stage', desc: `${stage1.length} rising teams fighting for a spot`, teams: stage1 },
-            stage2: { name: 'Legends Stage', desc: 'Top 8 current teams (auto-selected)', teams: stage2 },
-            stage3: { name: 'Champions Stage (Playoffs)', desc: `${stage3.length} teams selected by you`, teams: stage3 }
+            champions:   { num: 1, name: 'Champions Stage (Playoffs)', desc: `Global #${S.champions[0]}–${S.champions[1]}`, teams: champions },
+            legends:     { num: 2, name: 'Legends Stage', desc: `Global #${S.legends[0]}–${S.legends[1]}`, teams: legends },
+            challengers: { num: 3, name: 'Challengers Stage', desc: `Global #${S.challengers[0]}–${S.challengers[1]}`, teams: challengers }
         }
     };
 }
@@ -1964,9 +2015,16 @@ function renderTeamCountStep() {
         }
     }
 
-    const range = getInviteRankRange(evt.stars, evt.region);
-    const suggestedCounts = { 1: 8, 2: 10, 3: 14, 4: 16, 5: 24 };
-    const suggested = suggestedCounts[evt.stars] || 8;
+    const range = getInvitePool(evt.stars, evt.region);
+    const isFixed = evt.stars === 4;
+    const poolSize = evt.stars === 3 ? range.max : (range.max - range.min + 1);
+    const suggested = Math.min(SUGGESTED_TEAM_COUNTS[evt.stars] || 8, poolSize);
+    const poolNote = {
+        4: `Fixo: top ${range.max} do ranking ${evt.region === 'global' ? 'global' : 'regional'}`,
+        3: `~40% Top (timer ★3) · ~60% Growing (timer ★3 + streak)`,
+        2: `Rotação pelo timer ★1/★2 · leve preferência pela parte de cima do pool`,
+        1: `Rotação pelo timer ★1/★2 · leve preferência pela parte de baixo do pool`
+    }[evt.stars] || '';
 
     const html = `
         ${renderStepIndicator(['Qty Teams', 'Review Teams', 'Confirm'], 1)}
@@ -1976,17 +2034,17 @@ function renderTeamCountStep() {
             Format: <strong>${evt.format.toUpperCase()}</strong>
         </div>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">
-            Rank range: <span style="color:var(--accent-cyan);font-weight:700;">#${range.min} – #${range.max}</span>
-            ${evt.region !== 'global' ? ' (adapted for regional)' : ' (global)'}
+            Rank range: <span style="color:var(--accent-cyan);font-weight:700;">${range.label}</span>
+            ${evt.region !== 'global' ? ` (ranking da região · ${range.total} times)` : ` (ranking global · ${range.total} times)`}
         </div>
         ${warning}
 
         <h3>👥 Quantos times serão convidados?</h3>
         <div style="display:flex;align-items:center;gap:16px;margin:16px 0;">
-            <input type="number" class="number-input" id="teamCountInput" value="${suggested}" min="2" max="64" onkeydown="if(event.key==='Enter')proceedToReview()">
+            <input type="number" class="number-input" id="teamCountInput" value="${suggested}" min="2" max="${poolSize}" ${isFixed ? 'disabled' : ''} onkeydown="if(event.key==='Enter')proceedToReview()">
             <div>
-                <div style="font-size:12px;color:var(--text-muted);">Sugestão AI: <span style="color:var(--accent-cyan);font-weight:700;">${suggested} times</span></div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Baseado no nível ★${evt.stars} · Pool: ranks #${range.min}–#${range.max}</div>
+                <div style="font-size:12px;color:var(--text-muted);">${isFixed ? 'Fixo' : 'Sugestão AI'}: <span style="color:var(--accent-cyan);font-weight:700;">${suggested} times</span></div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${poolNote}</div>
             </div>
         </div>
 
@@ -2017,6 +2075,22 @@ function renderReviewStep() {
 
     // Count rising teams
     const risingCount = inviteData.teams.filter(t => t.streak >= 3).length;
+    const isRegional = evt.region !== 'global';
+    const showGroup = evt.stars === 3;
+    const lastHeader = evt.stars <= 2 ? 'Last ★1/★2' : `Last ★${evt.stars}`;
+
+    let explain = '';
+    if (evt.stars === 4) {
+        explain = `Convite fixo: os <strong>top ${inviteData.teams.length}</strong> do ranking ${isRegional ? 'da região' : 'global'}. Sem timer.`;
+    } else if (evt.stars === 3) {
+        const nTop = inviteData.teams.filter(t => inviteData.meta[t.name].group === 'Top').length;
+        explain = `<strong>${nTop} do Top</strong> (${inviteData.range.top.min}–${inviteData.range.top.max}) e <strong>${inviteData.teams.length - nTop} do Growing</strong> (${inviteData.range.growing.min}–${inviteData.range.growing.max}).
+            <br>Prioridade: times há mais tempo sem jogar ★3; no Growing, streak dá bônus.`;
+    } else {
+        explain = `Pool: ranks <strong>${inviteData.range.label}</strong> (top ${INVITE_RULES.TOP_CUTOFF} fica de fora).
+            <br>Prioridade: <strong>timer de convite</strong> — nunca jogou ★1/★2 primeiro, depois quem esperou mais.
+            Leve preferência pela parte de ${evt.stars === 2 ? 'cima' : 'baixo'} do pool.`;
+    }
 
     let html = `
         ${renderStepIndicator(['Qty Teams', 'Review Teams', 'Confirm'], 2)}
@@ -2025,23 +2099,26 @@ function renderReviewStep() {
 
         <div class="ai-tip">
             <span class="ai-icon">🧠</span>
-            <div>A AI selecionou <strong>${inviteData.teams.length} times</strong> do pool ranks <strong>#${inviteData.range.min}–#${inviteData.range.max}</strong> para ★${evt.stars}.
-            ${risingCount > 0 ? `<br>🔥 <strong>${risingCount} time(s) em ascensão</strong> (streak ≥ 3 vitórias) incluídos.` : ''}
-            <br>Prioridade dada a times que <strong>não participaram recentemente</strong> de eventos ★${evt.stars}.</div>
+            <div>A AI selecionou <strong>${inviteData.teams.length} times</strong> para ★${evt.stars}${isRegional ? ' (ranking da região)' : ' (ranking global)'}.
+            <br>${explain}
+            ${risingCount > 0 ? `<br>🔥 <strong>${risingCount} time(s) em ascensão</strong> (streak ≥ 3 vitórias) incluídos.` : ''}</div>
         </div>
 
         <h3>👥 Times Convidados (${inviteData.teams.length})</h3>
         <table class="data-table"><thead><tr>
-            <th>#</th><th>Team</th><th>Points</th><th>Tier</th><th>Region</th><th>Streak</th><th>Last ★${evt.stars}</th>
+            <th>${isRegional ? 'Reg #' : '#'}</th><th>Team</th>${showGroup ? '<th>Group</th>' : ''}<th>Points</th><th>Tier</th><th>Region</th><th>Streak</th><th>${lastHeader}</th>
         </tr></thead><tbody>`;
 
     inviteData.teams.forEach(t => {
-        const lastPlayed = t.starPart[evt.stars];
+        const m = inviteData.meta[t.name] || {};
+        const lastPlayed = m.lastPlayed;
         const lastStr = lastPlayed ? formatDateDisplay(lastPlayed) : '<span style="color:var(--accent-green);">Never</span>';
         const isRising = t.streak >= 3;
+        const shownRank = m.localRank || t.rank;
         html += `<tr>
-            <td><span class="rank-num ${t.rank <= 3 ? 'top3' : t.rank <= 10 ? 'top10' : ''}">${t.rank}</span></td>
+            <td><span class="rank-num ${shownRank <= 3 ? 'top3' : shownRank <= 10 ? 'top10' : ''}">${shownRank}</span>${isRegional ? `<div style="font-size:10px;color:var(--text-muted);">G#${t.rank}</div>` : ''}</td>
             <td class="team-name">${t.name} ${isRising ? '<span class="rising-badge">🔥 W' + t.streak + '</span>' : ''}</td>
+            ${showGroup ? `<td style="font-size:11px;font-weight:700;color:${m.group === 'Top' ? 'var(--accent-yellow)' : 'var(--accent-green)'};">${m.group}</td>` : ''}
             <td class="points-val">${t.points.toFixed(1)}</td>
             <td>${tierBadge(t.tier)}</td>
             <td>${regionBadge(t.region)}</td>
@@ -2062,7 +2139,7 @@ function renderReviewStep() {
 }
 
 // ============================================================
-// MAJOR EVENT - Special Multi-step
+// MAJOR EVENT - global top 32, auto-split into 3 stages by rank
 // ============================================================
 function renderMajorStep1() {
     const evt = modalState.event;
@@ -2086,96 +2163,31 @@ function renderMajorStep1() {
         </div>`;
     }
 
-    const allSorted = [...teams].sort((a, b) => b.points - a.points);
+    modalState.inviteData = getMajorTeams();
+    modalState.step = 1;
+    renderMajorReviewStep(warnings);
+}
 
-    const html = `
-        ${renderStepIndicator(['Stage 3 (Playoffs)', 'Review Stages', 'Confirm'], 1)}
+function renderMajorReviewStep(warnings = '') {
+    const evt = modalState.event;
+    const data = modalState.inviteData;
+    const st = data.stages;
+
+    let html = `
+        ${renderStepIndicator(['Review Stages', 'Confirm'], 1)}
         <h2>🏆 ${evt.name}</h2>
         <div style="display:flex;gap:8px;margin:12px 0;">${starBadge(5)} ${regionBadge('global')}</div>
         <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
-            <strong>MAJOR</strong> · Swiss System · 3 Stages
+            <strong>MAJOR</strong> · Swiss System · 3 Stages · Top ${INVITE_RULES.MAJOR_SIZE} global
         </div>
         ${warnings}
 
-        <h3>STAGE 3 — Champions (Playoffs)</h3>
-        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;line-height:1.6;">
-            Selecione os times que participarão do <strong>Stage 3 (Playoffs)</strong>. Apenas você sabe quais times se classificaram.
-            Após isso, o sistema irá preencher automaticamente o <strong>Stage 2</strong> (top 8 do ranking) e o <strong>Stage 1</strong> (próximos 16 melhores).
-        </div>
-
-        <div style="margin-bottom:8px;font-size:12px;color:var(--accent-cyan);font-weight:600;">
-            Selecionados: <span id="majorStage3Count">0</span> times
-        </div>
-
-        <input type="text" class="team-search-modal" placeholder="Buscar time..." id="majorTeamSearch" oninput="filterMajorTeams()">
-
-        <div id="majorTeamGrid" style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;">
-            ${allSorted.map(t => `
-                <div class="team-chip" data-team="${t.name}" onclick="toggleMajorTeam(this, '${t.name.replace(/'/g, "\\'")}')">
-                    <span class="chip-rank">#${t.rank}</span>
-                    ${t.name}
-                    ${tierBadge(t.tier)}
-                    ${t.streak >= 3 ? '<span class="rising-badge">🔥W' + t.streak + '</span>' : ''}
-                </div>
-            `).join('')}
-        </div>
-
-        <div style="display:flex;gap:12px;margin-top:20px;">
-            <button class="btn btn-primary" onclick="proceedMajorReview()">Próximo →</button>
-            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-        </div>
-    `;
-
-    document.getElementById('modalContent').innerHTML = html;
-    modalState.majorStage3 = [];
-}
-
-function toggleMajorTeam(el, teamName) {
-    const idx = modalState.majorStage3.indexOf(teamName);
-    if (idx >= 0) {
-        modalState.majorStage3.splice(idx, 1);
-        el.classList.remove('selected');
-    } else {
-        modalState.majorStage3.push(teamName);
-        el.classList.add('selected');
-    }
-    document.getElementById('majorStage3Count').textContent = modalState.majorStage3.length;
-}
-
-function filterMajorTeams() {
-    const search = (document.getElementById('majorTeamSearch')?.value || '').toLowerCase();
-    document.querySelectorAll('#majorTeamGrid .team-chip').forEach(chip => {
-        const name = chip.dataset.team.toLowerCase();
-        chip.style.display = name.includes(search) ? '' : 'none';
-    });
-}
-
-function proceedMajorReview() {
-    if (modalState.majorStage3.length === 0) {
-        alert('Selecione pelo menos 1 time para o Stage 3 (Playoffs).');
-        return;
-    }
-
-    modalState.inviteData = getMajorTeams(modalState.majorStage3);
-    modalState.step = 2;
-    renderMajorReviewStep();
-}
-
-function renderMajorReviewStep() {
-    const evt = modalState.event;
-    const data = modalState.inviteData;
-
-    let html = `
-        ${renderStepIndicator(['Stage 3 (Playoffs)', 'Review Stages', 'Confirm'], 2)}
-        <h2>🏆 ${evt.name}</h2>
-        <div style="display:flex;gap:8px;margin:12px 0;">${starBadge(5)} ${regionBadge('global')}</div>
-
-        <div class="ai-tip">
+        <div class="ai-tip" style="margin-top:12px;">
             <span class="ai-icon">🧠</span>
             <div>
-                <strong>Stage 3 (Playoffs):</strong> ${data.stages.stage3.teams.length} times selecionados por você<br>
-                <strong>Stage 2 (Legends):</strong> ${data.stages.stage2.teams.length} melhores times do ranking (auto)<br>
-                <strong>Stage 1 (Challengers):</strong> ${data.stages.stage1.teams.length} próximos melhores (auto)<br>
+                <strong>Stage 1 · Champions (Playoffs):</strong> ${st.champions.teams.length} times — ${st.champions.desc}<br>
+                <strong>Stage 2 · Legends:</strong> ${st.legends.teams.length} times — ${st.legends.desc}<br>
+                <strong>Stage 3 · Challengers:</strong> ${st.challengers.teams.length} times — ${st.challengers.desc}<br>
                 <strong>Total: ${data.teams.length} times</strong>
             </div>
         </div>
@@ -2183,19 +2195,19 @@ function renderMajorReviewStep() {
         <div class="major-flow">
     `;
 
-    const stageOrder = ['stage3', 'stage2', 'stage1'];
-    const stageLabels = { stage1: '1', stage2: '2', stage3: '3' };
+    // Display in play order: Challengers → Legends → Champions
+    const stageOrder = ['challengers', 'legends', 'champions'];
     const stageColors = {
-        stage1: '',
-        stage2: 'background:rgba(0,212,255,0.15);color:var(--accent-cyan);',
-        stage3: 'background:rgba(224,86,253,0.15);color:var(--star-5);'
+        challengers: '',
+        legends: 'background:rgba(0,212,255,0.15);color:var(--accent-cyan);',
+        champions: 'background:rgba(224,86,253,0.15);color:var(--star-5);'
     };
 
     stageOrder.forEach((key, idx) => {
-        const stage = data.stages[key];
+        const stage = st[key];
         html += `<div class="stage-col"><div class="major-stage">
             <div class="major-stage-header">
-                <div class="stage-num" style="${stageColors[key] || ''}">${stageLabels[key]}</div>
+                <div class="stage-num" style="${stageColors[key] || ''}">${stage.num}</div>
                 <div>
                     <div class="stage-title">${stage.name}</div>
                     <div class="stage-desc">${stage.desc}</div>
@@ -2204,8 +2216,7 @@ function renderMajorReviewStep() {
             <div>`;
 
         stage.teams.forEach(t => {
-            const isUserPick = key === 'stage3';
-            html += `<div class="team-chip ${isUserPick ? 'locked' : ''}">
+            html += `<div class="team-chip ${key === 'champions' ? 'locked' : ''}">
                 <span class="chip-rank">#${t.rank}</span>
                 ${t.name}
                 ${tierBadge(t.tier)}
@@ -2219,13 +2230,12 @@ function renderMajorReviewStep() {
     html += `</div>
 
         <div style="margin-top:12px;font-size:12px;color:var(--text-muted);line-height:1.6;">
-            <strong>Flow:</strong> Stage 1 (Challengers) → Stage 2 (Legends) → Stage 3 (Champions/Playoffs).
+            <strong>Flow:</strong> Stage 3 (Challengers, #17–32) → top 8 join Stage 2 (Legends, #9–16) → top 8 join Stage 1 (Champions/Playoffs, #1–8).
             Swiss format: 3 wins to advance, 3 losses to be eliminated.
         </div>
 
         <div style="display:flex;gap:12px;margin-top:24px;">
             <button class="btn btn-confirm" onclick="confirmOpenEvent()">✓ OPEN MAJOR</button>
-            <button class="btn btn-secondary" onclick="renderMajorStep1()">← Back</button>
             <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
         </div>
     `;
@@ -2469,12 +2479,23 @@ function filterEvents() {
 // RULES PAGE (Updated with rank-range system)
 // ============================================================
 function renderRules() {
+    const R = INVITE_RULES;
     const rules = [
-        { star: 1, title: 'ENTRY LEVEL', teams: '~8', desc: 'Ranks #100–160+ (global). New teams and lower-ranked get opportunities. Teams with long absence from ★1 events get priority. Rising teams (streak) boosted.', tiers: 'Tier 3 (lower)', freq: 'Every ~3 weeks', range: '100–160' },
-        { star: 2, title: 'DEVELOPING', teams: '~10-12', desc: 'Ranks #50–160 (global). Mid-range teams compete. Teams that haven\'t played ★2 recently get preference.', tiers: 'Tier 3 (mid)', freq: 'Every ~5-6 weeks', range: '50–160' },
-        { star: 3, title: 'COMPETITIVE', teams: '~12-16', desc: 'Ranks #15–80 (global). Strong competition. Long absence from ★3 events prioritized. Streak bonus applied.', tiers: 'Tier 2-3 (upper)', freq: 'Every ~8-9 weeks', range: '15–80' },
-        { star: 4, title: 'ELITE', teams: '~16', desc: 'Ranks #1–35 (global). Premium events. Top-ranked teams, with participation recency as tiebreaker.', tiers: 'Tier 1-2', freq: 'Every ~11-13 weeks', range: '1–35' },
-        { star: 5, title: 'MAJOR', teams: '24+', desc: 'Swiss format, 3 stages. Stage 3 (Playoffs) chosen by user, Stage 2 (top 8 auto), Stage 1 (next 16 auto). Max 2/year.', tiers: 'All top tiers', freq: '2 per year max', range: 'All' }
+        { star: 1, title: 'ROTATION · LOWER', teams: '~8', range: `${R.TOP_CUTOFF + 1}+`,
+          desc: `Everyone ranked below the top ${R.TOP_CUTOFF} of the region. Picked by the invite timer: teams that never played a ★1/★2 go first, then whoever has waited longest since their last ★1 or ★2. Slight preference for the lower part of the pool.`,
+          freq: 'Every ~3 weeks' },
+        { star: 2, title: 'ROTATION · UPPER', teams: '~10', range: `${R.TOP_CUTOFF + 1}+`,
+          desc: `Same pool and same shared ★1/★2 timer as ★1, so every team keeps rotating. Slight preference for the upper part of the pool.`,
+          freq: 'Every ~5-6 weeks' },
+        { star: 3, title: 'TOP + GROWING', teams: '~14', range: `1–${R.GROWING_MAX.global}`,
+          desc: `~40% of the spots go to the Top bracket (#1–${R.TOP_CUTOFF}), picked by who has gone longest without a ★3. ~60% go to the Growing bracket (#${R.TOP_CUTOFF + 1}–${R.GROWING_MAX.global} global, #${R.TOP_CUTOFF + 1}–${R.GROWING_MAX.regional} regional), picked by the ★3 timer plus a win-streak bonus. If one bracket runs short, the other fills the spots.`,
+          freq: 'Every ~8-9 weeks' },
+        { star: 4, title: 'ELITE', teams: `${R.TOP_CUTOFF}`, range: `1–${R.TOP_CUTOFF}`,
+          desc: `Only the top ${R.TOP_CUTOFF} teams are invited, by ranking only (no timer). Global event = global top ${R.TOP_CUTOFF}; regional event = that region's top ${R.TOP_CUTOFF}.`,
+          freq: 'Every ~11-13 weeks' },
+        { star: 5, title: 'MAJOR', teams: `${R.MAJOR_SIZE}`, range: `1–${R.MAJOR_SIZE} global`,
+          desc: `Global top ${R.MAJOR_SIZE}, split by rank: #1–8 Stage 1 (Champions/Playoffs), #9–16 Stage 2 (Legends), #17–32 Stage 3 (Challengers). Swiss format. Max 2/year recommended.`,
+          freq: '2 per year max' }
     ];
 
     let gridHtml = '';
@@ -2497,50 +2518,50 @@ function renderRules() {
                 <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${r.title}</div>
                 <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${r.desc}</div>
                 <div style="margin-top:6px;font-size:12px;">
-                    <span style="color:var(--text-muted);">Rank Range:</span> <span style="color:var(--accent-cyan);">#${r.range}</span>
+                    <span style="color:var(--text-muted);">Ranks:</span> <span style="color:var(--accent-cyan);">#${r.range}</span>
                     · <span style="color:var(--text-muted);">Frequency:</span> <span style="color:var(--accent-orange);">${r.freq}</span>
-                </div>
-                <div style="margin-top:4px;font-size:11px;color:var(--text-muted);line-height:1.5;">
-                    ℹ️ Regional events adapt the rank range proportionally to the number of teams in that region.
-                    Priority: teams that haven't participated in ★${r.star} events recently. Streak (winning run) gives extra boost.
                 </div>
             </div>
         </div>`;
     });
-    detailHtml += '</div>';
+    detailHtml += `</div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted);line-height:1.6;">
+            ℹ️ For ★1–★4, ranks are counted <strong>inside the event's region</strong> (Americas, Europe, Asia). Global events use the global ranking.
+            The ★5 Major always uses the global ranking.
+        </div>`;
     document.getElementById('rulesDetail').innerHTML = detailHtml;
 
     document.getElementById('majorRulesDetail').innerHTML = `
         <div style="font-size:14px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px;">
-            The Major uses a <strong style="color:var(--accent-cyan);">Swiss System</strong> across <strong>3 stages</strong>.
+            The Major invites the <strong style="color:var(--accent-cyan);">global top ${R.MAJOR_SIZE}</strong> and uses a <strong style="color:var(--accent-cyan);">Swiss System</strong> across <strong>3 stages</strong>.
             Teams need <strong>3 wins</strong> to advance and are eliminated after <strong>3 losses</strong>. Only <strong>2 Majors per year</strong> are recommended.
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
             <div class="major-stage">
                 <div class="major-stage-header">
-                    <div class="stage-num">1</div>
-                    <div><div class="stage-title">Challengers Stage</div><div class="stage-desc">Auto-filled from ranking</div></div>
+                    <div class="stage-num">3</div>
+                    <div><div class="stage-title">Challengers Stage</div><div class="stage-desc">Global #17–32 · played first</div></div>
                 </div>
                 <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-                    Next 16 best teams (after Stage 2) compete in Swiss format. Auto-selected by the system based on ranking.
+                    16 teams play Swiss. The top 8 advance to the Legends Stage.
                 </div>
             </div>
             <div class="major-stage">
                 <div class="major-stage-header">
                     <div class="stage-num" style="background:rgba(0,212,255,0.15);color:var(--accent-cyan);">2</div>
-                    <div><div class="stage-title">Legends Stage</div><div class="stage-desc">Top 8 from ranking (auto)</div></div>
+                    <div><div class="stage-title">Legends Stage</div><div class="stage-desc">Global #9–16</div></div>
                 </div>
                 <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-                    The 8 best current teams (auto-selected). Stage 1 winners join them here.
+                    8 seeded teams + 8 from Challengers. The top 8 advance to the Champions Stage.
                 </div>
             </div>
             <div class="major-stage">
                 <div class="major-stage-header">
-                    <div class="stage-num" style="background:rgba(224,86,253,0.15);color:var(--star-5);">3</div>
-                    <div><div class="stage-title">Champions Stage</div><div class="stage-desc">User-selected teams</div></div>
+                    <div class="stage-num" style="background:rgba(224,86,253,0.15);color:var(--star-5);">1</div>
+                    <div><div class="stage-title">Champions Stage</div><div class="stage-desc">Global #1–8 · Playoffs</div></div>
                 </div>
                 <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-                    <strong>You choose</strong> which teams enter the Playoffs. These are pre-qualified seeds that only you know. Stage 2 winners join them.
+                    The top 8 teams are seeded straight into the Playoffs and joined by the 8 Legends qualifiers.
                 </div>
             </div>
         </div>
