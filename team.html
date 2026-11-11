@@ -281,6 +281,134 @@
       .mh-switch{ padding:8px 0; } .mh-switch .form-label{ display:none; }
     }
     @media (prefers-reduced-motion: reduce){ .shelf-i, .tip{ transition:none; } .shelf-i:hover{ transform:none; } }
+
+    /* ════════════════════════════════════════════════════════
+       v3 — RANKING MOVEMENT, TABS, TOURNAMENTS, MATCHES AS SERIES
+    ════════════════════════════════════════════════════════ */
+    .dl{ display:inline-flex; align-items:center; gap:3px; font-family:var(--font-mono); font-size:11px; font-weight:600; white-space:nowrap; }
+    .dl.up{ color:var(--good); } .dl.down{ color:var(--bad); } .dl.flat{ color:var(--muted); } .dl.new{ color:var(--warn); }
+    .hero .dl.up{ color:#86cf9d; } .hero .dl.down{ color:#ec9a8e; } .hero .dl.flat{ color:#8a8275; } .hero .dl.new{ color:#e3c475; }
+    .hero-rank-row{ display:flex; align-items:flex-end; justify-content:flex-end; gap:12px; }
+    .hero-rank-d{ padding-bottom:14px; }
+    .hero-rank-d .dl{ font-size:14px; padding:4px 9px; border-radius:2px; background:rgba(244,241,234,.08); }
+    .hero-stat-d{ margin-top:3px; min-height:14px; }
+
+    /* ── Tabs ── */
+    .tp-tabs{ display:flex; gap:0; border-bottom:1.5px solid var(--text); margin-top:6px; scroll-margin-top:130px; }
+    .tp-tab{
+      display:flex; align-items:baseline; gap:9px; padding:13px 22px 11px; margin-bottom:-1.5px; cursor:pointer;
+      background:none; border:none; border-bottom:3px solid transparent; color:var(--muted);
+      font-family:var(--font-display); font-size:20px; font-weight:700;
+    }
+    .tp-tab small{ font-family:var(--font-mono); font-size:10px; font-weight:500; letter-spacing:1px; color:var(--muted2); }
+    .tp-tab:hover{ color:var(--text); border-bottom-color:var(--border-bright); }
+    .tp-tab.active{ color:var(--accent); border-bottom-color:var(--accent); }
+    .tp-tab:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+    .tp-tabpanel{ display:flex; flex-direction:column; gap:20px; }
+    .tp-tabpanel[hidden]{ display:none; }
+
+    /* ── Ranking movement card ── */
+    .mv-grid{ display:grid; grid-template-columns:230px minmax(0,1fr); gap:24px; align-items:stretch; }
+    .mv-tiles{ display:flex; flex-direction:column; border:1px solid var(--border); border-radius:3px; background:var(--bg3); }
+    .mv-tile{ flex:1; padding:12px 16px; border-top:1px solid var(--border); display:flex; flex-direction:column; justify-content:center; }
+    .mv-tile:first-child{ border-top:none; }
+    .mv-tile .hero-stat-l{ color:var(--muted2); }
+    .mv-now{ font-family:var(--font-display); font-size:28px; font-weight:800; line-height:1.1; }
+    .mv-was{ display:flex; flex-wrap:wrap; gap:4px 10px; align-items:center; font-family:var(--font-mono); font-size:11px; color:var(--muted); min-height:16px; }
+    .tr-legend{ display:flex; flex-wrap:wrap; gap:6px 18px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.5px; color:var(--muted2); margin-bottom:4px; }
+    .tr-legend .glo{ color:var(--accent); font-weight:600; } .tr-legend .reg{ color:var(--good); font-weight:600; }
+    .tr-svg{ width:100%; height:auto; display:block; }
+    .tr-grid{ stroke:var(--border); stroke-width:1; }
+    .tr-axis{ font-family:var(--font-mono); font-size:10px; fill:var(--muted); }
+    .tr-line{ fill:none; stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round; }
+    .tr-line.glo{ stroke:var(--accent); } .tr-line.reg{ stroke:var(--good); stroke-dasharray:5 4; }
+    circle.glo{ fill:var(--accent); stroke:#fff; stroke-width:2; } circle.reg{ fill:var(--good); stroke:#fff; stroke-width:2; }
+    .tr-val{ font-family:var(--font-mono); font-size:11px; font-weight:600; }
+    text.glo{ fill:var(--accent); } text.reg{ fill:var(--good); }
+
+    /* ── Player cards: medals up beside the name ── */
+    .tp-phead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6px; min-height:44px; }
+    .tp-phead .tp-pname{ min-width:0; padding-top:4px; }
+    .tp-cardmedals{ flex:none; flex-wrap:nowrap; justify-content:flex-end; }
+    .tp-roles{ min-height:22px !important; }
+    .tp-awards{ min-height:74px; }
+    .tp-awards-l{ display:flex; justify-content:space-between; gap:8px; }
+    .shelf.cardrow{ --ico:40px; gap:2px; flex-wrap:nowrap; }
+    .shelf.cardrow .shelf-i{ padding:3px; flex:1 1 0; max-width:25%; }
+    .shelf.cardrow .shelf-pic{ width:100%; max-width:var(--ico); height:var(--ico); }
+
+    /* ── Player panel: medals in the header, career list ── */
+    .pp-panel{ width:min(640px, 100vw); }
+    .pp-head{ flex-wrap:wrap; }
+    .pp-id{ padding-right:0; }
+    .pp-medals{ flex:none; align-self:center; padding:0 44px 0 16px; border-left:1px solid var(--border); max-width:250px; }
+    .shelf.pm{ --ico:46px; gap:2px 4px; }
+    .shelf.pm .shelf-i{ padding:4px; }
+    .cr-list{ list-style:none; margin:0; padding:0; background:#fff; border:1px solid var(--border); border-radius:3px; }
+    .cr-list li{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; padding:9px 14px; border-top:1px solid var(--border); font-size:13px; }
+    .cr-list li:first-child{ border-top:none; }
+    .cr-month{ width:62px; flex:none; font-family:var(--font-mono); font-size:10.5px; color:var(--muted); }
+    .cr-type{ width:112px; flex:none; font-family:var(--font-mono); font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--accent); }
+    .cr-move{ display:inline-flex; flex-wrap:wrap; align-items:center; gap:6px; flex:1; min-width:0; }
+    .cr-team{ display:inline-flex; align-items:center; font-weight:600; } .cr-team .team-logo{ margin-right:5px; }
+    .cr-fa{ color:var(--muted); font-style:italic; } .cr-arrow{ color:var(--muted2); }
+    .cr-fee{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted); }
+    .cr-now{ background:var(--bg3); } .cr-now .cr-month{ color:var(--text); font-weight:600; }
+
+    /* ── Tournaments & series (native <details>) ── */
+    details > summary{ list-style:none; cursor:pointer; }
+    details > summary::-webkit-details-marker{ display:none; }
+    .sr-chev{ color:var(--muted2); font-size:12px; transition:transform .15s ease; justify-self:end; }
+    details[open] > summary > .sr-chev{ transform:rotate(180deg); color:var(--accent); }
+    .tour{ border:1px solid var(--border); border-radius:3px; background:#fff; margin-bottom:10px; }
+    .tour:last-child{ margin-bottom:0; }
+    .tour > summary{ display:grid; grid-template-columns:56px minmax(0,1fr) auto auto 18px; gap:16px; align-items:center; padding:12px 16px; }
+    .tour > summary:hover, .tour[open] > summary{ background:var(--bg3); }
+    .tour[open] > summary{ border-bottom:1px solid var(--border); }
+    .tour > summary:focus-visible, .sr > summary:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+    .tour-logo{ width:56px; height:56px; display:flex; align-items:center; justify-content:center; }
+    .tour-logo img{ max-width:100%; max-height:100%; object-fit:contain; }
+    .tour-logo span{ width:44px; height:44px; display:flex; align-items:center; justify-content:center; border:1px solid var(--border-bright); border-radius:3px; font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--muted); }
+    .tour-id{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .tour-name{ font-family:var(--font-display); font-size:19px; font-weight:700; line-height:1.15; }
+    .tour-meta{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted); line-height:1.5; }
+    .tour-rec{ text-align:right; font-family:var(--font-mono); line-height:1.2; }
+    .tour-rec b{ display:block; font-size:15px; font-weight:600; } .tour-rec small{ font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted2); }
+    .tour-place{ min-width:92px; text-align:center; padding:7px 12px; border:1.5px solid currentColor; border-radius:3px; font-family:var(--font-display); font-size:19px; font-weight:800; line-height:1; white-space:nowrap; }
+    .tour-place.soft{ font-family:var(--font-mono); font-size:10.5px; font-weight:500; letter-spacing:.5px; border-width:1px; border-color:var(--border-bright); white-space:normal; max-width:170px; line-height:1.35; }
+    .tour-place.t-gold{ background:rgba(169,132,46,.1); } .tour-place.t-silver{ background:rgba(154,160,171,.12); } .tour-place.t-bronze{ background:rgba(176,122,67,.1); }
+    .tour-path{ padding:12px 16px 14px; }
+    .tour-path-l{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted2); margin-bottom:8px; }
+
+    .sr{ border:1px solid var(--border); border-radius:3px; background:#fff; margin-bottom:6px; }
+    .sr:last-of-type{ margin-bottom:0; }
+    .sr > summary{ display:grid; grid-template-columns:92px 30px 46px minmax(0,1.1fr) minmax(0,1.4fr) 18px; gap:12px; align-items:center; padding:9px 14px; }
+    .sr > summary:hover{ background:rgba(140,47,36,.04); }
+    .sr-date{ font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+    .sr-score{ font-family:var(--font-display); font-size:19px; font-weight:800; line-height:1; text-align:center; }
+    .sr-opp{ display:inline-flex; align-items:center; gap:8px; min-width:0; }
+    .sr-vs{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted2); }
+    .tp-opp-plain{ display:inline-flex; align-items:center; font-weight:600; }
+    .sr-stage{ font-size:12.5px; color:var(--text); min-width:0; }
+    .sr-stage small{ display:block; font-family:var(--font-mono); font-size:10px; color:var(--muted); margin-top:2px; }
+    .sr-maps{ display:flex; flex-wrap:wrap; gap:8px; padding:10px 14px 12px; border-top:1px dashed var(--border-bright); background:var(--bg3); }
+    .sr-map{ display:flex; align-items:center; gap:9px; padding:7px 11px; background:#fff; border:1px solid var(--border); border-radius:3px; }
+    .sr-mapn{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted2); }
+    .sr-mapscore{ font-family:var(--font-mono); font-size:13px; font-weight:600; }
+    .sr-mapscore.w{ color:var(--good); } .sr-mapscore.l{ color:var(--bad); }
+
+    @media (max-width:900px){
+      .mv-grid{ grid-template-columns:1fr; } .mv-tiles{ flex-direction:row; flex-wrap:wrap; } .mv-tile{ min-width:33%; border-top:none; border-left:1px solid var(--border); } .mv-tile:first-child{ border-left:none; }
+      .hero-rank-row{ justify-content:flex-start; } .hero-rank-d{ padding-bottom:6px; }
+      .tour > summary{ grid-template-columns:44px minmax(0,1fr) 18px; gap:10px; }
+      .tour-logo{ width:44px; height:44px; } .tour-rec{ display:none; } .tour-place{ grid-column:2 / 3; justify-self:start; min-width:0; font-size:15px; padding:5px 10px; }
+      .tour > summary > .sr-chev{ grid-column:3; grid-row:1; }
+      .sr > summary{ grid-template-columns:30px 40px minmax(0,1fr) 18px; gap:8px; }
+      .sr-date{ grid-column:1 / -1; grid-row:1; } .sr-stage{ grid-column:1 / -1; grid-row:3; } .sr > summary > .sr-chev{ grid-column:4; grid-row:2; }
+      .pp-medals{ border-left:none; padding:0; max-width:none; width:100%; }
+      .tp-tab{ padding:11px 14px 9px; font-size:17px; }
+    }
+    @media (prefers-reduced-motion: reduce){ .sr-chev{ transition:none; } }
   </style>
 </head>
 <body>
@@ -306,9 +434,8 @@
     <nav class="sidebar-nav mh-ribbon">
       <a class="nav-item" href="index.html#global"><span class="nav-icon">←</span><span class="nav-label">Global Ranking</span></a>
       <span class="sidebar-divider"></span>
-      <a class="nav-item" href="#sec-overview"><span class="nav-icon">01</span><span class="nav-label">Overview</span></a>
-      <a class="nav-item" href="#sec-roster"><span class="nav-icon">02</span><span class="nav-label">Roster</span></a>
-      <a class="nav-item" href="#sec-matches"><span class="nav-icon">03</span><span class="nav-label">Recent Matches</span></a>
+      <a class="nav-item active" href="#" data-tab="overview"><span class="nav-icon">01</span><span class="nav-label">Overview</span></a>
+      <a class="nav-item" href="#history" data-tab="history"><span class="nav-icon">02</span><span class="nav-label">History</span></a>
       <a class="nav-item mh-back" href="index.html"><span class="nav-icon">↩</span><span class="nav-label">Menu</span></a>
     </nav>
   </aside>
@@ -330,20 +457,47 @@
         </div>
       </section>
 
-      <div class="card" id="sec-roster">
-        <div class="card-header">
-          <div><div class="card-title">Roster</div><div class="card-subtitle">Hover an award for details · click a player for the full profile</div></div>
-          <span class="tp-section-note" id="tpRosterNote"></span>
-        </div>
-        <div class="card-body"><div id="tpRoster"><div class="tp-empty">Loading roster…</div></div></div>
+      <div class="tp-tabs" id="tpTabs" role="tablist">
+        <button type="button" class="tp-tab active" role="tab" data-tab="overview" aria-selected="true" aria-controls="tab-overview">Overview</button>
+        <button type="button" class="tp-tab" role="tab" data-tab="history" aria-selected="false" aria-controls="tab-history">History <small id="tabHistCount"></small></button>
       </div>
 
-      <div class="card" id="sec-matches">
-        <div class="card-header">
-          <div><div class="card-title">Recent Matches</div><div class="card-subtitle">Last 15 from the match history</div></div>
-          <span class="tp-section-note" id="tpMatchNote"></span>
+      <!-- ═══ OVERVIEW: the team right now ═══ -->
+      <div class="tp-tabpanel" id="tab-overview" role="tabpanel">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Ranking Movement</div><div class="card-subtitle">Compared with the previous ranking · position over time</div></div>
+            <span class="tp-section-note" id="tpTrendNote"></span>
+          </div>
+          <div class="card-body" id="tpTrend"><div class="tp-empty">Loading ranking history…</div></div>
         </div>
-        <div class="card-body" id="tpMatches"><div class="tp-empty">Loading matches…</div></div>
+
+        <div class="card" id="sec-roster">
+          <div class="card-header">
+            <div><div class="card-title">Roster</div><div class="card-subtitle">Hover an award for details · click a player for the full profile</div></div>
+            <span class="tp-section-note" id="tpRosterNote"></span>
+          </div>
+          <div class="card-body"><div id="tpRoster"><div class="tp-empty">Loading roster…</div></div></div>
+        </div>
+      </div>
+
+      <!-- ═══ HISTORY: everything the team has played ═══ -->
+      <div class="tp-tabpanel" id="tab-history" role="tabpanel" hidden>
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Tournaments</div><div class="card-subtitle">Final position in each event · click one to see the team's path</div></div>
+            <span class="tp-section-note" id="tpTourNote"></span>
+          </div>
+          <div class="card-body" id="tpTours"><div class="tp-empty">Loading tournaments…</div></div>
+        </div>
+
+        <div class="card" id="sec-matches">
+          <div class="card-header">
+            <div><div class="card-title">Matches</div><div class="card-subtitle">Score in maps won · click a match to see each map</div></div>
+            <span class="tp-section-note" id="tpMatchNote"></span>
+          </div>
+          <div class="card-body" id="tpMatches"><div class="tp-empty">Loading matches…</div></div>
+        </div>
       </div>
 
       <div class="status-bar">
@@ -369,7 +523,10 @@
      file/ranking.xlsx           position, points, record, tier, region
      file/players_updated.xlsx   roster, roles, country, market value, medals
      file/history_updated.xlsx   TeamHistory + PlayerHistory (achievements)
-     file/history.xlsx           match results (optional)
+     file/history.xlsx           match results, one row per map (optional)
+     file/old.xlsx               previous ranking, for movement (optional)
+     file/archives/              older ranking snapshots, for the chart (optional)
+     file/kz-events-backup.json  event logos, places and full standings (optional, large)
      assets/team_logo.json       team logos (optional)
      assets/awards.json          trophy / medal icons (optional, large)
      assets/players/<Name>.png   player photos (optional)
@@ -379,6 +536,9 @@ const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 
 const URLS = {
   ranking: 'file/ranking.xlsx',
+  old:     'file/old.xlsx',
+  archiveDir: 'file/archives/',
+  events:  'file/kz-events-backup.json',
   players: 'file/players_updated.xlsx',
   history: 'file/history_updated.xlsx',
   matches: 'file/history.xlsx',
@@ -393,7 +553,8 @@ const PHOTO_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
 
 const state = {
   teamParam: new URLSearchParams(location.search).get('team') || '',
-  ranking: [], team: null,
+  ranking: [], oldRanking: null, team: null, trajectory: [],
+  series: null, events: null, transactions: [],
   players: [], playersLoaded: false,
   teamHistory: [], playerHistory: [], historyLoaded: false,
   matches: null,            // null = file not available
@@ -437,8 +598,8 @@ function col(row, ...names) {
 }
 const num = v => { const n = Number(String(v).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
 
-async function loadRanking() {
-  const rows = sheetRows(await fetchWorkbook(URLS.ranking));
+/* Same ordering rule as the Global Ranking: points, then name. Adds global + regional position. */
+function parseRanking(rows) {
   const teams = rows.map(r => ({
     team: String(col(r, 'Team')).trim(),
     points: num(col(r, 'Points')),
@@ -446,11 +607,35 @@ async function loadRanking() {
     majors: num(col(r, 'Majors')),
     tier: String(col(r, 'Tier')).trim(), region: String(col(r, 'Region')).trim()
   })).filter(t => t.team);
-  // Same ordering rule as the Global Ranking
   teams.sort((a, b) => b.points !== a.points ? b.points - a.points : a.team.localeCompare(b.team, 'en'));
   const regionCount = {};
   teams.forEach((t, i) => { t.pos = i + 1; t.regionPos = regionCount[t.region] = (regionCount[t.region] || 0) + 1; });
-  state.ranking = teams;
+  return teams;
+}
+async function loadRanking() { state.ranking = parseRanking(sheetRows(await fetchWorkbook(URLS.ranking))); }
+async function loadOldRanking() { state.oldRanking = parseRanking(sheetRows(await fetchWorkbook(URLS.old))); }
+
+/* Position over time: archived snapshots (file/archives/manifest.json → r0.xlsx, r1.xlsx …),
+   then old.xlsx, then the live ranking. Missing archive → just old + live. */
+async function loadTrajectory() {
+  let manifest = { archives: [], old: { date: null } };
+  try {
+    const res = await fetch(URLS.archiveDir + 'manifest.json', { cache: 'no-store' });
+    if (res.ok) manifest = await res.json();
+  } catch (e) {}
+  const entries = (manifest.archives || []).filter(a => a && a.file)
+    .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+  const loaded = await Promise.allSettled(entries.map(a => fetchWorkbook(URLS.archiveDir + a.file).then(wb => parseRanking(sheetRows(wb)))));
+  const points = [];
+  const add = (teams, label) => {
+    const t = teams && teams.find(x => sameTeam(x.team, state.team.team));
+    if (t) points.push({ label, pos: t.pos, regionPos: t.regionPos, points: t.points });
+  };
+  const shortDate = d => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d || '')); return m ? `${m[3]}/${m[2]}` : ''; };
+  loaded.forEach((r, i) => { if (r.status === 'fulfilled') add(r.value, shortDate(entries[i].date) || entries[i].file.replace(/\.xlsx$/i, '')); });
+  add(state.oldRanking, shortDate(manifest.old && manifest.old.date) || 'Previous');
+  add(state.ranking, 'Now');
+  state.trajectory = points;
 }
 
 async function loadPlayers() {
@@ -484,12 +669,17 @@ async function loadHistory() {
     position: String(r.position || 'Winner').trim(), month: Number(r.month) || 1,
     awardKey: String(r.awardKey || '').trim() || null, note: String(r.note || '').trim()
   }));
+  state.transactions = sheetRows(wb, 'Transactions').filter(r => r.type && r.playerName).map(r => ({
+    id: Number(r.id) || 0, month: Number(r.month) || 1, type: String(r.type).trim(), player: String(r.playerName).trim(),
+    from: String(r.from || '').trim(), to: String(r.to || '').trim(), amount: Number(r.amount) || 0, note: String(r.note || '').trim()
+  }));
   state.historyLoaded = true;
 }
 
 async function loadMatches() {
   const rows = sheetRows(await fetchWorkbook(URLS.matches));
   const out = [];
+  let rowIdx = 0;
   for (const r of rows) {
     const team1 = String(col(r, 'Team 1', 'team1')).trim(), team2 = String(col(r, 'Team 2', 'team2')).trim();
     const result = String(col(r, 'Result')).trim();
@@ -502,13 +692,51 @@ async function loadMatches() {
     }
     const parts = result.toLowerCase().split('x').map(s => parseInt(s.trim(), 10));
     out.push({
-      team1, team2, result, score1: parts[0] || 0, score2: parts[1] || 0,
+      idx: rowIdx++, team1, team2, result, score1: parts[0] || 0, score2: parts[1] || 0,
       map: String(col(r, 'Map')).trim(), event: String(col(r, 'Event')).trim(), details: String(col(r, 'Details')).trim(),
       dateObj, dateStr: dateObj ? dateObj.toISOString().split('T')[0] : String(dateRaw).trim()
     });
   }
   out.sort((a, b) => (a.dateObj && b.dateObj) ? b.dateObj - a.dateObj : b.dateStr.localeCompare(a.dateStr));
   state.matches = out;
+  state.series = buildSeries(out);
+}
+
+/* Event names differ slightly between files ("DreamHack Winter 2026" vs
+   "DreamHack Winter Major 2026", double spaces) — compare on a normalised key. */
+const evKey = name => String(name || '').toLowerCase().replace(/\bmajor\b/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+
+/* Maps → matches. One match = same two teams, same day, same event and stage.
+   The score is simply maps won, so BO1, BO3 and BO5 all come out right. */
+function buildSeries(maps) {
+  const bag = new Map();
+  for (const m of maps) {
+    const pair = [m.team1.toLowerCase(), m.team2.toLowerCase()].sort().join('|');
+    const key = [m.dateStr, pair, evKey(m.event), m.details.toLowerCase()].join('~');
+    let s = bag.get(key);
+    if (!s) { s = { dateStr: m.dateStr, dateObj: m.dateObj, event: m.event, details: m.details, teamA: m.team1, teamB: m.team2, winsA: 0, winsB: 0, maps: [], idx: m.idx }; bag.set(key, s); }
+    const aIsT1 = sameTeam(m.team1, s.teamA);
+    const a = aIsT1 ? m.score1 : m.score2, b = aIsT1 ? m.score2 : m.score1;
+    if (a > b) s.winsA++; else if (b > a) s.winsB++;
+    s.maps.push({ map: m.map, a, b, idx: m.idx });
+    s.idx = Math.max(s.idx, m.idx);
+  }
+  const list = [...bag.values()];
+  list.forEach(s => s.maps.sort((x, y) => x.idx - y.idx));
+  // newest first; inside one day the later rows of the sheet are the later matches
+  list.sort((x, y) => (y.dateStr || '').localeCompare(x.dateStr || '') || y.idx - x.idx);
+  return list;
+}
+
+async function loadEvents() {
+  const res = await fetch(URLS.events);   // large file: let the browser cache it
+  if (!res.ok) throw new Error('kz-events-backup.json → HTTP ' + res.status);
+  const arr = await res.json();
+  state.events = (Array.isArray(arr) ? arr : []).filter(e => e && e.name).map(e => ({
+    key: evKey(e.name), name: String(e.name).replace(/\s+/g, ' ').trim(), logo: e.logo || '', stars: Number(e.stars) || 0,
+    major: String(e.major || '').toLowerCase() === 'yes', city: e.city || '', country: e.country || '', prizePool: e.prizePool || '',
+    standings: (e.standings || []).map(s => ({ label: String(s.label || '').trim(), teams: (s.teams || []).map(t => String(t.name || '').trim().toLowerCase()) }))
+  }));
 }
 
 async function loadLogos() {
@@ -686,16 +914,41 @@ function medalIconHtml(g, opts) {
   window.hideTip = hide;
 })();
 
-/* ── render: hero ── */
-function teamMatches() {
-  if (!state.matches) return [];
+/* ── ranking movement (current ranking vs old.xlsx, like the Global Ranking) ── */
+function movement() {
+  const t = state.team;
+  const o = state.oldRanking && state.oldRanking.find(x => sameTeam(x.team, t.team));
+  if (!state.oldRanking) return null;
+  if (!o) return { isNew: true };
+  return { old: o, pos: o.pos - t.pos, regionPos: o.regionPos - t.regionPos, points: Math.trunc(t.points) - Math.trunc(o.points) };
+}
+/* positive = improved. `what` is appended for screen readers / clarity */
+function deltaChip(d, opts) {
+  opts = opts || {};
+  if (d === 'new') return '<span class="dl new">NEW</span>';
+  if (d == null) return '';
+  if (d === 0) return `<span class="dl flat">—${opts.flat === undefined ? ' no change' : (opts.flat ? ' ' + opts.flat : '')}</span>`;
+  const n = Math.abs(d).toLocaleString('en-US');
+  return d > 0 ? `<span class="dl up">▲ ${opts.signed ? '+' : ''}${n}${opts.unit || ''}</span>` : `<span class="dl down">▼ ${opts.signed ? '−' : ''}${n}${opts.unit || ''}</span>`;
+}
+
+/* ── matches as series, from this team's point of view ── */
+function teamSeries() {
+  if (!state.series) return [];
   const t = state.team.team;
-  return state.matches.filter(m => sameTeam(m.team1, t) || sameTeam(m.team2, t)).map(m => {
-    const home = sameTeam(m.team1, t);
-    const mine = home ? m.score1 : m.score2, theirs = home ? m.score2 : m.score1;
-    return { m, opp: home ? m.team2 : m.team1, mine, theirs, res: mine > theirs ? 'w' : mine < theirs ? 'l' : 'd' };
+  return state.series.filter(s => sameTeam(s.teamA, t) || sameTeam(s.teamB, t)).map(s => {
+    const isA = sameTeam(s.teamA, t);
+    const mine = isA ? s.winsA : s.winsB, theirs = isA ? s.winsB : s.winsA;
+    return { s, isA, opp: isA ? s.teamB : s.teamA, mine, theirs, res: mine > theirs ? 'w' : mine < theirs ? 'l' : 'd' };
   });
 }
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function fmtDate(iso, withYear) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+  return m ? `${m[3]} ${MONTHS[Number(m[2]) - 1]}${withYear ? ' ' + m[1] : ''}` : (iso || '—');
+}
+
+/* ── render: hero ── */
 function renderHero() {
   const t = state.team;
   document.title = `${t.team} · NEXUS`;
@@ -711,9 +964,13 @@ function renderHero() {
   const titles = th.filter(e => e.position === 'Winner').length;
   const podiums = th.filter(isPodium).length;
   const majors = Math.max(t.majors, th.filter(e => e.position === 'Winner' && e.tier >= 5).length);
-  const form = teamMatches().slice(0, 5);
+  const form = teamSeries().slice(0, 5);
+  const mv = movement();
   const dash = v => state.historyLoaded ? v : '—';
-  const stat = (l, v, cls) => `<div><div class="hero-stat-l">${l}</div><div class="hero-stat-v${cls || ''}">${v}</div></div>`;
+  const stat = (l, v, cls, extra) => `<div><div class="hero-stat-l">${l}</div><div class="hero-stat-v${cls || ''}">${v}</div>${extra ? `<div class="hero-stat-d">${extra}</div>` : ''}</div>`;
+  const gChip = mv ? (mv.isNew ? deltaChip('new') : deltaChip(mv.pos, { flat: 'holding' })) : '';
+  const rChip = mv && !mv.isNew ? deltaChip(mv.regionPos, { flat: '' }) : '';
+  const pChip = mv && !mv.isNew ? deltaChip(mv.points, { signed: true, flat: 'no change' }) : '';
 
   $('#tpHero').innerHTML = `
     <div class="hero-ghost" aria-hidden="true">${t.pos}</div>
@@ -723,17 +980,17 @@ function renderHero() {
         <div class="hero-kicker"><span>Team profile</span>
           ${region ? `<span class="hero-chip">${esc(region)}</span>` : ''}${t.tier ? `<span class="hero-chip accent">${esc(t.tier)}</span>` : ''}</div>
         <h1 class="hero-name">${esc(t.team)}</h1>
-        ${form.length ? `<div class="hero-form"><span>Last ${form.length}</span><div class="hero-form-dots">${form.map(f =>
+        ${form.length ? `<div class="hero-form"><span>Last ${form.length} matches</span><div class="hero-form-dots">${form.map(f =>
           `<span class="${f.res}" title="${esc(f.mine + '–' + f.theirs + ' vs ' + f.opp)}">${f.res.toUpperCase()}</span>`).join('')}</div></div>` : ''}
       </div>
       <div class="hero-rank">
         <div class="hero-rank-label">World ranking</div>
-        <div class="hero-rank-n${t.pos <= 3 ? ' r' + t.pos : ''}"><sup>#</sup>${t.pos}</div>
-        <div class="hero-rank-sub"><b>#${t.regionPos}</b> in ${esc(region || 'region')} · of ${state.ranking.length} teams</div>
+        <div class="hero-rank-row"><div class="hero-rank-n${t.pos <= 3 ? ' r' + t.pos : ''}"><sup>#</sup>${t.pos}</div>${gChip ? `<div class="hero-rank-d">${gChip}</div>` : ''}</div>
+        <div class="hero-rank-sub"><b>#${t.regionPos}</b> in ${esc(region || 'region')} ${rChip}</div>
       </div>
     </div>
     <div class="hero-stats">
-      ${stat('Points', fmtPts(t.points))}
+      ${stat('Points', fmtPts(t.points), '', pChip)}
       ${stat('Record', `${t.victories}–${t.loses}`)}
       ${stat('Win rate', wr)}
       ${stat('Win streak', t.streak, t.streak >= 3 ? ' hot' : '')}
@@ -749,7 +1006,7 @@ function renderHero() {
   }
 }
 
-/* ── render: trophy cabinet (icons ↔ detailed) ── */
+/* ── render: trophy cabinet (icons ↔ detailed) — team results only ── */
 function tallyHtml(items) {
   return '<div class="ach-tally">' + items.map(i =>
     `<div><div class="ach-tally-n ${i[1] === 0 ? 't-none' : (i[2] || '')}">${i[1]}</div><div class="ach-tally-l">${i[0]}</div></div>`).join('') + '</div>';
@@ -765,27 +1022,69 @@ function renderAchievements() {
   const results = events.filter(e => e.kind === 'EVENT');
   const podium = events.filter(e => isPodium(e) || e.kind === 'BADGE');
   const others = results.length - results.filter(isPodium).length;
-  const awards = state.playerHistory.filter(h => sameTeam(h.team, t) && h.kind !== 'EVENT').sort(byNewest);
   $('#tpCabCount').textContent = podium.length ? `${podium.length} on the shelf` : '';
 
   if (view === 'icons') {
-    const foot = [others ? `${others} top 4–8 finish${others > 1 ? 'es' : ''}` : '', awards.length ? `${awards.length} individual award${awards.length > 1 ? 's' : ''}` : '']
-      .filter(Boolean).join(' and ');
     box.innerHTML = (podium.length
         ? `<div class="shelf lg">${podium.map(e => trophyIconHtml(e, { showPrize: true, focusable: true })).join('')}</div>`
         : '<div class="shelf-none">No top-3 finishes yet.</div>')
-      + (foot ? `<div class="cab-foot">${foot} in the expanded view</div>` : '');
+      + (others ? `<div class="cab-foot">${others} top 4–8 finish${others > 1 ? 'es' : ''} in the expanded view</div>` : '');
     return;
   }
-  if (!events.length && !awards.length) { box.innerHTML = '<div class="shelf-none">No achievements recorded for this team yet.</div>'; return; }
+  if (!events.length) { box.innerHTML = '<div class="shelf-none">No achievements recorded for this team yet.</div>'; return; }
   const count = pos => results.filter(e => e.position === pos).length;
-  let html = tallyHtml([
+  box.innerHTML = tallyHtml([
     ['Titles', count('Winner'), 't-gold'], ['Runner-up', count('Second'), 't-silver'], ['3rd place', count('Third'), 't-bronze'],
-    ['Top 4–8', count('Fourth'), 't-none'], ['Events played', results.length], ['Prize money', fmtMoney(results.reduce((s, e) => s + e.wonAmount, 0))]
-  ]);
-  if (events.length) html += '<div class="ach-sub">Every result</div><div class="ach-grid">' + events.map(e => achItemHtml(e, { showPrize: true })).join('') + '</div>';
-  if (awards.length) html += '<div class="ach-sub">Individual awards won with the team</div><div class="ach-grid">' + awards.map(h => achItemHtml(h, { playerRow: true, showPlayer: true })).join('') + '</div>';
-  box.innerHTML = html;
+    ['Top 4–8', count('Fourth'), 't-none'], ['Events placed', results.length], ['Prize money', fmtMoney(results.reduce((s, e) => s + e.wonAmount, 0))]
+  ]) + '<div class="ach-grid">' + events.map(e => achItemHtml(e, { showPrize: true })).join('') + '</div>';
+}
+
+/* ── render: ranking trend (Overview tab) ── */
+function trendSvg(pts) {
+  const W = 760, H = 240, L = 70, R = 34, T = 34, B = 44;
+  const all = pts.flatMap(p => [p.pos, p.regionPos]);
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if (hi - lo < 4) { hi = lo + 4; }
+  lo = Math.max(1, lo - 1); hi = hi + 1;
+  const x = i => pts.length === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (pts.length - 1);
+  const y = v => T + (v - lo) * (H - T - B) / (hi - lo);          // position 1 at the top
+  const ticks = [...new Set([lo, Math.round((lo + hi) / 2), hi])];
+  const line = key => pts.map((p, i) => `${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(' ');
+  const every = Math.ceil(pts.length / 10);
+  const showLbl = i => i === 0 || i === pts.length - 1 || i % every === 0;
+  const dots = (key, cls) => pts.map((p, i) => {
+    // the line that is higher at this point gets its label above, the other one below, so they never collide
+    const other = key === 'pos' ? p.regionPos : p.pos;
+    const up = p[key] < other || (p[key] === other && key === 'pos');
+    const dy = up ? -11 : 19;
+    return `<circle class="${cls}" cx="${x(i).toFixed(1)}" cy="${y(p[key]).toFixed(1)}" r="4.5"><title>${esc(p.label)}: #${p[key]}</title></circle>` +
+      (showLbl(i) ? `<text class="tr-val ${cls}" x="${x(i).toFixed(1)}" y="${(y(p[key]) + dy).toFixed(1)}" text-anchor="middle">#${p[key]}</text>` : '');
+  }).join('');
+  return `<svg class="tr-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ranking position over time, global and regional">
+    ${ticks.map(v => `<line class="tr-grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="tr-axis" x="${L - 10}" y="${y(v) + 4}" text-anchor="end">#${v}</text>`).join('')}
+    <polyline class="tr-line reg" points="${line('regionPos')}"/><polyline class="tr-line glo" points="${line('pos')}"/>
+    ${dots('regionPos', 'reg')}${dots('pos', 'glo')}
+    ${pts.map((p, i) => showLbl(i) ? `<text class="tr-axis" x="${x(i).toFixed(1)}" y="${H - 12}" text-anchor="middle">${esc(p.label)}</text>` : '').join('')}
+  </svg>`;
+}
+function renderTrend() {
+  const box = $('#tpTrend');
+  const t = state.team, mv = movement();
+  const region = REGION_LABELS[t.region] || t.region || 'Region';
+  const tile = (label, now, before, chip) => `<div class="mv-tile"><div class="hero-stat-l">${label}</div>
+    <div class="mv-now">${now}</div><div class="mv-was">${before != null ? 'was ' + before : ''} ${chip || ''}</div></div>`;
+  let tiles;
+  if (!mv) tiles = tile('Global rank', '#' + t.pos) + tile(esc(region) + ' rank', '#' + t.regionPos) + tile('Points', fmtPts(t.points));
+  else if (mv.isNew) tiles = tile('Global rank', '#' + t.pos, null, deltaChip('new')) + tile(esc(region) + ' rank', '#' + t.regionPos, null, deltaChip('new')) + tile('Points', fmtPts(t.points), null, deltaChip('new'));
+  else tiles = tile('Global rank', '#' + t.pos, '#' + mv.old.pos, deltaChip(mv.pos, { unit: mv.pos && Math.abs(mv.pos) === 1 ? ' place' : ' places' }))
+    + tile(esc(region) + ' rank', '#' + t.regionPos, '#' + mv.old.regionPos, deltaChip(mv.regionPos, { unit: Math.abs(mv.regionPos) === 1 ? ' place' : ' places' }))
+    + tile('Points', fmtPts(t.points), fmtPts(mv.old.points), deltaChip(mv.points, { signed: true }));
+  const pts = state.trajectory;
+  $('#tpTrendNote').textContent = pts.length > 1 ? `${pts.length} ranking snapshots` : '';
+  box.innerHTML = `<div class="mv-grid"><div class="mv-tiles">${tiles}</div>
+    <div class="mv-chart">${pts.length > 1
+      ? `<div class="tr-legend"><span class="glo">● Global</span><span class="reg">● ${esc(region)}</span><span>higher on the chart = better position</span></div>${trendSvg(pts)}`
+      : '<div class="tp-empty">The chart needs at least two ranking snapshots (file/old.xlsx or file/archives/).</div>'}</div></div>`;
 }
 
 /* ── render: roster ── */
@@ -808,45 +1107,128 @@ function renderRoster() {
     const a = playerAwards(p.name);
     const shown = a.trophies.slice(0, CARD_TROPHY_LIMIT), hidden = a.trophies.length - shown.length;
     const groups = groupMedals(a.medals);
-    let awards = '';
-    if (shown.length) awards += `<div class="tp-awards-l">Latest trophies</div><div class="shelf sm">${shown.map(h => trophyIconHtml(h, { playerRow: true })).join('')}${hidden > 0 ? `<span class="shelf-more">+${hidden}</span>` : ''}</div>`;
-    if (groups.length) awards += `<div class="tp-awards-l">Medals</div><div class="shelf xs">${groups.map(g => medalIconHtml(g)).join('')}</div>`;
-    if (!awards) awards = `<div class="shelf-none">${state.historyLoaded ? 'No awards yet' : '—'}</div>`;
+    const medals = groups.length ? `<div class="shelf xs tp-cardmedals">${groups.map(g => medalIconHtml(g)).join('')}</div>` : '';
+    const trophies = shown.length
+      ? `<div class="tp-awards-l"><span>Latest trophies</span>${hidden > 0 ? `<span>+${hidden} older</span>` : ''}</div><div class="shelf cardrow">${shown.map(h => trophyIconHtml(h, { playerRow: true })).join('')}</div>`
+      : `<div class="shelf-none">${state.historyLoaded ? 'No trophies yet' : '—'}</div>`;
     return `<button type="button" class="tp-player" data-player="${esc(p.name)}">
       <div class="tp-photo">${photoHtml(p.name)}${p.roster && p.roster !== 'Starter' ? `<span class="tp-bench-tag">${esc(p.roster)}</span>` : ''}</div>
       <div class="tp-pbody">
-        <div class="tp-pname">${flagImg(p.country)}<span>${esc(p.name)}</span></div>
+        <div class="tp-phead"><div class="tp-pname">${flagImg(p.country)}<span>${esc(p.name)}</span></div>${medals}</div>
         <div class="tp-roles">${roleChips(p.roles)}</div>
-        <div class="tp-awards">${awards}</div>
+        <div class="tp-awards">${trophies}</div>
       </div>
     </button>`;
   }).join('') + '</div>';
 }
 
-/* ── render: matches ── */
+/* ── History tab: tournaments + matches ── */
+const ordinal = n => { n = Number(n); const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+function prettyPlace(label) {
+  const nums = String(label).match(/\d+/g);
+  if (!nums) return { text: label, tier: 'none' };
+  const text = nums.length > 1 ? `${ordinal(nums[0])}–${ordinal(nums[1])}` : ordinal(nums[0]);
+  return { text, tier: nums.length === 1 ? ({ 1: 'gold', 2: 'silver', 3: 'bronze' }[nums[0]] || 'none') : 'none' };
+}
+function buildTournaments() {
+  const t = state.team.team, tl = t.toLowerCase();
+  const bag = new Map();
+  const get = (key, name) => { if (!bag.has(key)) bag.set(key, { key, name, series: [], th: null, ev: null }); return bag.get(key); };
+  teamSeries().forEach(v => get(evKey(v.s.event), v.s.event).series.push(v));
+  state.teamHistory.filter(e => sameTeam(e.team, t) && e.kind === 'EVENT').forEach(e => { get(evKey(e.event), e.event).th = e; });
+  (state.events || []).forEach(ev => {
+    const st = ev.standings.find(s => s.teams.includes(tl));
+    if (st || bag.has(ev.key)) { const o = get(ev.key, ev.name); o.ev = ev; o.standing = st ? st.label : null; }
+  });
+  const list = [...bag.values()];
+  list.forEach(o => {
+    if (o.ev) o.name = o.ev.name;
+    o.series.sort((a, b) => (a.s.dateStr || '').localeCompare(b.s.dateStr || '') || a.s.idx - b.s.idx);   // path: oldest → newest
+    o.first = o.series.length ? o.series[0].s.dateStr : ''; o.last = o.series.length ? o.series[o.series.length - 1].s.dateStr : '';
+    o.won = o.series.filter(v => v.res === 'w').length; o.lost = o.series.filter(v => v.res === 'l').length;
+    if (o.standing) o.place = prettyPlace(o.standing);
+    else if (o.th) o.place = prettyPlace({ Winner: '1', Second: '2', Third: '3', Fourth: '4-8' }[o.th.position] || o.th.position);
+    else if (o.series.length) {
+      const lastS = o.series[o.series.length - 1];
+      o.place = { text: lastS.res === 'l' ? 'Out · ' + (lastS.s.details || 'eliminated') : 'Played', tier: 'none', soft: true };
+    } else o.place = { text: '—', tier: 'none', soft: true };
+    o.stars = (o.ev && o.ev.stars) || (o.th && o.th.tier) || 0;
+  });
+  list.sort((a, b) => (b.last || '').localeCompare(a.last || '') || ((b.th ? b.th.month : 0) - (a.th ? a.th.month : 0)));
+  return list;
+}
+function seriesRowHtml(v, opts) {
+  opts = opts || {};
+  const s = v.s;
+  const ranked = state.rankedSet.has(v.opp.toLowerCase());
+  const opp = ranked ? `<a class="tp-opp" href="team.html?team=${encodeURIComponent(v.opp)}">${logoImg(v.opp)}${esc(v.opp)}</a>` : `<span class="tp-opp-plain">${logoImg(v.opp)}${esc(v.opp)}</span>`;
+  const maps = s.maps.map((m, i) => {
+    const mine = v.isA ? m.a : m.b, theirs = v.isA ? m.b : m.a;
+    return `<div class="sr-map"><span class="sr-mapn">Map ${i + 1}</span><span class="pa-map-badge">${esc(m.map || '—')}</span>
+      <span class="sr-mapscore ${mine > theirs ? 'w' : mine < theirs ? 'l' : ''}">${mine}–${theirs}</span></div>`;
+  }).join('');
+  return `<details class="sr">
+    <summary>
+      <span class="sr-date">${esc(fmtDate(s.dateStr, opts.year))}</span>
+      <span class="tp-res ${v.res}">${v.res.toUpperCase()}</span>
+      <span class="sr-score">${v.mine}–${v.theirs}</span>
+      <span class="sr-opp"><span class="sr-vs">vs</span>${opp}</span>
+      <span class="sr-stage">${esc(s.details || '—')}${opts.showEvent && s.event ? `<small>${esc(s.event)}</small>` : ''}</span>
+      <span class="sr-chev" aria-hidden="true">▾</span>
+    </summary>
+    <div class="sr-maps">${maps}</div>
+  </details>`;
+}
+function renderTournaments() {
+  const box = $('#tpTours');
+  if (state.series === null && !state.historyLoaded) { box.innerHTML = '<div class="tp-empty">Match history and achievements files are not available.</div>'; return; }
+  const list = buildTournaments();
+  $('#tabHistCount').textContent = list.length || '';
+  $('#tpTourNote').textContent = list.length ? `${list.length} tournament${list.length > 1 ? 's' : ''}` : '';
+  if (!list.length) { box.innerHTML = '<div class="tp-empty">No tournaments on record for this team.</div>'; return; }
+  box.innerHTML = list.map(o => {
+    const where = o.ev ? [o.ev.city, o.ev.country].filter(Boolean).filter((x, i, a) => a.indexOf(x) === i).join(', ') : '';
+    const dates = o.first ? (o.first === o.last ? fmtDate(o.first, true) : `${fmtDate(o.first)} – ${fmtDate(o.last, true)}`) : (o.th ? 'Month ' + o.th.month : '');
+    const meta = [o.stars ? `<span class="ach-stars">${'★'.repeat(Math.min(5, o.stars))}</span>${o.stars >= 5 ? ' Major' : ''}` : '', esc(where), esc(dates),
+      o.ev && o.ev.prizePool ? 'Prize pool ' + esc(o.ev.prizePool) : ''].filter(Boolean).join(' · ');
+    const logo = o.ev && o.ev.logo ? `<img src="${o.ev.logo}" alt="">` : `<span>${esc(o.name.charAt(0))}</span>`;
+    return `<details class="tour">
+      <summary>
+        <span class="tour-logo">${logo}</span>
+        <span class="tour-id"><span class="tour-name">${esc(o.name)}</span><span class="tour-meta">${meta}</span></span>
+        <span class="tour-rec">${o.series.length ? `<b>${o.won}–${o.lost}</b><small>matches</small>` : ''}</span>
+        <span class="tour-place t-${o.place.tier}${o.place.soft ? ' soft' : ''}">${esc(o.place.text)}</span>
+        <span class="sr-chev" aria-hidden="true">▾</span>
+      </summary>
+      <div class="tour-path">${o.series.length
+        ? `<div class="tour-path-l">Path through the event · first match at the top</div>${o.series.map(v => seriesRowHtml(v)).join('')}`
+        : '<div class="shelf-none">No matches logged for this event.</div>'}</div>
+    </details>`;
+  }).join('');
+}
+const MATCH_PAGE = 20;
 function renderMatches() {
   const box = $('#tpMatches');
-  if (state.matches === null) { box.innerHTML = '<div class="tp-empty">Match history (file/history.xlsx) is not available.</div>'; return; }
-  const all = teamMatches();
+  if (state.series === null) { box.innerHTML = '<div class="tp-empty">Match history (file/history.xlsx) is not available.</div>'; return; }
+  const all = teamSeries();
   if (!all.length) { box.innerHTML = '<div class="tp-empty">No matches recorded for this team.</div>'; return; }
-  $('#tpMatchNote').textContent = `${all.length} maps on record · ${all.filter(v => v.res === 'w').length} won`;
-  const ranked = new Set(state.ranking.map(r => r.team.toLowerCase()));
-  box.innerHTML = `<div class="table-wrapper tp-matches"><table>
-    <thead><tr><th>Date</th><th></th><th class="right">Score</th><th>Opponent</th><th>Map</th><th>Event</th></tr></thead>
-    <tbody>${all.slice(0, MATCH_LIMIT).map(v => {
-      const m = v.m;
-      const opp = ranked.has(v.opp.toLowerCase())
-        ? `<a class="tp-opp" href="team.html?team=${encodeURIComponent(v.opp)}">${logoImg(v.opp)}${esc(v.opp)}</a>`
-        : `${logoImg(v.opp)}${esc(v.opp)}`;
-      return `<tr>
-        <td class="mono text-xs text-muted">${esc(m.dateStr || '—')}</td>
-        <td><span class="tp-res ${v.res}">${v.res.toUpperCase()}</span></td>
-        <td class="right mono">${v.mine}–${v.theirs}</td>
-        <td>${opp}</td>
-        <td>${m.map ? `<span class="pa-map-badge">${esc(m.map)}</span>` : '<span class="text-muted">—</span>'}</td>
-        <td class="text-muted">${esc([m.event, m.details].filter(Boolean).join(' · ') || '—')}</td>
-      </tr>`;
-    }).join('')}</tbody></table></div>`;
+  const w = all.filter(v => v.res === 'w').length, l = all.filter(v => v.res === 'l').length;
+  const mapsW = all.reduce((s, v) => s + v.mine, 0), mapsL = all.reduce((s, v) => s + v.theirs, 0);
+  $('#tpMatchNote').textContent = `${all.length} matches · ${w}–${l} · maps ${mapsW}–${mapsL}`;
+  const shown = all.slice(0, state.matchLimit);
+  box.innerHTML = shown.map(v => seriesRowHtml(v, { showEvent: true, year: true })).join('')
+    + (all.length > shown.length ? `<button type="button" class="btn btn-ghost" id="tpMoreMatches" style="margin-top:14px">Show ${Math.min(MATCH_PAGE, all.length - shown.length)} more · ${all.length - shown.length} left</button>` : '');
+}
+
+/* ── tabs ── */
+function setTab(name, push) {
+  name = name === 'history' ? 'history' : 'overview';
+  ['overview', 'history'].forEach(n => {
+    $('#tab-' + n).hidden = n !== name;
+    const b = $(`.tp-tab[data-tab="${n}"]`); b.classList.toggle('active', n === name); b.setAttribute('aria-selected', n === name);
+  });
+  document.querySelectorAll('.mh-ribbon [data-tab]').forEach(a => a.classList.toggle('active', a.dataset.tab === name));
+  if (push) history.replaceState(null, '', name === 'history' ? '#history' : location.pathname + location.search);
 }
 
 /* ── player panel ── */
@@ -871,6 +1253,23 @@ function closePlayer() {
   document.body.style.overflow = '';
   if (lastFocus && lastFocus.focus) lastFocus.focus();
 }
+const titleCase = s => String(s).toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()).replace(/\bFa\b/, 'Free-agent');
+function careerHtml(p) {
+  const seen = new Set();
+  const moves = state.transactions.filter(x => x.player === p.name).sort((a, b) => a.id - b.id)
+    .filter(x => { const k = [x.month, x.type, x.from, x.to].join('|'); if (seen.has(k)) return false; seen.add(k); return true; });
+  const hasTeam = p.team && p.team.toLowerCase() !== 'none';
+  const teamCell = n => /^free agen/i.test(n) ? '<span class="cr-fa">Free agency</span>' : `<span class="cr-team">${logoImg(n)}${esc(n)}</span>`;
+  let rows = moves.map(x => `<li><span class="cr-month">Month ${x.month}</span><span class="cr-type">${esc(titleCase(x.type))}</span>
+      <span class="cr-move">${x.from === x.to ? teamCell(x.to) : teamCell(x.from) + '<span class="cr-arrow">→</span>' + teamCell(x.to)}</span>
+      ${x.amount > 0 ? `<span class="cr-fee">Fee ${fmtMoney(x.amount)}</span>` : ''}</li>`).join('');
+  rows += `<li class="cr-now"><span class="cr-month">Now</span><span class="cr-type">${hasTeam ? esc(p.roster || 'Player') : 'Unsigned'}</span><span class="cr-move">${hasTeam ? teamCell(p.team) : teamCell('Free agency')}</span></li>`;
+  // teams the player collected results with, even without a logged transfer
+  const others = [...new Set(state.playerHistory.filter(h => h.player === p.name && h.team && h.team.toLowerCase() !== 'none' && !sameTeam(h.team, p.team)).map(h => h.team))];
+  return `<div class="ach-sub">Career</div><ul class="cr-list">${rows}</ul>`
+    + (others.length ? `<div class="cab-foot">Also has results with ${others.map(esc).join(', ')}</div>` : '')
+    + (!moves.length ? '<div class="cab-foot">No transfers on record</div>' : '');
+}
 function renderPlayerPanel(resetScroll) {
   const p = state.players.find(x => x.name === state.openPlayer);
   if (!p) return;
@@ -878,6 +1277,7 @@ function renderPlayerPanel(resetScroll) {
   const a = playerAwards(p.name);
   const majors = Math.max(p.majorWinner, a.placements.filter(h => h.tier >= 5 && h.position === 'Winner').length);
   const view = getView('player');
+  const groups = groupMedals(a.medals);
   const meta = [
     hasTeam ? `<span class="pp-team">${logoImg(p.team)}${esc(p.team)}</span>` : '<span class="pp-team">Free agent</span>',
     p.roster && hasTeam ? esc(p.roster) : '',
@@ -890,8 +1290,9 @@ function renderPlayerPanel(resetScroll) {
       <div class="pp-kicker">Player</div>
       <div class="pp-name" id="ppName">${flagImg(p.country)}<span>${esc(p.name)}</span></div>
       <div class="pp-meta">${meta}</div>
-      <div class="tp-roles" style="margin-top:10px">${roleChips(p.roles) || '<span class="tp-role">No role assigned</span>'}</div>
+      <div class="tp-roles" style="margin-top:10px;min-height:0">${roleChips(p.roles) || '<span class="tp-role">No role assigned</span>'}</div>
     </div>
+    ${groups.length ? `<div class="pp-medals"><div class="tp-awards-l"><span>Medals</span></div><div class="shelf pm">${groups.map(g => medalIconHtml(g, { focusable: true })).join('')}</div></div>` : ''}
     <button type="button" class="pp-close" id="ppClose" aria-label="Close player panel">×</button>`;
 
   let body = `
@@ -900,36 +1301,38 @@ function renderPlayerPanel(resetScroll) {
       ${[['Titles', p.titles, 't-gold'], ['Majors', majors, 't-gold'], ['MVP', p.mvp, 't-gold'], ['EVP', p.evp, 't-silver'], ['VP', p.vp, 't-bronze']]
         .map(c => `<div><div class="ach-tally-n ${c[1] ? c[2] : 't-none'}">${c[1]}</div><div class="ach-tally-l">${c[0]}</div></div>`).join('')}
     </div>
-    <div class="pp-achhead"><div class="pp-achhead-t">Achievements</div>
+    <div class="pp-achhead"><div class="pp-achhead-t">Trophy Cabinet</div>
       ${a.hist.length ? `<button type="button" class="btn btn-ghost view-toggle" id="ppAchToggle" aria-pressed="${view === 'detailed'}">${toggleLabel(view)}</button>` : ''}</div>`;
 
   if (!state.historyLoaded) body += '<div class="tp-empty" style="margin-top:12px">Achievements file could not be loaded.</div>';
   else if (!a.hist.length) body += '<div class="tp-empty" style="margin-top:12px">No achievements recorded for this player yet.</div>';
   else if (view === 'icons') {
     const others = a.placements.length - a.trophies.length;
-    const groups = groupMedals(a.medals);
-    body += `<div class="ach-sub">Trophies · ${a.trophies.length}</div><div class="pp-shelfbox">${a.trophies.length
+    body += `<div class="pp-shelfbox" style="margin-top:12px">${a.trophies.length
       ? `<div class="shelf md">${a.trophies.map(h => trophyIconHtml(h, { playerRow: true, focusable: true })).join('')}</div>`
-      : '<div class="shelf-none">No top-3 finishes yet.</div>'}</div>`;
-    if (groups.length) body += `<div class="ach-sub">Individual awards · ${a.medals.length}</div><div class="pp-shelfbox"><div class="shelf md">${groups.map(g => medalIconHtml(g, { focusable: true })).join('')}</div></div>`;
-    body += `<div class="cab-foot">Hover an icon for details${others ? ` · ${others} top 4–8 finish${others > 1 ? 'es' : ''} in the expanded view` : ''}</div>`;
+      : '<div class="shelf-none">No top-3 finishes yet.</div>'}</div>
+      <div class="cab-foot">Hover an icon for details${others ? ` · ${others} top 4–8 finish${others > 1 ? 'es' : ''} in the expanded view` : ''}</div>`;
   } else {
     if (a.medals.length) body += `<div class="ach-sub">Individual awards · ${a.medals.length}</div><div class="ach-grid">${a.medals.map(h => achItemHtml(h, { playerRow: true, showTeam: true })).join('')}</div>`;
     if (a.placements.length) body += `<div class="ach-sub">Trophies &amp; placements · ${a.placements.length}</div><div class="ach-grid">${a.placements.map(h => achItemHtml(h, { playerRow: true, showTeam: true })).join('')}</div>`;
   }
+  if (state.historyLoaded) body += careerHtml(p);
   $('#ppBody').innerHTML = body;
   if (resetScroll) $('#ppBody').scrollTop = 0;
 }
 
 document.addEventListener('click', e => {
+  const tab = e.target.closest('[data-tab]');
+  if (tab) { e.preventDefault(); setTab(tab.dataset.tab, true); if (tab.closest('.mh-ribbon')) $('#tpTabs').scrollIntoView({ block: 'start' }); return; }
   const card = e.target.closest('.tp-player');
   if (card) { openPlayer(card.dataset.player); return; }
+  if (e.target.closest('#tpMoreMatches')) { state.matchLimit += MATCH_PAGE; renderMatches(); return; }
   if (e.target.closest('#tpAchToggle')) { setView('team', getView('team') === 'detailed' ? 'icons' : 'detailed'); hideTip(); renderAchievements(); return; }
   if (e.target.closest('#ppAchToggle')) { setView('player', getView('player') === 'detailed' ? 'icons' : 'detailed'); hideTip(); renderPlayerPanel(false); $('#ppAchToggle').focus(); return; }
   if (e.target.closest('#ppClose') || e.target.id === 'ppOverlay') closePlayer();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.openPlayer) closePlayer(); });
-$('#tpSwitch').addEventListener('change', e => { location.href = 'team.html?team=' + encodeURIComponent(e.target.value); });
+$('#tpSwitch').addEventListener('change', e => { location.href = 'team.html?team=' + encodeURIComponent(e.target.value) + location.hash; });
 
 /* ── boot ── */
 function showNotFound(msg) {
@@ -939,32 +1342,41 @@ function showNotFound(msg) {
     <p style="margin:14px 0 20px" class="text-muted">Pick a team from the ranking to open its page.</p>
     <a class="btn btn-primary" href="index.html#global" style="text-decoration:none">← Global Ranking</a></div></div>`;
 }
-function renderAll() { tips = []; renderHero(); renderAchievements(); renderRoster(); renderMatches(); if (state.openPlayer) renderPlayerPanel(false); }
+/* Re-drawing replaces the lists, so remember which tournaments / matches were open */
+function renderAll() {
+  tips = [];
+  renderHero(); renderAchievements(); renderTrend(); renderRoster(); renderTournaments(); renderMatches();
+  if (state.openPlayer) renderPlayerPanel(false);
+}
 
 (async () => {
+  state.matchLimit = MATCH_PAGE;
   // Ranking + logos first: enough to draw the header immediately
   const [rankRes] = await Promise.allSettled([loadRanking(), loadLogos()]);
   if (rankRes.status === 'rejected') { console.error(rankRes.reason); showNotFound('Ranking file (file/ranking.xlsx) could not be loaded.'); return; }
   if (!state.teamParam) { showNotFound('No team selected.'); return; }
   state.team = state.ranking.find(t => sameTeam(t.team, state.teamParam));
   if (!state.team) { showNotFound(`“${state.teamParam}” is not in the current ranking.`); return; }
+  state.rankedSet = new Set(state.ranking.map(r => r.team.toLowerCase()));
+  setTab(location.hash === '#history' ? 'history' : 'overview', false);
   renderHero();
 
-  const [pl, hi, ma] = await Promise.allSettled([loadPlayers(), loadHistory(), loadMatches()]);
-  [pl, hi, ma].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
+  const [pl, hi, ma, ol] = await Promise.allSettled([loadPlayers(), loadHistory(), loadMatches(), loadOldRanking()]);
+  [pl, hi, ma, ol].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
+  state.trajectory = [];
   renderAll();
   const missing = [pl.status === 'rejected' && 'players_updated.xlsx', hi.status === 'rejected' && 'history_updated.xlsx'].filter(Boolean);
-  setStatus(missing.length ? 'Loaded with missing files: ' + missing.join(', ') : 'Team data loaded · loading trophy icons…', missing.length ? 'err' : 'loading');
+  setStatus(missing.length ? 'Loaded with missing files: ' + missing.join(', ') : 'Team data loaded · loading ranking archive, trophy icons and event details…', missing.length ? 'err' : 'loading');
 
-  // Trophy icons last — awards.json is large, the page is already usable without it
-  try {
-    await loadAwards();
-    renderAll();
-    if (!missing.length) setStatus('All data loaded', 'ok');
-  } catch (e) {
-    console.warn(e);
-    if (!missing.length) setStatus('Loaded · trophy icons (assets/awards.json) not available', 'ok');
-  }
+  // Slower extras, each optional: the page is already usable without them
+  const extras = await Promise.allSettled([
+    loadTrajectory().then(renderTrend),
+    loadAwards().then(() => { tips = []; renderAchievements(); renderRoster(); if (state.openPlayer) renderPlayerPanel(false); }),
+    loadEvents().then(renderTournaments)
+  ]);
+  extras.forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
+  const off = [extras[1].status === 'rejected' && 'trophy icons (assets/awards.json)', extras[2].status === 'rejected' && 'event details (file/kz-events-backup.json)'].filter(Boolean);
+  if (!missing.length) setStatus(off.length ? 'Loaded · not available: ' + off.join(', ') : 'All data loaded', 'ok');
 })();
 </script>
 </body>
