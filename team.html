@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NEXUS · Team</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    /* ════════════════════════════════════════════════════════
+       TEAM PAGE — built on the Nexus Ledger stylesheet
+       (assets/style.css supplies colours, fonts, cards, tables)
+    ════════════════════════════════════════════════════════ */
+    .tp-wrap{ max-width:1320px; width:100%; margin:0 auto; }
+    .tp-title{ display:flex; align-items:center; gap:16px; }
+    .tp-logo{ width:64px; height:64px; object-fit:contain; flex:none; }
+    .tp-logo-fallback{
+      width:64px; height:64px; flex:none; display:flex; align-items:center; justify-content:center;
+      border:1.5px solid var(--text); border-radius:3px; background:#fff;
+      font-family:var(--font-display); font-size:30px; font-weight:800; color:var(--accent);
+    }
+    .tp-switch{ min-width:220px; }
+    .tp-section-note{ font-family:var(--font-mono); font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted2); }
+    .stat-value small{ font-family:var(--font-mono); font-size:11px; font-weight:500; color:var(--muted); margin-left:4px; }
+
+    /* ── Roster ── */
+    .tp-roster{ display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:14px; }
+    .tp-player{
+      display:flex; flex-direction:column; text-align:left; padding:0; cursor:pointer;
+      background:#fff; border:1px solid var(--border); border-radius:3px; overflow:hidden;
+      font:inherit; color:inherit; transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+    .tp-player:hover, .tp-player:focus-visible{
+      border-color:var(--accent); box-shadow:0 10px 24px -16px rgba(140,47,36,.6); transform:translateY(-2px); outline:none;
+    }
+    .tp-photo{
+      aspect-ratio:1/1; width:100%; background:var(--bg3); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;
+    }
+    .tp-photo img{ width:100%; height:100%; object-fit:cover; object-position:top center; }
+    .tp-initial{ font-family:var(--font-display); font-size:64px; font-weight:700; color:var(--border-bright); line-height:1; }
+    .tp-bench-tag{
+      position:absolute; top:8px; left:8px; padding:2px 7px; border-radius:2px; background:var(--text); color:var(--bg);
+      font-family:var(--font-mono); font-size:9px; letter-spacing:1.5px; text-transform:uppercase;
+    }
+    .tp-pbody{ padding:12px 14px 14px; display:flex; flex-direction:column; gap:7px; flex:1; }
+    .tp-pname{ display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:19px; font-weight:700; line-height:1.1; overflow-wrap:anywhere; }
+    .tp-flag{ width:22px; height:auto; flex:none; border-radius:2px; box-shadow:0 0 0 1px rgba(28,26,23,.12); }
+    .tp-roles{ display:flex; flex-wrap:wrap; gap:4px; min-height:20px; }
+    .tp-role{
+      padding:2px 7px; border:1px solid var(--border-bright); border-radius:2px;
+      font-family:var(--font-mono); font-size:9.5px; letter-spacing:.8px; text-transform:uppercase; color:var(--muted);
+    }
+    .tp-medals{ display:flex; flex-wrap:wrap; gap:10px; font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+    .tp-medals b{ color:var(--text); font-weight:600; }
+    .tp-mv{ margin-top:auto; padding-top:9px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:baseline; }
+    .tp-mv-label{ font-family:var(--font-mono); font-size:9px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted2); }
+    .tp-mv-value{ font-family:var(--font-display); font-size:19px; font-weight:800; color:var(--accent); }
+
+    /* ── Achievements ── */
+    .ach-tally{ display:flex; flex-wrap:wrap; gap:0; border:1px solid var(--border); border-radius:3px; margin-bottom:18px; background:var(--bg3); }
+    .ach-tally > div{ flex:1; min-width:110px; padding:10px 16px; border-left:1px solid var(--border); }
+    .ach-tally > div:first-child{ border-left:none; }
+    .ach-tally-n{ font-family:var(--font-display); font-size:24px; font-weight:800; line-height:1; }
+    .ach-tally-l{ font-family:var(--font-mono); font-size:9px; letter-spacing:1.6px; text-transform:uppercase; color:var(--muted2); margin-top:4px; }
+    .t-gold{ color:var(--gold); } .t-silver{ color:#7d838e; } .t-bronze{ color:var(--bronze); } .t-none{ color:var(--muted); }
+
+    .ach-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(330px, 1fr)); gap:10px; }
+    .ach-item{
+      display:flex; align-items:center; gap:14px; padding:12px 14px;
+      background:#fff; border:1px solid var(--border); border-left:3px solid var(--border-bright); border-radius:3px;
+    }
+    .ach-item.tier-gold{ border-left-color:var(--gold); background:linear-gradient(90deg, rgba(169,132,46,.08), #fff 55%); }
+    .ach-item.tier-silver{ border-left-color:var(--silver); background:linear-gradient(90deg, rgba(154,160,171,.10), #fff 55%); }
+    .ach-item.tier-bronze{ border-left-color:var(--bronze); background:linear-gradient(90deg, rgba(176,122,67,.08), #fff 55%); }
+    .ach-icon{ width:60px; height:60px; flex:none; display:flex; align-items:center; justify-content:center; }
+    .ach-icon img{ width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(28,26,23,.22)); }
+    .ach-glyph{
+      width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      border:1.5px solid currentColor; font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:.5px;
+    }
+    .ach-text{ min-width:0; flex:1; }
+    .ach-line1{ font-family:var(--font-display); font-size:16px; font-weight:700; line-height:1.2; overflow-wrap:anywhere; }
+    .ach-pos{ font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
+    .ach-line2{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.5; }
+    .ach-stars{ color:var(--gold); letter-spacing:1px; }
+    .ach-sub{
+      display:flex; align-items:center; gap:10px; margin:22px 0 12px;
+      font-family:var(--font-mono); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent);
+    }
+    .ach-sub:first-child{ margin-top:0; }
+    .ach-sub::after{ content:''; flex:1; height:1px; background:var(--border); }
+    .ach-who{ color:var(--text); font-weight:600; }
+
+    /* ── Matches ── */
+    .tp-res{ display:inline-block; min-width:26px; text-align:center; padding:2px 6px; border-radius:2px; font-family:var(--font-mono); font-size:11px; font-weight:600; }
+    .tp-res.w{ background:rgba(63,125,82,.14); color:var(--good); border:1px solid rgba(63,125,82,.3); }
+    .tp-res.l{ background:rgba(163,57,44,.12); color:var(--bad); border:1px solid rgba(163,57,44,.28); }
+    .tp-res.d{ background:var(--bg3); color:var(--muted); border:1px solid var(--border); }
+    .tp-opp{ display:inline-flex; align-items:center; color:inherit; text-decoration:none; font-weight:600; border-bottom:1px solid transparent; }
+    .tp-matches{ max-height:none; }
+    .tp-opp:hover{ border-bottom-color:var(--accent); color:var(--accent); }
+
+    /* ── Player panel (drawer) ── */
+    .pp-overlay{ position:fixed; inset:0; z-index:200; background:rgba(28,26,23,.45); opacity:0; visibility:hidden; transition:opacity .2s ease, visibility .2s; }
+    .pp-overlay.open{ opacity:1; visibility:visible; }
+    .pp-panel{
+      position:fixed; top:0; right:0; bottom:0; z-index:201; width:min(560px, 100vw);
+      background:var(--bg); border-left:2px solid var(--text); box-shadow:-24px 0 48px -28px rgba(28,26,23,.7);
+      display:flex; flex-direction:column; transform:translateX(100%); visibility:hidden;
+      transition:transform .25s cubic-bezier(.4,0,.2,1), visibility .25s;
+    }
+    .pp-panel.open{ transform:none; visibility:visible; }
+    .pp-head{ display:flex; gap:16px; padding:22px 24px 18px; background:#fbf9f3; border-bottom:1.5px solid var(--text); position:relative; }
+    .pp-photo{ width:112px; height:112px; flex:none; border:1px solid var(--border-bright); border-radius:3px; background:#fff; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .pp-photo img{ width:100%; height:100%; object-fit:cover; object-position:top center; }
+    .pp-photo .tp-initial{ font-size:54px; }
+    .pp-id{ min-width:0; flex:1; padding-right:34px; }
+    .pp-kicker{ font-family:var(--font-mono); font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--accent); }
+    .pp-name{ display:flex; align-items:center; gap:10px; margin-top:6px; font-family:var(--font-display); font-size:32px; font-weight:700; line-height:1; overflow-wrap:anywhere; }
+    .pp-name .tp-flag{ width:28px; }
+    .pp-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin-top:10px; font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+    .pp-meta .sep{ color:var(--border-bright); }
+    .pp-meta .team-logo{ margin-right:5px; }
+    .pp-team{ display:inline-flex; align-items:center; color:var(--text); font-weight:600; }
+    .pp-close{
+      position:absolute; top:16px; right:18px; width:32px; height:32px; cursor:pointer;
+      background:none; border:1px solid var(--border-bright); border-radius:2px; color:var(--muted); font-size:18px; line-height:1;
+    }
+    .pp-close:hover{ background:var(--text); border-color:var(--text); color:var(--bg); }
+    .pp-body{ flex:1; overflow-y:auto; padding:20px 24px 28px; }
+    .pp-mv{ display:flex; align-items:baseline; justify-content:space-between; padding:14px 18px; background:#fff; border:1px solid var(--border); border-top:2px solid var(--accent); border-radius:3px; }
+    .pp-mv-value{ font-family:var(--font-display); font-size:34px; font-weight:800; color:var(--accent); line-height:1; }
+    .pp-counts{ display:grid; grid-template-columns:repeat(5, 1fr); margin-top:12px; background:#fff; border:1px solid var(--border); border-radius:3px; }
+    .pp-counts > div{ padding:10px 6px; text-align:center; border-left:1px solid var(--border); }
+    .pp-counts > div:first-child{ border-left:none; }
+    .pp-counts .ach-tally-n{ font-size:22px; }
+    .pp-body .ach-grid{ grid-template-columns:1fr; }
+    .pp-body .ach-sub{ margin-top:24px; }
+
+    .tp-empty{ padding:26px; text-align:center; font-family:var(--font-mono); font-size:12px; color:var(--muted); border:1px dashed var(--border-bright); border-radius:3px; background:var(--bg3); }
+    .tp-notfound{ padding:60px 28px; text-align:center; }
+
+    @media (max-width:1100px){ .tp-roster{ grid-template-columns:repeat(3, minmax(0,1fr)); } }
+    @media (max-width:700px){
+      .tp-roster{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .ach-grid{ grid-template-columns:1fr; }
+      .tp-logo, .tp-logo-fallback{ width:48px; height:48px; }
+      .pp-photo{ width:84px; height:84px; }
+      .pp-name{ font-size:26px; }
+    }
+    @media (prefers-reduced-motion: reduce){ .pp-panel, .pp-overlay, .tp-player{ transition:none; } }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ─── MASTHEAD ─── -->
+  <aside class="sidebar">
+    <div class="mh-top">
+      <div class="mh-brand">
+        <div class="logo">NEXUS</div>
+        <div class="logo-sub">The Ranking Command Ledger</div>
+      </div>
+      <div class="mh-dateline">
+        <span class="mh-edition">Team Profile</span>
+        <span class="mh-dot">/</span><span>Roster &amp; Achievements</span>
+        <span class="mh-dot">/</span><span>KZ Studio · Kilzys</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav mh-ribbon">
+      <a class="nav-item" href="index.html#global"><span class="nav-icon">←</span><span class="nav-label">Global Ranking</span></a>
+      <span class="sidebar-divider"></span>
+      <a class="nav-item" href="#sec-roster"><span class="nav-icon">01</span><span class="nav-label">Roster</span></a>
+      <a class="nav-item" href="#sec-achievements"><span class="nav-icon">02</span><span class="nav-label">Achievements</span></a>
+      <a class="nav-item" href="#sec-matches"><span class="nav-icon">03</span><span class="nav-label">Recent Matches</span></a>
+      <a class="nav-item mh-back" href="index.html"><span class="nav-icon">↩</span><span class="nav-label">Menu</span></a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="top-bar">
+      <div class="tb-headline">
+        <span class="tb-kicker">Team</span>
+        <div class="tp-title">
+          <span id="tpLogo"></span>
+          <div>
+            <div class="page-title" id="tpName">Loading…</div>
+            <div class="page-sub" id="tpSub">&nbsp;</div>
+          </div>
+        </div>
+      </div>
+      <div class="top-bar-actions">
+        <div class="form-group">
+          <label class="form-label" for="tpSwitch">Switch team</label>
+          <select class="form-control tp-switch" id="tpSwitch" disabled></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="panels tp-wrap" id="tpContent">
+      <div class="status-bar">
+        <div class="status-dot loading" id="statusDot"></div>
+        <span id="statusText">Loading team data…</span>
+      </div>
+
+      <div class="stats-row" id="tpStats"></div>
+
+      <div class="card" id="sec-roster">
+        <div class="card-header">
+          <div><div class="card-title">Roster</div><div class="card-subtitle">Click a player to see their achievements</div></div>
+          <span class="tp-section-note" id="tpRosterNote"></span>
+        </div>
+        <div class="card-body"><div id="tpRoster"><div class="tp-empty">Loading roster…</div></div></div>
+      </div>
+
+      <div class="card" id="sec-achievements">
+        <div class="card-header">
+          <div><div class="card-title">Team Achievements</div><div class="card-subtitle">Every recorded result, newest first</div></div>
+          <span class="tp-section-note" id="tpAchNote"></span>
+        </div>
+        <div class="card-body" id="tpAch"><div class="tp-empty">Loading achievements…</div></div>
+      </div>
+
+      <div class="card" id="sec-matches">
+        <div class="card-header">
+          <div><div class="card-title">Recent Matches</div><div class="card-subtitle">Last 15 from the match history</div></div>
+          <span class="tp-section-note" id="tpMatchNote"></span>
+        </div>
+        <div class="card-body" id="tpMatches"><div class="tp-empty">Loading matches…</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Player panel -->
+<div class="pp-overlay" id="ppOverlay"></div>
+<aside class="pp-panel" id="ppPanel" role="dialog" aria-modal="true" aria-labelledby="ppName" tabindex="-1">
+  <div class="pp-head" id="ppHead"></div>
+  <div class="pp-body" id="ppBody"></div>
+</aside>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS · Team page
+   Read-only view. Sources (same files the other pages already use):
+     file/ranking.xlsx           position, points, record, tier, region
+     file/players_updated.xlsx   roster, roles, country, market value, medals
+     file/history_updated.xlsx   TeamHistory + PlayerHistory (achievements)
+     file/history.xlsx           match results (optional)
+     assets/team_logo.json       team logos (optional)
+     assets/awards.json          trophy / medal icons (optional, large)
+     assets/players/<Name>.png   player photos (optional)
+═══════════════════════════════════════════════════════════════ */
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+const URLS = {
+  ranking: 'file/ranking.xlsx',
+  players: 'file/players_updated.xlsx',
+  history: 'file/history_updated.xlsx',
+  matches: 'file/history.xlsx',
+  logos:   'assets/team_logo.json',
+  awards:  'assets/awards.json'
+};
+const MATCH_LIMIT = 15;
+const REGION_LABELS = { 'AM': 'Americas', 'EU': 'Europe', 'AS/SIS/ESEA': 'Asia' };
+const ROLE_LABELS = { 'igl': 'IGL', 'rifler': 'Rifler', 'entry fragger': 'Entry Fragger', 'star player': 'Star Player', 'awper': 'AWPer', 'anchor': 'Anchor' };
+const COUNTRY_CODES = {"brazil":"br","brasil":"br","united states":"us","usa":"us","us":"us","canada":"ca","argentina":"ar","chile":"cl","colombia":"co","mexico":"mx","peru":"pe","uruguay":"uy","venezuela":"ve","ecuador":"ec","bolivia":"bo","paraguay":"py","france":"fr","germany":"de","sweden":"se","denmark":"dk","finland":"fi","norway":"no","ukraine":"ua","poland":"pl","czech republic":"cz","czechia":"cz","slovakia":"sk","hungary":"hu","portugal":"pt","spain":"es","italy":"it","netherlands":"nl","belgium":"be","austria":"at","switzerland":"ch","uk":"gb","united kingdom":"gb","england":"gb","latvia":"lv","lithuania":"lt","estonia":"ee","serbia":"rs","croatia":"hr","romania":"ro","bulgaria":"bg","greece":"gr","turkey":"tr","turkiye":"tr","iceland":"is","ireland":"ie","georgia":"ge","moldova":"md","north macedonia":"mk","slovenia":"si","bosnia":"ba","bosnia and herzegovina":"ba","albania":"al","montenegro":"me","belarus":"by","kosovo":"xk","luxembourg":"lu","south africa":"za","israel":"il","jordan":"jo","lebanon":"lb","palestine":"ps","russia":"ru","kazakhstan":"kz","uzbekistan":"uz","china":"cn","south korea":"kr","korea":"kr","japan":"jp","australia":"au","new zealand":"nz","indonesia":"id","malaysia":"my","singapore":"sg","thailand":"th","vietnam":"vn","philippines":"ph","india":"in","pakistan":"pk","mongolia":"mn","taiwan":"tw","hong kong":"hk","iraq":"iq","uae":"ae","united arab emirates":"ae","guatemala":"gt","united kingom":"gb"};
+const PHOTO_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+
+const state = {
+  teamParam: new URLSearchParams(location.search).get('team') || '',
+  ranking: [], team: null,
+  players: [], playersLoaded: false,
+  teamHistory: [], playerHistory: [], historyLoaded: false,
+  matches: null,            // null = file not available
+  logos: {}, awards: null, historyIcons: {},
+  openPlayer: null
+};
+const sameTeam = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+
+/* ── formatting ── */
+const fmtMoney = v => {
+  v = Number(v) || 0;
+  const a = Math.abs(v), s = v < 0 ? '-' : '';
+  return s + (a >= 1000 ? '$' + (a / 1000).toFixed(1) + 'k' : '$' + a.toLocaleString('en-US', { maximumFractionDigits: 0 }));
+};
+const fmtPts = v => (Number(v) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+
+function setStatus(msg, cls) {
+  $('#statusText').textContent = msg;
+  $('#statusDot').className = 'status-dot ' + (cls || 'loading');
+}
+
+/* ── loading ── */
+async function fetchWorkbook(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(url + ' → HTTP ' + res.status);
+  return XLSX.read(await res.arrayBuffer(), { type: 'array' });
+}
+const sheetRows = (wb, name) => {
+  const ws = name ? wb.Sheets[name] : wb.Sheets[wb.SheetNames[0]];
+  return ws ? XLSX.utils.sheet_to_json(ws, { defval: '', raw: true }) : [];
+};
+/* Case-insensitive column lookup, so small header differences don't break the page */
+function col(row, ...names) {
+  for (const n of names) if (row[n] !== undefined && row[n] !== '') return row[n];
+  const keys = Object.keys(row);
+  for (const n of names) {
+    const k = keys.find(k => k.trim().toLowerCase() === n.toLowerCase());
+    if (k !== undefined && row[k] !== '') return row[k];
+  }
+  return '';
+}
+const num = v => { const n = Number(String(v).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
+
+async function loadRanking() {
+  const rows = sheetRows(await fetchWorkbook(URLS.ranking));
+  const teams = rows.map(r => ({
+    team: String(col(r, 'Team')).trim(),
+    points: num(col(r, 'Points')),
+    victories: num(col(r, 'Victories')), loses: num(col(r, 'Loses')), streak: num(col(r, 'Streak')),
+    majors: num(col(r, 'Majors')),
+    tier: String(col(r, 'Tier')).trim(), region: String(col(r, 'Region')).trim()
+  })).filter(t => t.team);
+  // Same ordering rule as the Global Ranking
+  teams.sort((a, b) => b.points !== a.points ? b.points - a.points : a.team.localeCompare(b.team, 'en'));
+  const regionCount = {};
+  teams.forEach((t, i) => { t.pos = i + 1; t.regionPos = regionCount[t.region] = (regionCount[t.region] || 0) + 1; });
+  state.ranking = teams;
+}
+
+async function loadPlayers() {
+  const rows = sheetRows(await fetchWorkbook(URLS.players));
+  state.players = rows.map(r => ({
+    name: String(col(r, 'PlayerName')).trim(),
+    team: String(col(r, 'TeamName')).trim(),
+    roster: String(col(r, 'Roster')).trim(),
+    roles: [...new Set(String(col(r, 'Role')).split('|').map(s => s.trim().toLowerCase()).filter(Boolean))],
+    country: String(col(r, 'Country')).trim(),
+    marketValue: num(col(r, 'Market Value', 'MarketValue')),
+    mvp: num(col(r, 'MVP')), evp: num(col(r, 'EVP')), vp: num(col(r, 'VP')),
+    titles: num(col(r, 'Titles')), majorWinner: num(col(r, 'Major Winner'))
+  })).filter(p => p.name);
+  state.playersLoaded = true;
+}
+
+const normScope = v => { const s = String(v ?? '').trim(); if (!s) return 'Global'; return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase(); };
+async function loadHistory() {
+  const wb = await fetchWorkbook(URLS.history);
+  state.teamHistory = sheetRows(wb, 'TeamHistory').filter(r => r.event).map(r => ({
+    id: String(r.id), team: String(r.team || '').trim(), event: String(r.event), tier: Number(r.tier) || 1,
+    scope: normScope(r.scope), compRegion: String(r.compRegion || '').trim(), position: String(r.position || 'Winner').trim(),
+    prizePool: Number(r.prizePool) || 0, wonAmount: Number(r.wonAmount) || 0, month: Number(r.month) || 1,
+    kind: String(r.kind || 'EVENT').trim(), awardKey: String(r.awardKey || '').trim() || null, note: String(r.note || '').trim()
+  }));
+  state.playerHistory = sheetRows(wb, 'PlayerHistory').filter(r => r.player && r.event).map(r => ({
+    id: String(r.id), refId: r.refId === '' || r.refId == null ? null : String(r.refId),
+    player: String(r.player).trim(), team: String(r.team || '').trim(), kind: String(r.kind || 'EVENT').trim(),
+    event: String(r.event), tier: Number(r.tier) || 1, scope: normScope(r.scope), compRegion: String(r.compRegion || '').trim(),
+    position: String(r.position || 'Winner').trim(), month: Number(r.month) || 1,
+    awardKey: String(r.awardKey || '').trim() || null, note: String(r.note || '').trim()
+  }));
+  state.historyLoaded = true;
+}
+
+async function loadMatches() {
+  const rows = sheetRows(await fetchWorkbook(URLS.matches));
+  const out = [];
+  for (const r of rows) {
+    const team1 = String(col(r, 'Team 1', 'team1')).trim(), team2 = String(col(r, 'Team 2', 'team2')).trim();
+    const result = String(col(r, 'Result')).trim();
+    if (!team1 || !team2 || !result) continue;
+    const dateRaw = col(r, 'Date');
+    let dateObj = null;
+    if (dateRaw !== '') {
+      dateObj = typeof dateRaw === 'number' ? new Date((dateRaw - 25569) * 86400000) : new Date(dateRaw);
+      if (isNaN(dateObj.getTime())) dateObj = null;
+    }
+    const parts = result.toLowerCase().split('x').map(s => parseInt(s.trim(), 10));
+    out.push({
+      team1, team2, result, score1: parts[0] || 0, score2: parts[1] || 0,
+      map: String(col(r, 'Map')).trim(), event: String(col(r, 'Event')).trim(), details: String(col(r, 'Details')).trim(),
+      dateObj, dateStr: dateObj ? dateObj.toISOString().split('T')[0] : String(dateRaw).trim()
+    });
+  }
+  out.sort((a, b) => (a.dateObj && b.dateObj) ? b.dateObj - a.dateObj : b.dateStr.localeCompare(a.dateStr));
+  state.matches = out;
+}
+
+async function loadLogos() {
+  const res = await fetch(URLS.logos, { cache: 'no-store' });
+  if (!res.ok) return;
+  const arr = await res.json();
+  if (Array.isArray(arr)) arr.forEach(e => { if (e.name && e.logo) state.logos[e.name.trim().toLowerCase()] = e.logo.trim(); });
+}
+
+async function loadAwards() {
+  const res = await fetch(URLS.awards);   // large file: let the browser cache it
+  if (!res.ok) throw new Error('awards.json → HTTP ' + res.status);
+  const data = await res.json();
+  state.awards = data;
+  state.historyIcons = data.__historyIcons || {};
+}
+
+/* ── small HTML helpers ── */
+function logoImg(team, cls) {
+  const url = state.logos[String(team).trim().toLowerCase()];
+  return url ? `<img class="team-logo ${cls || 'team-logo-sm'}" src="${esc(url)}" alt="" onerror="this.style.display='none'">` : '';
+}
+function flagImg(country) {
+  const code = COUNTRY_CODES[String(country || '').toLowerCase().trim()];
+  return code ? `<img class="tp-flag" src="https://flagcdn.com/w40/${code}.png" alt="${esc(country)}" title="${esc(country)}" onerror="this.style.display='none'">` : '';
+}
+/* Looks for assets/players/<Name>.png|jpg|jpeg|webp; falls back to the initial letter */
+function photoHtml(name) {
+  const base = 'assets/players/' + encodeURIComponent(String(name).trim());
+  const initial = esc(String(name).trim().charAt(0).toUpperCase() || '?');
+  return `<img src="${base}.${PHOTO_EXTS[0]}" data-base="${esc(base)}" data-idx="0" data-initial="${initial}" alt="" onerror="photoFallback(this)">`;
+}
+function photoFallback(img) {
+  const next = (parseInt(img.dataset.idx, 10) || 0) + 1;
+  if (next < PHOTO_EXTS.length) { img.dataset.idx = next; img.src = img.dataset.base + '.' + PHOTO_EXTS[next]; }
+  else img.outerHTML = `<span class="tp-initial">${img.dataset.initial}</span>`;
+}
+const roleChips = roles => roles.map(r => `<span class="tp-role">${esc(ROLE_LABELS[r] || r)}</span>`).join('');
+
+/* ── achievements (same matching rules as the Finances page) ── */
+function computeAwardKey(kind, tier, scope, compRegion, position) {
+  tier = Number(tier) || 1;
+  let comp;
+  if (tier >= 5) comp = 'major';
+  else if (scope === 'Global') comp = 'global';
+  else if (scope === 'Regional') {
+    comp = { Europe: 'regional_eu', America: 'regional_am', Asia: 'regional_as' }[compRegion];
+    if (!comp) return null;
+  } else return null;
+  if (kind === 'EVENT') {
+    const sub = { Winner: 'winner', Second: 'second', Third: 'third', Fourth: 'fourth' }[position];
+    return sub ? `${comp}_${sub}` : null;
+  }
+  if (kind === 'MVP' || kind === 'EVP' || kind === 'VP') return `${comp}_${kind.toLowerCase()}`;
+  return null;
+}
+const positionLabel = p => ({ Winner: '1st place', Second: '2nd place', Third: '3rd place', Fourth: '4th–8th' }[p] || p || '');
+const starsHtml = tier => {
+  tier = Number(tier) || 1;
+  return tier >= 5 ? '<span class="ach-stars">★★★★★</span> Major' : `<span class="ach-stars">${'★'.repeat(Math.max(1, Math.min(4, tier)))}</span>`;
+};
+
+/* Turns one TeamHistory / PlayerHistory row into a display model */
+function describeEntry(e, isPlayerRow) {
+  const isBadge = e.kind === 'BADGE';
+  const awardKey = e.awardKey || (isBadge ? null : computeAwardKey(e.kind, e.tier, e.scope, e.compRegion, e.position));
+  const award = awardKey && state.awards ? state.awards[awardKey] : null;
+  const isMedal = e.kind === 'MVP' || e.kind === 'EVP' || e.kind === 'VP';
+  const fallbackTier = isMedal ? { MVP: 'gold', EVP: 'silver', VP: 'bronze' }[e.kind]
+    : ({ Winner: 'gold', Second: 'silver', Third: 'bronze' }[e.position] || 'none');
+  const tier = (award && award.tierColor) || fallbackTier;
+  // Icon priority: icon baked into this specific entry → award registry icon → plain glyph
+  const custom = isPlayerRow
+    ? (e.refId != null ? state.historyIcons[e.refId] : state.historyIcons[e.id])
+    : state.historyIcons[e.id];
+  const icon = custom || (award && award.icon) || '';
+  const label = isBadge ? (award ? String(award.label).split('—').pop().trim() : 'Badge')
+    : (isMedal ? e.kind : positionLabel(e.position));
+  const glyph = isBadge ? '★' : isMedal ? e.kind : ({ Winner: '1st', Second: '2nd', Third: '3rd', Fourth: 'Top 8' }[e.position] || '•');
+  return { tier, icon, label, glyph, isBadge, isMedal, award };
+}
+
+function achItemHtml(e, opts) {
+  opts = opts || {};
+  const d = describeEntry(e, !!opts.playerRow);
+  const iconHtml = d.icon
+    ? `<img src="${d.icon}" alt="">`
+    : `<span class="ach-glyph t-${d.tier}">${esc(d.glyph)}</span>`;
+  const meta = [];
+  if (d.isBadge) { meta.push(esc(d.award ? d.award.category : 'Badge')); if (e.note) meta.push(esc(e.note)); }
+  else meta.push(starsHtml(e.tier), esc(e.scope + (e.compRegion ? ' ' + e.compRegion : '')));
+  if (opts.showTeam && e.team && e.team.toLowerCase() !== 'none') meta.push('with ' + esc(e.team));
+  if (opts.showPrize && e.wonAmount) meta.push('Prize ' + fmtMoney(e.wonAmount));
+  meta.push('Month ' + e.month);
+  const who = opts.showPlayer ? `<span class="ach-who">${esc(e.player)}</span> · ` : '';
+  return `<div class="ach-item tier-${d.tier}">
+    <div class="ach-icon">${iconHtml}</div>
+    <div class="ach-text">
+      <div class="ach-line1">${who}${esc(e.event)}</div>
+      <div class="ach-line2"><span class="ach-pos t-${d.tier}">${esc(d.label)}</span> · ${meta.join(' · ')}</div>
+    </div>
+  </div>`;
+}
+const byNewest = (a, b) => b.month - a.month;   // stable sort keeps the file's newest-first order inside a month
+
+/* ── render: header + stats ── */
+function renderHeader() {
+  const t = state.team;
+  document.title = `${t.team} · NEXUS`;
+  $('#tpName').textContent = t.team;
+  $('#tpLogo').innerHTML = state.logos[t.team.toLowerCase()]
+    ? `<img class="tp-logo" src="${esc(state.logos[t.team.toLowerCase()])}" alt="" onerror="this.outerHTML='<span class=&quot;tp-logo-fallback&quot;>${esc(t.team.charAt(0).toUpperCase())}</span>'">`
+    : `<span class="tp-logo-fallback">${esc(t.team.charAt(0).toUpperCase())}</span>`;
+  const region = REGION_LABELS[t.region] || t.region || '—';
+  $('#tpSub').textContent = [region, t.tier || null, `#${t.pos} of ${state.ranking.length} teams`].filter(Boolean).join(' · ');
+
+  const sel = $('#tpSwitch');
+  sel.innerHTML = state.ranking.map(r => `<option value="${esc(r.team)}"${r === t ? ' selected' : ''}>#${r.pos} · ${esc(r.team)}</option>`).join('');
+  sel.disabled = false;
+}
+
+function renderStats() {
+  const t = state.team;
+  const played = t.victories + t.loses;
+  const wr = played ? Math.round(t.victories / played * 100) + '%' : '—';
+  const th = state.teamHistory.filter(e => sameTeam(e.team, t.team) && e.kind === 'EVENT');
+  const titles = th.filter(e => e.position === 'Winner').length;
+  const majors = Math.max(t.majors, th.filter(e => e.position === 'Winner' && e.tier >= 5).length);
+  const region = REGION_LABELS[t.region] || t.region || 'Region';
+  const streakCls = t.streak >= 3 ? ' warn' : '';
+  const pill = (label, value, cls) => `<div class="stat-pill"><span class="stat-label">${label}</span><span class="stat-value${cls || ''}">${value}</span></div>`;
+  $('#tpStats').innerHTML =
+    pill('Global Rank', '#' + t.pos) +
+    pill(esc(region) + ' Rank', '#' + t.regionPos) +
+    pill('Points', fmtPts(t.points)) +
+    pill('Record', `${t.victories}–${t.loses}<small>${wr}</small>`) +
+    pill('Win Streak', t.streak, streakCls) +
+    pill('Titles', state.historyLoaded ? titles : '—') +
+    pill('Majors', majors);
+}
+
+/* ── render: roster ── */
+function teamPlayers() {
+  return state.players.filter(p => sameTeam(p.team, state.team.team))
+    .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue);
+}
+function renderRoster() {
+  const box = $('#tpRoster');
+  if (!state.playersLoaded) { box.innerHTML = '<div class="tp-empty">Roster file (file/players_updated.xlsx) could not be loaded.</div>'; return; }
+  const list = teamPlayers();
+  if (!list.length) { box.innerHTML = '<div class="tp-empty">No players registered for this team.</div>'; return; }
+  $('#tpRosterNote').textContent = 'Squad value ' + fmtMoney(list.reduce((s, p) => s + p.marketValue, 0));
+  box.innerHTML = '<div class="tp-roster">' + list.map(p => {
+    const medals = [['Titles', p.titles], ['MVP', p.mvp], ['EVP', p.evp], ['VP', p.vp]].filter(m => m[1] > 0)
+      .map(m => `<span><b>${m[1]}</b> ${m[0]}</span>`).join('');
+    return `<button type="button" class="tp-player" data-player="${esc(p.name)}">
+      <div class="tp-photo">${photoHtml(p.name)}${p.roster && p.roster !== 'Starter' ? `<span class="tp-bench-tag">${esc(p.roster)}</span>` : ''}</div>
+      <div class="tp-pbody">
+        <div class="tp-pname">${flagImg(p.country)}<span>${esc(p.name)}</span></div>
+        <div class="tp-roles">${roleChips(p.roles)}</div>
+        <div class="tp-medals">${medals || '<span>No medals yet</span>'}</div>
+        <div class="tp-mv"><span class="tp-mv-label">Market value</span><span class="tp-mv-value">${fmtMoney(p.marketValue)}</span></div>
+      </div>
+    </button>`;
+  }).join('') + '</div>';
+}
+
+/* ── render: team achievements ── */
+function tallyHtml(items) {
+  return '<div class="ach-tally">' + items.map(i =>
+    `<div><div class="ach-tally-n ${i[1] === 0 ? 't-none' : (i[2] || '')}">${i[1]}</div><div class="ach-tally-l">${i[0]}</div></div>`).join('') + '</div>';
+}
+function renderAchievements() {
+  const box = $('#tpAch');
+  if (!state.historyLoaded) { box.innerHTML = '<div class="tp-empty">Achievements file (file/history_updated.xlsx) could not be loaded.</div>'; return; }
+  const t = state.team.team;
+  const events = state.teamHistory.filter(e => sameTeam(e.team, t)).sort(byNewest);
+  // Individual awards (MVP / EVP / VP / badges) earned by players while playing for this team
+  const awards = state.playerHistory.filter(h => sameTeam(h.team, t) && h.kind !== 'EVENT').sort(byNewest);
+  $('#tpAchNote').textContent = state.awards ? '' : 'Loading trophy icons…';
+
+  if (!events.length && !awards.length) { box.innerHTML = '<div class="tp-empty">No achievements recorded for this team yet.</div>'; return; }
+  const results = events.filter(e => e.kind === 'EVENT');
+  const count = pos => results.filter(e => e.position === pos).length;
+  let html = tallyHtml([
+    ['Titles', count('Winner'), 't-gold'], ['Runner-up', count('Second'), 't-silver'], ['3rd place', count('Third'), 't-bronze'],
+    ['Top 4–8', count('Fourth'), 't-none'], ['Events played', results.length], ['Prize money', fmtMoney(results.reduce((s, e) => s + e.wonAmount, 0))]
+  ]);
+  if (events.length) html += '<div class="ach-sub">Trophy case</div><div class="ach-grid">' + events.map(e => achItemHtml(e, { showPrize: true })).join('') + '</div>';
+  if (awards.length) html += '<div class="ach-sub">Individual awards won with the team</div><div class="ach-grid">' + awards.map(h => achItemHtml(h, { playerRow: true, showPlayer: true })).join('') + '</div>';
+  box.innerHTML = html;
+}
+
+/* ── render: matches ── */
+function renderMatches() {
+  const box = $('#tpMatches');
+  if (state.matches === null) { box.innerHTML = '<div class="tp-empty">Match history (file/history.xlsx) is not available.</div>'; return; }
+  const t = state.team.team;
+  const all = state.matches.filter(m => sameTeam(m.team1, t) || sameTeam(m.team2, t));
+  if (!all.length) { box.innerHTML = '<div class="tp-empty">No matches recorded for this team.</div>'; return; }
+  const view = m => {
+    const home = sameTeam(m.team1, t);
+    const mine = home ? m.score1 : m.score2, theirs = home ? m.score2 : m.score1;
+    return { opp: home ? m.team2 : m.team1, mine, theirs, res: mine > theirs ? 'w' : mine < theirs ? 'l' : 'd' };
+  };
+  const wins = all.filter(m => view(m).res === 'w').length;
+  $('#tpMatchNote').textContent = `${all.length} maps on record · ${wins} won`;
+  const ranked = new Set(state.ranking.map(r => r.team.toLowerCase()));
+  box.innerHTML = `<div class="table-wrapper tp-matches"><table>
+    <thead><tr><th>Date</th><th></th><th class="right">Score</th><th>Opponent</th><th>Map</th><th>Event</th></tr></thead>
+    <tbody>${all.slice(0, MATCH_LIMIT).map(m => {
+      const v = view(m);
+      const opp = ranked.has(v.opp.toLowerCase())
+        ? `<a class="tp-opp" href="team.html?team=${encodeURIComponent(v.opp)}">${logoImg(v.opp)}${esc(v.opp)}</a>`
+        : `${logoImg(v.opp)}${esc(v.opp)}`;
+      return `<tr>
+        <td class="mono text-xs text-muted">${esc(m.dateStr || '—')}</td>
+        <td><span class="tp-res ${v.res}">${v.res.toUpperCase()}</span></td>
+        <td class="right mono">${v.mine}–${v.theirs}</td>
+        <td>${opp}</td>
+        <td>${m.map ? `<span class="pa-map-badge">${esc(m.map)}</span>` : '<span class="text-muted">—</span>'}</td>
+        <td class="text-muted">${esc([m.event, m.details].filter(Boolean).join(' · ') || '—')}</td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+/* ── player panel ── */
+let lastFocus = null;
+function openPlayer(name) {
+  const p = state.players.find(x => x.name === name);
+  if (!p) return;
+  state.openPlayer = name;
+  lastFocus = document.activeElement;
+  renderPlayerPanel();
+  $('#ppOverlay').classList.add('open');
+  $('#ppPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  $('#ppPanel').focus();
+}
+function closePlayer() {
+  state.openPlayer = null;
+  $('#ppOverlay').classList.remove('open');
+  $('#ppPanel').classList.remove('open');
+  document.body.style.overflow = '';
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+function renderPlayerPanel() {
+  const p = state.players.find(x => x.name === state.openPlayer);
+  if (!p) return;
+  const hasTeam = p.team && p.team.toLowerCase() !== 'none';
+  const hist = state.playerHistory.filter(h => h.player === p.name).sort(byNewest);
+  const trophies = hist.filter(h => h.kind === 'EVENT');
+  const personal = hist.filter(h => h.kind !== 'EVENT');
+  const majors = Math.max(p.majorWinner, trophies.filter(h => h.tier >= 5 && h.position === 'Winner').length);
+  const meta = [
+    hasTeam ? `<span class="pp-team">${logoImg(p.team)}${esc(p.team)}</span>` : '<span class="pp-team">Free agent</span>',
+    p.roster && hasTeam ? esc(p.roster) : '',
+    p.country ? esc(p.country) : ''
+  ].filter(Boolean).join('<span class="sep">|</span>');
+
+  $('#ppHead').innerHTML = `
+    <div class="pp-photo">${photoHtml(p.name)}</div>
+    <div class="pp-id">
+      <div class="pp-kicker">Player</div>
+      <div class="pp-name" id="ppName">${flagImg(p.country)}<span>${esc(p.name)}</span></div>
+      <div class="pp-meta">${meta}</div>
+      <div class="tp-roles" style="margin-top:10px">${roleChips(p.roles) || '<span class="tp-role">No role assigned</span>'}</div>
+    </div>
+    <button type="button" class="pp-close" id="ppClose" aria-label="Close player panel">×</button>`;
+
+  let body = `
+    <div class="pp-mv"><span class="tp-mv-label">Market value</span><span class="pp-mv-value">${fmtMoney(p.marketValue)}</span></div>
+    <div class="pp-counts">
+      ${[['Titles', p.titles, 't-gold'], ['Majors', majors, 't-gold'], ['MVP', p.mvp, 't-gold'], ['EVP', p.evp, 't-silver'], ['VP', p.vp, 't-bronze']]
+        .map(c => `<div><div class="ach-tally-n ${c[1] ? c[2] : 't-none'}">${c[1]}</div><div class="ach-tally-l">${c[0]}</div></div>`).join('')}
+    </div>`;
+  if (!state.historyLoaded) body += '<div class="ach-sub">Achievements</div><div class="tp-empty">Achievements file could not be loaded.</div>';
+  else if (!hist.length) body += '<div class="ach-sub">Achievements</div><div class="tp-empty">No achievements recorded for this player yet.</div>';
+  else {
+    if (personal.length) body += `<div class="ach-sub">Individual awards · ${personal.length}</div><div class="ach-grid">${personal.map(h => achItemHtml(h, { playerRow: true, showTeam: true })).join('')}</div>`;
+    if (trophies.length) body += `<div class="ach-sub">Trophies &amp; placements · ${trophies.length}</div><div class="ach-grid">${trophies.map(h => achItemHtml(h, { playerRow: true, showTeam: true })).join('')}</div>`;
+  }
+  $('#ppBody').innerHTML = body;
+  $('#ppBody').scrollTop = 0;
+}
+
+document.addEventListener('click', e => {
+  const card = e.target.closest('.tp-player');
+  if (card) { openPlayer(card.dataset.player); return; }
+  if (e.target.closest('#ppClose') || e.target.id === 'ppOverlay') closePlayer();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.openPlayer) closePlayer(); });
+$('#tpSwitch').addEventListener('change', e => { location.href = 'team.html?team=' + encodeURIComponent(e.target.value); });
+
+/* ── boot ── */
+function showNotFound(msg) {
+  $('#tpName').textContent = 'Team not found';
+  $('#tpSub').textContent = '';
+  $('#tpContent').innerHTML = `<div class="card"><div class="tp-notfound">
+    <div class="card-title">${esc(msg)}</div>
+    <p style="margin:14px 0 20px" class="text-muted">Pick a team from the ranking to open its page.</p>
+    <a class="btn btn-primary" href="index.html#global" style="text-decoration:none">← Global Ranking</a></div></div>`;
+}
+
+(async () => {
+  // Ranking + logos first: enough to draw the header immediately
+  const [rankRes] = await Promise.allSettled([loadRanking(), loadLogos()]);
+  if (rankRes.status === 'rejected') { console.error(rankRes.reason); setStatus('Could not load file/ranking.xlsx', 'err'); showNotFound('Ranking file could not be loaded.'); return; }
+  if (!state.teamParam) { showNotFound('No team selected.'); return; }
+  state.team = state.ranking.find(t => sameTeam(t.team, state.teamParam));
+  if (!state.team) { showNotFound(`“${state.teamParam}” is not in the current ranking.`); return; }
+  renderHeader(); renderStats();
+
+  const [pl, hi, ma] = await Promise.allSettled([loadPlayers(), loadHistory(), loadMatches()]);
+  [pl, hi, ma].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
+  renderStats(); renderRoster(); renderAchievements(); renderMatches();
+  const missing = [pl.status === 'rejected' && 'players_updated.xlsx', hi.status === 'rejected' && 'history_updated.xlsx'].filter(Boolean);
+  setStatus(missing.length ? 'Loaded with missing files: ' + missing.join(', ') : 'Team data loaded · loading trophy icons…', missing.length ? 'err' : 'loading');
+
+  // Trophy icons last — awards.json is large, the page is already usable without it
+  try {
+    await loadAwards();
+    renderAchievements();
+    if (state.openPlayer) renderPlayerPanel();
+    if (!missing.length) setStatus('All data loaded', 'ok');
+  } catch (e) {
+    console.warn(e);
+    $('#tpAchNote').textContent = '';
+    if (!missing.length) setStatus('Loaded · trophy icons (assets/awards.json) not available', 'ok');
+  }
+})();
+</script>
+</body>
+</html>
