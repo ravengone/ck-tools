@@ -5,43 +5,46 @@
 <title>NEXUS COMMAND — eSports Intelligence Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 
 :root{
-  --bg:#0b0d11; --bg2:#12151b; --bg3:#181c23; --bg4:#20252e;
-  --cyan:#6aa8f0; --cyan-dim:rgba(106,168,240,0.13);
-  --orange:#e8a86b; --orange-dim:rgba(232,168,107,0.13);
-  --green:#5fcf95; --green-dim:rgba(95,207,149,0.13);
-  --red:#f0736f; --red-dim:rgba(240,115,111,0.13);
-  --yellow:#e6c56a; --purple:#a98cf0;
-  --text:#e9ecf1; --text-dim:#98a2b0; --text-faint:#6a7482;
-  --border:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.13); --border-hot:rgba(106,168,240,0.45);
+  /* Vault palette: green-black ink, ivory text, brass as the one accent.
+     --cyan keeps its name because the whole page refers to it as "the accent". */
+  --bg:#0c1211; --bg2:#131b19; --bg3:#19231f; --bg4:#222e29;
+  --cyan:#cfae6b; --cyan-dim:rgba(207,174,107,0.12);
+  --orange:#e0975a; --orange-dim:rgba(224,151,90,0.13);
+  --green:#63c79a; --green-dim:rgba(99,199,154,0.13);
+  --red:#ea7a6e; --red-dim:rgba(234,122,110,0.13);
+  --yellow:#ecc45a; --purple:#a99ae0;
+  --text:#ece8dd; --text-dim:#a3ada5; --text-faint:#717c75;
+  --border:rgba(236,232,221,0.085); --border-strong:rgba(236,232,221,0.16); --border-hot:rgba(207,174,107,0.5);
   --panel-shadow:0 1px 3px rgba(0,0,0,0.35);
-  --card-shadow:0 2px 10px rgba(0,0,0,0.28);
-  --pop-shadow:0 24px 70px rgba(0,0,0,0.55);
-  --btn-ink:#0b0d11;
-  --overlay:rgba(6,8,11,0.78);
-  --r-sm:8px; --r:12px; --r-lg:16px;
-  --font-display:'Archivo',system-ui,sans-serif;
-  --font-ui:'Archivo',system-ui,sans-serif;
-  --font-data:'JetBrains Mono',ui-monospace,monospace;
+  --card-shadow:none;
+  --pop-shadow:0 24px 70px rgba(0,0,0,0.6);
+  --btn-ink:#11160f;
+  --overlay:rgba(5,9,8,0.8);
+  --r-sm:8px; --r:11px; --r-lg:14px;
+  --font-serif:'Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif;
+  --font-display:'Hanken Grotesk','Segoe UI',system-ui,sans-serif;
+  --font-ui:'Hanken Grotesk','Segoe UI',system-ui,sans-serif;
+  --font-data:'Hanken Grotesk','Segoe UI',system-ui,sans-serif;
 }
 html[data-theme="light"]{
-  --bg:#eef0f4; --bg2:#ffffff; --bg3:#f4f6f9; --bg4:#eceff4;
-  --cyan:#2f6fd0; --cyan-dim:rgba(47,111,208,0.10);
-  --orange:#c2731c; --orange-dim:rgba(194,115,28,0.10);
-  --green:#138a5b; --green-dim:rgba(19,138,91,0.10);
-  --red:#d64545; --red-dim:rgba(214,69,69,0.10);
-  --yellow:#9c7a1e; --purple:#6d4fcf;
-  --text:#161a20; --text-dim:#5a6472; --text-faint:#8a93a0;
-  --border:#e3e7ee; --border-strong:#cfd6e0; --border-hot:rgba(47,111,208,0.45);
-  --panel-shadow:0 1px 2px rgba(20,22,30,0.06);
-  --card-shadow:0 2px 10px rgba(20,22,30,0.06);
-  --pop-shadow:0 24px 70px rgba(20,22,30,0.22);
+  --bg:#eceeea; --bg2:#ffffff; --bg3:#f4f5f1; --bg4:#e7eae4;
+  --cyan:#86621a; --cyan-dim:rgba(134,98,26,0.10);
+  --orange:#b9661a; --orange-dim:rgba(185,102,26,0.10);
+  --green:#157a54; --green-dim:rgba(21,122,84,0.10);
+  --red:#c94a3f; --red-dim:rgba(201,74,63,0.10);
+  --yellow:#96751a; --purple:#6753c2;
+  --text:#18201c; --text-dim:#58635c; --text-faint:#89938c;
+  --border:#e0e4dd; --border-strong:#cbd2c9; --border-hot:rgba(134,98,26,0.45);
+  --panel-shadow:0 1px 2px rgba(20,30,24,0.06);
+  --card-shadow:0 1px 2px rgba(20,30,24,0.05);
+  --pop-shadow:0 24px 70px rgba(20,30,24,0.22);
   --btn-ink:#ffffff;
-  --overlay:rgba(28,31,38,0.42);
+  --overlay:rgba(24,32,28,0.42);
 }
 
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -51,14 +54,14 @@ html[data-theme="light"]{
 ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;border:2px solid transparent;background-clip:padding-box;}
 ::-webkit-scrollbar-thumb:hover{background:var(--text-faint);background-clip:padding-box;}
 
-body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:15px;line-height:1.5;overflow:hidden;height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;letter-spacing:0.1px;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums lining-nums;overflow:hidden;height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;letter-spacing:0.1px;}
 .corner-tl,.corner-tr,.corner-bl,.corner-br{display:none;}
 svg.ico{width:1em;height:1em;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:-0.14em;}
 
 /* ===== TOP BAR ===== */
 #topbar{height:60px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;flex-shrink:0;position:relative;z-index:100;gap:22px;}
 .topbar-logo{font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:0.5px;color:var(--text);display:flex;align-items:center;gap:11px;}
-.topbar-logo::before{content:'';display:inline-flex;width:26px;height:26px;border-radius:8px;background:linear-gradient(150deg,var(--cyan),#8f7cf0);}
+.topbar-logo::before{content:'';display:inline-flex;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--cyan);background:radial-gradient(circle,var(--cyan) 0 3.5px,transparent 4px);}
 .topbar-status{display:flex;align-items:center;gap:9px;font-family:var(--font-data);font-size:11px;color:var(--text-dim);}
 .status-pill{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);border-radius:9px;background:var(--bg3);letter-spacing:.4px;}
 .status-pill span{color:var(--text);font-weight:600;}
@@ -74,7 +77,7 @@ svg.ico{width:1em;height:1em;flex-shrink:0;stroke:currentColor;fill:none;stroke-
 .tick-item.up{color:var(--green);} .tick-item.down{color:var(--red);} .tick-item.warn{color:var(--orange);}
 
 /* ===== UPLOAD OVERLAY ===== */
-#upload-overlay{position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% -10%,rgba(106,168,240,0.08),transparent),var(--bg);z-index:500;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:42px;}
+#upload-overlay{position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% -10%,rgba(207,174,107,0.08),transparent),var(--bg);z-index:500;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:42px;}
 .upload-title{font-family:var(--font-display);font-size:44px;font-weight:800;color:var(--text);text-align:center;letter-spacing:-0.5px;}
 .upload-title span{color:var(--text-dim);font-size:13px;font-family:var(--font-data);display:block;margin-top:14px;letter-spacing:2px;font-weight:400;text-transform:uppercase;}
 .upload-zone{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;max-width:1100px;}
@@ -86,7 +89,7 @@ svg.ico{width:1em;height:1em;flex-shrink:0;stroke:currentColor;fill:none;stroke-
 .upload-icon svg.ico{width:32px;height:32px;stroke-width:1.6;}
 .upload-label{font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:var(--text);font-weight:700;}
 .upload-status{font-family:var(--font-data);font-size:11px;color:var(--text-dim);letter-spacing:.4px;}
-.upload-launch{font-family:var(--font-display);font-size:14px;font-weight:700;letter-spacing:1px;padding:15px 46px;background:var(--cyan);color:var(--btn-ink);border:none;border-radius:11px;cursor:pointer;transition:all .2s;opacity:.4;box-shadow:0 8px 30px rgba(106,168,240,0.25);}
+.upload-launch{font-family:var(--font-display);font-size:14px;font-weight:700;letter-spacing:1px;padding:15px 46px;background:var(--cyan);color:var(--btn-ink);border:none;border-radius:11px;cursor:pointer;transition:all .2s;opacity:.4;box-shadow:0 8px 30px rgba(207,174,107,0.25);}
 .upload-launch.ready{opacity:1;}
 .upload-launch.ready:hover{filter:brightness(1.08);transform:translateY(-1px);}
 .upload-scan{padding:11px 30px;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:11px;font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
@@ -385,23 +388,6 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .pm-medal .lbl{font-family:var(--font-data);font-size:9px;color:var(--text-dim);letter-spacing:.4px;margin-top:2px;text-transform:uppercase;}
 @media (max-width:760px){.pm-split{grid-template-columns:1fr;}.pm-col-history{border-left:none;border-top:1px solid var(--border);}}
 
-/* ── COMMAND PANEL — clean HLTV-style team profile ── */
-.cmd-header{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
-.cmd-header-main{display:flex;align-items:center;gap:16px;flex:1;min-width:240px;}
-.cmd-team-name{font-family:var(--font-display);font-size:22px;font-weight:900;letter-spacing:.3px;}
-.cmd-team-sub{font-family:var(--font-data);font-size:11.5px;color:var(--text-dim);margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.roster-section-title{font-family:var(--font-display);font-size:11px;letter-spacing:2px;color:var(--text-dim);margin:20px 0 12px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
-.roster-section-title:first-child{margin-top:0;}
-.roster-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
-.roster-card{background:var(--bg3);border:1px solid var(--border);border-radius:13px;padding:18px 14px 15px;text-align:center;transition:border-color .15s,transform .15s;cursor:pointer;}
-.roster-card:hover{border-color:var(--border-hot);transform:translateY(-2px);}
-.roster-card .rc-avatar{width:52px;height:52px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text-dim);border:1px solid var(--border);overflow:hidden;}
-.roster-card .rc-name{font-family:var(--font-display);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.roster-card .rc-role{margin-top:7px;}
-.roster-card .rc-contract{font-family:var(--font-data);font-size:9.5px;color:var(--text-dim);margin-top:6px;}
-.roster-card .rc-medals{margin-top:9px;display:flex;justify-content:center;flex-wrap:wrap;gap:3px;min-height:20px;}
-.roster-empty-slot{background:var(--bg3);border:1px dashed var(--border);border-radius:13px;padding:18px 14px;text-align:center;color:var(--text-faint);font-family:var(--font-data);font-size:11px;display:flex;align-items:center;justify-content:center;min-height:120px;}
-
 /* ── Player Profile — enlarged variant (opened on click, room to breathe) ── */
 .player-modal-xl{width:1520px;max-width:98vw;max-height:95vh;}
 .player-modal-xl .pm-close{width:42px;height:42px;font-size:26px;top:20px;right:22px;}
@@ -444,8 +430,6 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 <style id="fo-css">
 
 /* ═══ FRONT OFFICE ═══ */
-#p-office { padding:26px; overflow-y:auto; display:none; }
-#p-office.active { display:block; }
 .fo-pipeline { display:flex; align-items:stretch; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
 .fo-team-tag { display:flex; align-items:center; gap:18px; padding:14px 24px 14px 14px; background:var(--bg2); border:1px solid var(--border-hot); border-radius:16px; }
 .fo-team-name { font-family:var(--font-display); font-weight:800; font-size:15px; letter-spacing:.5px; color:var(--text); }
@@ -526,6 +510,241 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 .xfer-status.fail { color:var(--red); background:var(--red-dim); }
 .xfer-status.pending { color:var(--orange); background:var(--orange-dim); }
 .xfer-teamnames { display:flex; align-items:center; gap:6px; font-family:var(--font-data); font-size:9.5px; color:var(--text-dim); }
+
+</style>
+<style id="bank-css">
+/* ═══════════════════════════════════════════════════════════════════
+   PRIVATE-BANK LAYER
+   Serif is reserved for the things a statement would print large:
+   the team name and money figures. Everything else is the sans.
+   ═══════════════════════════════════════════════════════════════════ */
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+.topbar-logo{font-family:var(--font-serif);font-weight:600;font-size:20px;letter-spacing:.3px;}
+
+/* ── nav: underline tabs, active team on the right ── */
+#nav{padding:0 22px;gap:2px;align-items:stretch;}
+.nav-tab{border:none;border-bottom:2px solid transparent;border-radius:0;padding:15px 14px 13px;font-size:14px;font-weight:500;}
+.nav-tab:hover{background:transparent;color:var(--text);}
+.nav-tab.active{background:transparent;border-color:transparent;border-bottom-color:var(--cyan);color:var(--text);font-weight:600;}
+.nav-tab.active svg.ico{color:var(--cyan);}
+.nav-tab .badge{background:var(--cyan);color:var(--btn-ink);font-size:11px;padding:1px 7px;border-radius:999px;}
+
+.team-trigger{margin-left:auto;align-self:center;display:inline-flex;align-items:center;gap:9px;padding:6px 12px 6px 14px;background:var(--bg3);border:1px solid var(--border-strong);border-radius:999px;color:var(--text);font-family:var(--font-ui);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:border-color .15s;}
+.team-trigger:hover{border-color:var(--border-hot);}
+.team-trigger-lbl{font-weight:400;color:var(--text-dim);font-size:13px;}
+.team-trigger-crest{width:24px;height:24px;display:grid;place-items:center;overflow:hidden;border-radius:6px;}
+.team-trigger-crest img{width:22px;height:22px;object-fit:contain;}
+.team-trigger-crest .xfer-mono{font-size:10px;}
+.team-trigger svg.ico{width:15px;height:15px;color:var(--text-dim);}
+
+.team-picker{position:fixed;z-index:700;width:360px;max-width:calc(100vw - 24px);background:var(--bg2);border:1px solid var(--border-strong);border-radius:14px;box-shadow:var(--pop-shadow);padding:10px;}
+.team-picker[hidden]{display:none;}
+.team-picker-list{margin-top:8px;max-height:min(420px,56vh);overflow-y:auto;}
+.team-opt{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:11px;width:100%;padding:8px 10px;background:none;border:none;border-radius:9px;color:var(--text);font-family:var(--font-ui);text-align:left;cursor:pointer;}
+.team-opt:hover,.team-opt.cur{background:var(--bg3);}
+.team-opt.sel .team-opt-name{color:var(--cyan);}
+.team-opt-crest{width:34px;height:34px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);display:grid;place-items:center;overflow:hidden;}
+.team-opt.cur .team-opt-crest,.team-opt:hover .team-opt-crest{background:var(--bg4);}
+.team-opt-crest img{width:26px;height:26px;object-fit:contain;}
+.team-opt-name{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team-opt-meta{font-size:12.5px;color:var(--text-dim);}
+.team-opt-bank{font-size:13.5px;text-align:right;}
+.team-opt-net{font-size:12px;text-align:right;}
+.team-picker-empty{padding:18px 10px;color:var(--text-dim);font-size:13.5px;}
+
+/* ── shared small pieces ── */
+.fo-h{font-family:var(--font-ui);font-size:16px;font-weight:600;letter-spacing:0;color:var(--text);margin:0;}
+.fo-h-pad{margin-bottom:16px;}
+.fo-h-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+.fo-count{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--bg4);color:var(--text-dim);font-size:12.5px;font-weight:600;}
+.fo-count.hot{background:var(--cyan);color:var(--btn-ink);}
+.fo-count:empty{display:none;}
+.fo-note{font-size:13px;color:var(--text-dim);line-height:1.55;margin:0 0 12px;max-width:62ch;}
+.fo-sub{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-dim);margin:0 0 10px;}
+.fo-empty{font-family:var(--font-ui);font-size:13.5px;color:var(--text-dim);padding:10px 2px;line-height:1.55;}
+#p-office .card{padding:22px 24px;}
+#p-office .card.fo-flush{padding:0;overflow:hidden;}
+#p-office .card.yellow{border-color:var(--border);}
+
+/* ── account header ── */
+.acct{background:var(--bg2);border:1px solid var(--border);border-radius:18px;position:relative;overflow:hidden;flex-shrink:0;box-shadow:var(--card-shadow);}
+.acct::before{content:'';position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,var(--cyan),transparent 55%);}
+.acct-top{display:flex;align-items:center;gap:18px;padding:24px 28px 20px;flex-wrap:wrap;}
+.acct-crest{width:64px;height:64px;border-radius:16px;background:var(--bg3);border:1px solid var(--border);display:grid;place-items:center;overflow:hidden;flex-shrink:0;}
+.acct-crest img{width:48px;height:48px;object-fit:contain;}
+.acct-crest .xfer-mono{font-size:20px;}
+.acct-id{min-width:0;flex:1;}
+.acct-name{font-family:var(--font-serif);font-size:32px;font-weight:600;line-height:1.15;letter-spacing:-.3px;margin:0;}
+.acct-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+.acct-tag{font-size:12.5px;color:var(--text-dim);padding:2px 11px;border:1px solid var(--border-strong);border-radius:999px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;}
+.acct-tag.gold{color:var(--yellow);border-color:color-mix(in srgb,var(--yellow) 40%,transparent);}
+.acct-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.acct-body{display:grid;grid-template-columns:minmax(300px,1.1fr) minmax(280px,1fr) minmax(320px,1.2fr);border-top:1px solid var(--border);}
+.acct-cell{padding:22px 28px 24px;min-width:0;}
+.acct-cell + .acct-cell{border-left:1px solid var(--border);}
+.acct-lbl{font-size:13px;color:var(--text-dim);}
+.acct-balance{font-family:var(--font-serif);font-size:48px;font-weight:500;line-height:1.08;letter-spacing:-1px;margin-top:6px;white-space:nowrap;}
+.acct-balance .cents{font-size:.52em;color:var(--text-dim);letter-spacing:0;}
+.acct-balance.neg{color:var(--red);}
+.acct-sub{font-size:13.5px;color:var(--text-dim);margin-top:10px;}
+.acct-sub b{color:var(--text);font-weight:600;}
+.acct-kpis{display:grid;grid-template-columns:1fr 1fr;gap:20px 24px;}
+.acct-kpi .v{font-family:var(--font-serif);font-size:25px;font-weight:500;line-height:1.2;margin-top:3px;letter-spacing:-.2px;white-space:nowrap;}
+.acct-kpi .s{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+.pos{color:var(--green);} .neg{color:var(--red);}
+
+.flow-row{display:grid;grid-template-columns:74px minmax(0,1fr) 84px;align-items:center;gap:12px;font-size:13.5px;margin-top:12px;}
+.flow-row .amt{text-align:right;font-weight:600;}
+.flow-track{height:12px;border-radius:999px;background:var(--bg4);overflow:hidden;display:flex;}
+.flow-seg{height:100%;min-width:0;}
+.flow-seg + .flow-seg{box-shadow:-2px 0 0 var(--bg2);}
+.flow-in{background:var(--green);}
+.flow-pay{background:var(--cyan);}
+.flow-fix{background:color-mix(in srgb,var(--cyan) 45%,var(--bg4));}
+.flow-legend{display:flex;gap:6px 18px;flex-wrap:wrap;margin-top:16px;font-size:13px;color:var(--text-dim);}
+.flow-legend span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
+.flow-legend i{width:9px;height:9px;border-radius:3px;display:inline-block;}
+.flow-legend b{color:var(--text);font-weight:600;}
+
+/* ── attention row ── */
+.fo-attn{display:flex;gap:9px;flex-wrap:wrap;flex-shrink:0;}
+.attn{--c:var(--cyan);display:inline-flex;align-items:center;gap:9px;padding:6px 15px 6px 7px;border:1px solid var(--border);border-radius:999px;background:var(--bg2);color:var(--text-dim);font-family:var(--font-ui);font-size:13.5px;font-weight:500;cursor:pointer;transition:border-color .15s,color .15s;}
+.attn b{min-width:26px;height:26px;border-radius:999px;display:grid;place-items:center;background:var(--bg4);color:var(--text-dim);font-size:13px;font-weight:700;padding:0 7px;}
+.attn:hover{color:var(--text);border-color:var(--border-strong);}
+.attn.hot{color:var(--text);border-color:var(--c);border-color:color-mix(in srgb,var(--c) 50%,transparent);}
+.attn.hot b{background:var(--c);color:var(--btn-ink);}
+html[data-theme="light"] .attn.hot b{color:#fff;}
+.attn.note{cursor:default;padding-left:14px;}
+
+/* ── contracts + desk ── */
+.fo-main{display:grid;grid-template-columns:minmax(0,1fr) 440px;gap:20px;align-items:start;flex-shrink:0;}
+.fo-card-head{display:flex;align-items:center;gap:14px;padding:18px 22px 16px;flex-wrap:wrap;}
+.fo-search{width:200px;margin-left:auto;padding:8px 12px;font-size:13.5px;}
+.fo-seg{display:inline-flex;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap;}
+.fo-seg button{background:none;border:none;border-radius:7px;padding:5px 11px;color:var(--text-dim);font-family:var(--font-ui);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.fo-seg button:hover{color:var(--text);}
+.fo-seg button.on{background:var(--bg2);color:var(--text);box-shadow:0 0 0 1px var(--border-strong);}
+.fo-seg button span{color:var(--text-faint);margin-left:4px;}
+
+.fo-table-wrap{overflow-x:auto;border-top:1px solid var(--border);}
+.fo-table{width:100%;min-width:800px;border-collapse:collapse;font-size:14px;}
+.fo-table th{font-size:12.5px;font-weight:500;color:var(--text-dim);text-align:right;padding:10px 10px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg3);}
+.fo-table th:first-child,.fo-table td:first-child{text-align:left;padding-left:22px;}
+.fo-table th:first-child{width:34%;}
+.fo-table th:last-child,.fo-table td:last-child{padding-right:18px;}
+.fo-th{background:none;border:none;padding:0;color:inherit;font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:4px;}
+.fo-th:hover{color:var(--text);}
+.fo-th .arr{font-size:9px;opacity:0;}
+.fo-th.on{color:var(--text);font-weight:600;} .fo-th.on .arr{opacity:1;color:var(--cyan);}
+.fo-table td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:right;vertical-align:middle;white-space:nowrap;}
+.fo-row:hover td{background:var(--bg3);}
+.fo-row.open td{background:var(--bg3);border-bottom-color:transparent;}
+.fo-table tfoot td{border-bottom:none;font-weight:600;padding-top:13px;padding-bottom:15px;color:var(--text);}
+.fo-table tfoot td:first-child{color:var(--text-dim);font-weight:500;}
+
+.fo-who{display:flex;align-items:center;gap:12px;min-width:0;}
+.fo-av{width:38px;height:38px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:grid;place-items:center;overflow:hidden;flex-shrink:0;font-weight:700;font-size:14px;color:var(--text-dim);}
+.fo-av img{width:100%;height:100%;object-fit:cover;}
+.fo-name{background:none;border:none;padding:0;color:var(--text);font-family:var(--font-ui);font-size:14.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.fo-name:hover{color:var(--cyan);}
+.fo-marks{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
+.fo-mark{font-size:11.5px;font-weight:500;color:var(--text-dim);padding:0 7px;border:1px solid var(--border-strong);border-radius:5px;line-height:18px;}
+.fo-mark.c{--c:var(--purple);color:var(--c);border-color:color-mix(in srgb,var(--c) 45%,transparent);}
+.fo-mark.c.red{--c:var(--red);} .fo-mark.c.gold{--c:var(--yellow);}
+.fo-term{display:inline-flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.fo-term-bar{width:64px;height:3px;border-radius:2px;background:var(--bg4);overflow:hidden;}
+.fo-term-bar i{display:block;height:100%;border-radius:2px;background:var(--text-faint);}
+.fo-term.warn{color:var(--orange);} .fo-term.warn i{background:var(--orange);}
+.fo-term.bad{color:var(--red);font-weight:600;} .fo-term.bad i{background:var(--red);}
+.fo-dim{color:var(--text-dim);}
+.fo-cell{background:none;border:1px dashed var(--border-strong);border-radius:7px;padding:3px 9px;min-width:54px;color:var(--text-faint);font-family:var(--font-ui);font-size:13px;font-variant-numeric:tabular-nums;cursor:pointer;transition:border-color .12s,color .12s;}
+.fo-cell:hover{border-color:var(--cyan);color:var(--cyan);}
+.fo-cell.on{border-style:solid;border-color:var(--border-strong);color:var(--text);font-weight:600;font-size:14px;}
+.fo-cell.on:hover{border-color:var(--cyan);color:var(--cyan);}
+.fo-pill{border:1px solid var(--border-strong);background:none;border-radius:999px;padding:3px 11px;font-family:var(--font-ui);font-size:12.5px;font-weight:600;color:var(--text-dim);cursor:pointer;}
+.fo-pill:hover{color:var(--text);border-color:var(--text-dim);}
+.fo-pill.open{color:var(--green);border-color:color-mix(in srgb,var(--green) 50%,transparent);background:var(--green-dim);}
+.fo-acts{display:inline-flex;gap:6px;justify-content:flex-end;}
+.fo-btn{background:var(--bg2);border:1px solid var(--border-strong);border-radius:8px;padding:5px 11px;color:var(--text);font-family:var(--font-ui);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:border-color .12s,color .12s;}
+.fo-btn:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan);}
+.fo-btn:disabled{opacity:.4;cursor:not-allowed;}
+.fo-btn.danger{color:var(--red);border-color:color-mix(in srgb,var(--red) 35%,transparent);}
+.fo-btn.danger:hover:not(:disabled){border-color:var(--red);color:var(--red);background:var(--red-dim);}
+.fo-btn.more[aria-expanded="true"]{border-color:var(--cyan);color:var(--cyan);}
+.fo-table .fo-detail td{background:var(--bg3);padding:0 22px 16px 72px;text-align:left;white-space:normal;}
+.fo-table .fo-player{display:flex;gap:8px;flex-wrap:wrap;padding:0;margin:0;background:none;border:none;border-radius:0;}
+.fo-table .fo-player:hover{transform:none;border:none;}
+.fo-table .ph-expand{margin:12px 0 0;}
+.fo-table .badge{background:transparent;border:1px solid var(--border-strong);color:var(--text-dim);font-weight:500;font-size:11.5px;padding:0 7px;line-height:18px;border-radius:5px;}
+.fo-table-empty{padding:26px 22px;color:var(--text-dim);font-size:14px;}
+
+.fo-deskcard{position:sticky;top:0;display:flex;flex-direction:column;max-height:calc(100vh - 215px);min-height:240px;}
+.fo-desk-scroll{overflow-y:auto;padding:16px 18px 18px;border-top:1px solid var(--border);flex:1;min-height:0;}
+.fo-inbox-block{padding-bottom:6px;margin-bottom:14px;border-bottom:1px solid var(--border);}
+.fo-inbox-block.quiet{border-bottom:none;margin-bottom:0;}
+.fo-deskcard .pm-section-title{font-family:var(--font-ui);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;border:none;padding:0;margin:16px 0 10px;color:var(--text-dim);}
+.ng-card{background:var(--bg3);border-radius:12px;border-left-width:2px;padding:14px 14px 12px;}
+.ng-head{font-size:14.5px;}
+.ng-band{font-family:var(--font-ui);font-size:12.5px;letter-spacing:0;display:flex;gap:4px 14px;flex-wrap:wrap;width:100%;}
+.ng-band b{color:var(--text);font-weight:600;}
+.ng-msg{font-family:var(--font-ui);font-size:13px;}
+.ng-field label{font-family:var(--font-ui);font-size:12px;letter-spacing:0;text-transform:none;}
+.ng-field .nx-input{padding:7px 10px;font-size:13.5px;}
+.ng-asplayer{font-family:var(--font-ui);font-size:12.5px;letter-spacing:0;font-weight:600;}
+.fo-deskcard .ng-form{grid-template-columns:1fr 1fr;}
+.fo-deskcard .ng-form.ng-form-2{grid-template-columns:1fr auto;}
+.fo-deskcard .btn-sm{font-size:12.5px;padding:8px 12px;}
+.fo-deskcard .btn-red{background:transparent;color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,transparent);}
+.fo-deskcard .btn-red:hover{background:var(--red-dim);border-color:var(--red);}
+
+/* ── lower cards ── */
+.fo-lower{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.1fr) minmax(0,1.1fr);gap:20px;align-items:start;flex-shrink:0;}
+.fo-lower-2{grid-template-columns:1fr 1fr;}
+.health{display:grid;grid-template-columns:118px minmax(0,1fr);gap:20px;align-items:center;}
+.health .oracle-ring{width:118px;height:118px;margin:0;}
+.health .oracle-score-text .num{font-family:var(--font-serif);font-weight:500;font-size:34px;}
+.health .oracle-score-text .lbl{font-family:var(--font-ui);font-size:12px;letter-spacing:0;text-transform:none;}
+.health-rows{display:grid;gap:9px;font-size:13.5px;}
+.health-rows div{display:flex;justify-content:space-between;gap:12px;color:var(--text-dim);}
+.health-rows b{color:var(--text);font-weight:600;}
+.health-roles{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:13.5px;color:var(--text-dim);line-height:1.6;}
+.health-roles b{color:var(--orange);font-weight:600;}
+#p-office .log-area{font-family:var(--font-ui);font-size:13px;background:var(--bg3);border-color:var(--border);}
+#p-office .xfer-row{padding:10px 12px;margin-bottom:8px;}
+.fo-details summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none;}
+.fo-details summary::-webkit-details-marker{display:none;}
+.fo-details summary::after{content:'';margin-left:auto;width:8px;height:8px;border-right:1.5px solid var(--text-dim);border-bottom:1.5px solid var(--text-dim);transform:rotate(45deg);transition:transform .15s;}
+.fo-details[open] summary::after{transform:rotate(-135deg);}
+.fo-details[open] summary{margin-bottom:14px;}
+.fo-help{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px 18px;font-size:13.5px;margin:0 0 14px;}
+.fo-help dt{font-weight:600;color:var(--text);white-space:nowrap;}
+.fo-help dd{margin:0;color:var(--text-dim);line-height:1.5;}
+.fo-managed-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 2px;border-bottom:1px solid var(--border);font-size:14px;}
+.fo-managed-row:last-child{border-bottom:none;}
+.fo-managed-row span span{color:var(--text-dim);font-size:13px;margin-left:6px;}
+
+@media (max-width:1320px){
+  .fo-main{grid-template-columns:1fr;}
+  .fo-deskcard{position:static;max-height:none;}
+  .fo-deskcard .ng-form{grid-template-columns:repeat(4,1fr);}
+}
+@media (max-width:1180px){
+  .acct-body{grid-template-columns:1fr 1fr;}
+  .acct-cell:nth-child(3){grid-column:1 / -1;border-left:none;border-top:1px solid var(--border);}
+  .fo-lower{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:760px){
+  .panel{padding:16px;}
+  .acct-top{padding:18px;} .acct-cell{padding:18px;}
+  .acct-body{grid-template-columns:1fr;}
+  .acct-cell + .acct-cell{border-left:none;border-top:1px solid var(--border);}
+  .acct-name{font-size:25px;} .acct-balance{font-size:36px;}
+  .fo-lower,.fo-lower-2{grid-template-columns:1fr;}
+  .fo-search{width:100%;margin-left:0;}
+  .fo-deskcard .ng-form{grid-template-columns:1fr 1fr;}
+  .team-trigger-lbl{display:none;}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 
 </style>
 </head><body>
@@ -619,138 +838,118 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 
   <!-- NAV -->
   <div id="nav">
-    <button class="nav-tab active" onclick="showPanel('p-command', this)"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Command</button>
-      <button class="nav-tab" id="tab-office" onclick="showPanel('p-office', this); renderOffice()"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/></svg>Front Office</button>
+    <button class="nav-tab active" id="tab-office" onclick="showPanel('p-office', this); renderOffice()"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/></svg>Front Office</button>
     <button class="nav-tab" onclick="showPanel('p-market', this)"><svg class="ico" viewBox="0 0 24 24"><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M3 4h18l1 5a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-5 0z"/></svg>Market</button>
     <button class="nav-tab" onclick="showPanel('p-compare', this)"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>Compare</button>
     <button class="nav-tab" onclick="showPanel('p-league', this)"><svg class="ico" viewBox="0 0 24 24"><path d="M6 4h12v3a6 6 0 0 1-12 0z"/><path d="M6 5H3v1a3 3 0 0 0 3 3"/><path d="M18 5h3v1a3 3 0 0 1-3 3"/><path d="M12 13v4"/><path d="M8 21h8"/><path d="M9 21v-2h6v2"/></svg>League</button>
     <button class="nav-tab" onclick="showPanel('p-history', this); renderHistory()"><svg class="ico" viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg>History</button>
     <button class="nav-tab" onclick="showPanel('p-ops', this); renderAchIconSquares()"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Operations <span class="badge" id="alert-badge" style="display:none">!</span></button>
     <button class="nav-tab" onclick="showPanel('p-badges', this); renderBadgesPanel()"><svg class="ico" viewBox="0 0 24 24"><path d="M8 3h8v4a4 4 0 0 1-8 0V3z"/><path d="M8 4H4v2a4 4 0 0 0 4 4"/><path d="M16 4h4v2a4 4 0 0 1-4 4"/><path d="M12 11v4"/><path d="M9 19h6"/><path d="M10 15h4l1 4H9l1-4z"/></svg>Badges</button>
+    <button class="team-trigger" id="team-trigger" type="button" onclick="openTeamPicker(this)" aria-haspopup="listbox" title="Choose the team you are managing">
+      <span class="team-trigger-lbl">Managing</span>
+      <span class="team-trigger-crest" id="team-trigger-crest"></span>
+      <span class="team-trigger-name" id="team-trigger-name">No team</span>
+      <svg class="ico" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <select id="dash-team-select" hidden onchange="setActiveTeam(this.value)"></select>
   </div>
 
   <!-- CONTENT -->
   <div id="content">
 
-    <!-- ═══ COMMAND PANEL ═══ -->
-    <div class="panel active" id="p-command">
-
-      <!-- TEAM HEADER -->
-      <div class="card">
-        <div class="cmd-header">
-          <div class="cmd-header-main" id="cmd-team-header"></div>
-          <div class="form-group" style="margin:0; min-width:230px;">
-            <div class="form-label">SWITCH TEAM</div>
-            <select class="nx-select" id="dash-team-select" onchange="updateCommand()" style="font-size:14px; font-weight:700; font-family:var(--font-display); color:var(--cyan);"></select>
-          </div>
-        </div>
-      </div>
-
-      <!-- ROSTER -->
-      <div class="card" style="margin-top:16px;">
-        <div class="card-title">👥 ROSTER</div>
-        <div id="cmd-missing-roles" style="margin-bottom:12px;"></div>
-        <div id="cmd-roster"></div>
-      </div>
-
-      <!-- TEAM ACHIEVEMENTS -->
-      <div class="card yellow" style="margin-top:16px;">
-        <div class="card-title"><span class="medal-ic medal-ic-trophy"></span> TEAM ACHIEVEMENTS</div>
-        <div id="cmd-achievements" class="ach-scroll"></div>
-      </div>
-
-    </div>
-
-    
     <!-- ═══ FRONT OFFICE PANEL ═══ -->
-    <div class="panel" id="p-office">
-      <!-- OFFER NOTIFICATIONS -->
-      <div id="cmd-notifications"></div>
+    <div class="panel active" id="p-office">
 
-      <div id="fo-pipeline" class="fo-pipeline"></div>
+      <!-- ACCOUNT HEADER: team, balance, monthly money in and out -->
+      <section class="acct" id="fo-account" aria-label="Team account"></section>
 
-      <!-- TEAM OVERVIEW STATS -->
-      <div id="cmd-stat-row" class="stat-row" style="margin-bottom:16px;"></div>
+      <!-- THINGS THAT NEED ATTENTION -->
+      <div class="fo-attn" id="fo-pipeline"></div>
 
-      <div class="card orange" id="fo-inbox-card">
-        <div class="card-title" style="justify-content:space-between;">
-          <span>📥 INCOMING OFFERS — TALKS ON MY PLAYERS</span>
-          <span id="fo-inbox-count" class="badge badge-orange">0</span>
-        </div>
-        <div id="fo-inbox" class="fo-inbox-row"></div>
-      </div>
-      <div class="fo-grid">
-        <div style="display:flex; flex-direction:column; gap:12px; min-height:0;">
-          <div class="card" style="display:flex; flex-direction:column; min-height:0; flex:1;">
-            <div class="card-title">🛡 LOCKER ROOM — CONTRACT CONTROL</div>
-            <input type="text" class="nx-input" id="fo-squad-search" placeholder="🔍 Filter squad..." oninput="renderOffice()" style="margin-bottom:8px; padding:6px 10px; font-size:11px;">
-            <div id="fo-squad" class="scroll-list" style="flex:1; max-height:none;"></div>
+      <div class="fo-main">
+        <!-- CONTRACTS -->
+        <section class="card fo-flush" id="fo-contracts-card">
+          <div class="fo-card-head">
+            <h2 class="fo-h">Contracts</h2>
+            <div class="fo-seg" id="fo-squad-filters" role="group" aria-label="Filter players"></div>
+            <input type="text" class="nx-input fo-search" id="fo-squad-search" placeholder="Find a player" autocomplete="off" oninput="renderFoSquad($('dash-team-select').value)">
           </div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:12px; min-height:0;">
-          <div class="card" style="display:flex; flex-direction:column; min-height:0; flex:1;">
-            <div class="card-title">🗣 NEGOTIATION DESK</div>
-            <div id="fo-desk" class="scroll-list" style="flex:1; max-height:none;"></div>
+          <div class="fo-table-wrap" id="fo-squad"></div>
+        </section>
+
+        <!-- DEAL DESK -->
+        <section class="card fo-flush fo-deskcard" id="fo-desk-card">
+          <div class="fo-card-head">
+            <h2 class="fo-h">Deal desk</h2>
+            <span class="fo-count" id="fo-desk-count"></span>
           </div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:12px; min-height:0;">
-          <div class="card purple" style="border-color:rgba(177,140,240,0.25);">
-            <div class="card-title" style="color:var(--purple);">🎮 USER-CONTROLLED PLAYERS</div>
-            <input type="text" class="nx-input" id="fo-managed-search" placeholder="🔍 Search any player to toggle..." oninput="renderFoManaged()" style="margin-bottom:8px; padding:6px 10px; font-size:11px;">
-            <div id="fo-managed" class="scroll-list" style="max-height:200px;"></div>
-          </div>
-          <div class="card">
-            <div class="card-title">📜 TEAM DEAL HISTORY</div>
-            <div id="fo-history" class="scroll-list" style="max-height:180px;"></div>
-          </div>
-          <div class="card">
-            <div class="card-title">ℹ HOW DEALS WORK</div>
-            <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); line-height:1.8;">
-              🏷 <b>On Sale</b> / ⚡ <b>Buyout</b> — instant purchase at the listed price.<br>
-              🔑 <b>Release clause</b> — paid once to unlock fee talks (non-refundable).<br>
-              📬 <b>Open to Offers</b> — clubs bid a fee directly, no clause needed.<br>
-              📜 Team deals above · league-wide ledger in the <b>📜 GLOBAL HISTORY</b> tab.
+          <div class="fo-desk-scroll">
+            <div id="fo-inbox-card" class="fo-inbox-block">
+              <div class="fo-sub">Offers for your players <span class="fo-count" id="fo-inbox-count">0</span></div>
+              <div id="fo-inbox"></div>
             </div>
+            <div id="fo-desk"></div>
           </div>
-        </div>
+        </section>
       </div>
 
-      <!-- FINANCES / TEAM HEALTH / ACTIVITY LOG -->
-      <div class="g3" style="margin-top:20px;">
-        <div class="card">
-          <div class="card-title">💰 FINANCIAL STATUS</div>
-          <div id="cmd-finances"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">◈ TEAM HEALTH</div>
-          <div id="cmd-oracle-wrap"></div>
-        </div>
-        <div class="card">
-          <div class="card-title" style="justify-content:space-between;">
-            <span>📋 ACTIVITY LOG</span>
-            <button class="btn btn-ghost btn-sm" onclick="undo()">↩ UNDO</button>
+      <div class="fo-lower">
+        <section class="card">
+          <h2 class="fo-h fo-h-pad">Team health</h2>
+          <div id="fo-health"></div>
+        </section>
+        <section class="card">
+          <h2 class="fo-h fo-h-pad">Recent deals</h2>
+          <div id="fo-history" class="scroll-list" style="max-height:300px;"></div>
+        </section>
+        <section class="card">
+          <div class="fo-h-row">
+            <h2 class="fo-h">Activity log</h2>
+            <button class="btn btn-ghost btn-sm" onclick="undo()">Undo last action</button>
           </div>
-          <div class="log-area" id="action-log" style="max-height:220px;"></div>
-        </div>
+          <div class="log-area" id="action-log" style="height:auto; max-height:300px; min-height:160px;"></div>
+        </section>
       </div>
 
-      <div class="card yellow" style="margin-top:20px;">
-        <div class="card-title" style="justify-content:space-between;">
-          <span>Team Achievements</span>
-          <button class="btn btn-yellow btn-sm" onclick="openAchModal()">+ Record</button>
+      <div class="fo-lower fo-lower-2">
+        <details class="card fo-details">
+          <summary><span class="fo-h">Players you control</span><span class="fo-count" id="fo-managed-count">0</span></summary>
+          <p class="fo-note">A player you control answers contract offers through you instead of the NPC. This list covers every team.</p>
+          <input type="text" class="nx-input fo-search" id="fo-managed-search" placeholder="Find any player" autocomplete="off" oninput="renderFoManaged()" style="width:100%; margin-bottom:8px;">
+          <div id="fo-managed" class="scroll-list" style="max-height:240px;"></div>
+        </details>
+        <details class="card fo-details">
+          <summary><span class="fo-h">How deals work</span></summary>
+          <dl class="fo-help">
+            <dt>For sale or buyout</dt><dd>Bought on the spot at the listed price.</dd>
+            <dt>Release clause</dt><dd>Paid once to open fee talks with the club. It is not refunded.</dd>
+            <dt>Open to offers</dt><dd>Clubs bid a fee directly, with no clause to pay.</dd>
+            <dt>Protected</dt><dd>No price and not open to offers, so nobody can approach the player.</dd>
+            <dt>After any purchase</dt><dd>Salary and contract length are agreed with the player on the deal desk.</dd>
+          </dl>
+          <p class="fo-note">Deals for this team are listed under Recent deals. The History tab has the league-wide ledger.</p>
+        </details>
+      </div>
+
+      <!-- TROPHIES — kept at the very bottom so the panel stays about money -->
+      <section class="card yellow">
+        <div class="fo-h-row">
+          <h2 class="fo-h">Trophies and awards</h2>
+          <button class="btn btn-ghost btn-sm" onclick="openAchModal()">Record a result</button>
         </div>
         <div class="ach-split">
           <div class="ach-col">
-            <div class="pm-section-title" style="margin-top:0;">Team Trophy Case</div>
+            <div class="pm-section-title" style="margin-top:0;">Team trophy case</div>
             <div id="fo-ach-events" class="ach-scroll"></div>
           </div>
           <div class="ach-col">
-            <div class="pm-section-title" style="margin-top:0;">Player Awards — Current Roster</div>
+            <div class="pm-section-title" style="margin-top:0;">Player awards, current roster</div>
             <div id="fo-ach-awards" class="ach-scroll"></div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
+
 
     <!-- ═══ MARKET PANEL ═══ -->
     <div class="panel" id="p-market">
@@ -1236,6 +1435,12 @@ html[data-theme="light"] .badge-cyan,html[data-theme="light"] .badge-green,html[
 
 </div><!-- /app -->
 
+<!-- TEAM PICKER -->
+<div class="team-picker" id="team-picker" hidden>
+  <input type="text" class="nx-input" id="team-picker-q" placeholder="Search teams" autocomplete="off" oninput="teamPickerIdx=0; renderTeamPicker()" onkeydown="teamPickerKey(event)">
+  <div class="team-picker-list" id="team-picker-list" role="listbox"></div>
+</div>
+
 <!-- BOTTOM STRIP -->
 <div id="bottom-strip">
   <div id="month-counter">MONTH 01 — NEXUS COMMAND</div>
@@ -1421,7 +1626,7 @@ function toggleTheme(){
   r.setAttribute('data-theme',cur);
   try{ localStorage.setItem('nexus-theme',cur); }catch(e){}
   var b=document.getElementById('theme-toggle'); if(b) b.textContent=cur==='light'?'☀':'☾';
-  try{ if(typeof finLoaded!=='undefined' && finLoaded && plyLoaded && document.getElementById('app').classList.contains('visible')) updateCommand(); }catch(e){}
+  try{ if(typeof finLoaded!=='undefined' && finLoaded && plyLoaded && document.getElementById('app').classList.contains('visible')) refreshActiveTeam(); }catch(e){}
 }
 
 /* ── Topbar SITES menu: this is its own full page (no iframes) — the
@@ -1884,7 +2089,7 @@ function loadTeamLogos(data) {
 
 const $ = id => document.getElementById(id);
 const fmt = v => '$' + Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtK = v => { const a = Math.abs(v); const s = v < 0 ? '-' : ''; return s + (a >= 1000 ? '$' + (a/1000).toFixed(1) + 'k' : fmt(v)); };
+const fmtK = v => { const a = Math.abs(v); const s = v < 0 ? '-' : ''; return s + (a >= 1000 ? '$' + (a/1000).toFixed(1) + 'k' : fmt(a)); };
 const clamp = (v,min,max) => Math.min(max, Math.max(min, v));
 
 /* ═══ COUNTRY → FLAG & REGION ═══ */
@@ -2361,12 +2566,66 @@ function showPanel(id, btn) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   $(id).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id==='p-command' && finances.length) updateCommand(); // redraw the forecast with real dimensions
 }
-window.addEventListener('resize', () => {
-  const pc=document.getElementById('p-command');
-  if (pc && pc.classList.contains('active') && finances.length) updateCommand();
+
+/* ── ACTIVE TEAM PICKER ───────────────────────────────────────────────
+   The hidden <select id="dash-team-select"> is still the single source of
+   truth for "which team am I managing" (the engine reads its value).
+   This popover is only a nicer way to change it: searchable, with crests. */
+let teamPickerRows = [], teamPickerIdx = 0;
+function setActiveTeam(name){
+  const sel=$('dash-team-select');
+  if (!finances.some(t=>t.TeamName===name)) return;
+  sel.value=name;
+  try { localStorage.setItem('nexus-active-team', name); } catch(e) {}
+  foOpenRows.clear(); foFilter='all';
+  refreshActiveTeam();
+  renderOffice();
+}
+function openTeamPicker(anchor){
+  const box=$('team-picker');
+  if (!box.hidden && box._anchor===anchor){ closeTeamPicker(); return; }
+  box.hidden=false; box._anchor=anchor;
+  const r=anchor.getBoundingClientRect(), w=box.offsetWidth;
+  box.style.top=(r.bottom+8)+'px';
+  box.style.left=Math.max(12, Math.min(window.innerWidth-w-12, r.right-w))+'px';
+  $('team-picker-q').value=''; teamPickerIdx=0;
+  renderTeamPicker();
+  $('team-picker-q').focus();
+}
+function closeTeamPicker(){ const box=$('team-picker'); if (box) { box.hidden=true; box._anchor=null; } }
+function renderTeamPicker(){
+  const q=$('team-picker-q').value.trim().toLowerCase();
+  const cur=$('dash-team-select').value;
+  teamPickerRows=finances.filter(t=>!q||String(t.TeamName).toLowerCase().includes(q)).map(t=>t.TeamName);
+  if (teamPickerIdx>=teamPickerRows.length) teamPickerIdx=Math.max(0, teamPickerRows.length-1);
+  $('team-picker-list').innerHTML = teamPickerRows.length ? teamPickerRows.map((name,i)=>{
+    const t=finances.find(x=>x.TeamName===name);
+    const net=getTeamFinances(t).net;
+    return `<button type="button" role="option" aria-selected="${name===cur}" class="team-opt ${i===teamPickerIdx?'cur':''} ${name===cur?'sel':''}" onclick="pickTeam(${i})">
+      <span class="team-opt-crest">${crestInner(name)}</span>
+      <span style="min-width:0;"><div class="team-opt-name">${name}</div><div class="team-opt-meta">${t.Tier||'Unranked'}</div></span>
+      <span><div class="team-opt-bank">${fmtK(t.CurrentBank||0)}</div><div class="team-opt-net ${net>=0?'pos':'neg'}">${net>=0?'+':'−'}${fmtK(Math.abs(net))} a month</div></span>
+    </button>`;
+  }).join('') : '<div class="team-picker-empty">No team matches that search.</div>';
+  const curEl=$('team-picker-list').querySelector('.team-opt.cur');
+  if (curEl && curEl.scrollIntoView) curEl.scrollIntoView({block:'nearest'});
+}
+function pickTeam(i){ const name=teamPickerRows[i]; closeTeamPicker(); if (name) setActiveTeam(name); }
+function teamPickerKey(e){
+  if (e.key==='ArrowDown'){ e.preventDefault(); teamPickerIdx=Math.min(teamPickerRows.length-1, teamPickerIdx+1); renderTeamPicker(); }
+  else if (e.key==='ArrowUp'){ e.preventDefault(); teamPickerIdx=Math.max(0, teamPickerIdx-1); renderTeamPicker(); }
+  else if (e.key==='Enter'){ e.preventDefault(); pickTeam(teamPickerIdx); }
+  else if (e.key==='Escape'){ e.stopPropagation(); closeTeamPicker(); }
+}
+document.addEventListener('click', e => {
+  const box=$('team-picker');
+  if (!box || box.hidden) return;
+  if (box.contains(e.target) || (box._anchor && box._anchor.contains(e.target))) return;
+  closeTeamPicker();
 });
+window.addEventListener('resize', closeTeamPicker);
+
 
 /* ═══ CORE CALCULATIONS ═══ */
 /* ═══════════════════════════════════════════════════════════════════════
@@ -2720,8 +2979,33 @@ function gotoOffice(){
 }
 
 /* ── FRONT OFFICE RENDERING ─────────────────────────────────────────── */
-function foChip(icon,label,val,color){
-  return `<div class="fo-chip" style="--c:${color}"><span class="fo-chip-icon">${icon}</span><span class="fo-chip-val">${val}</span><span class="fo-chip-lbl">${label}</span></div>`;
+/* Contracts table view state — display only, nothing here is saved or exported */
+let foFilter='all', foSort={key:'contract', dir:1};
+const foOpenRows=new Set();
+const FO_FILTERS=[
+  ['all','All',()=>true],
+  ['starters','Starters',p=>p.Roster==='Starter'],
+  ['bench','Bench',p=>p.Roster==='Bench'],
+  ['expiring','Expiring',p=>(p.ContractMonths||0)<=2],
+  ['legacy','Legacy',p=>isLegacyContract(p)],
+];
+const FO_SORTS={
+  player:p=>String(p.PlayerName).toLowerCase(), salary:p=>getPlayerSalary(p), contract:p=>p.ContractMonths||0,
+  value:p=>p.MarketValue||0, buyout:p=>p.Buyout||0, clause:p=>p.ReleaseClause||0, sale:p=>p.OnSale||0
+};
+function setFoFilter(f){ foFilter=f; renderFoSquad($('dash-team-select').value); }
+function setFoSort(k){
+  foSort = foSort.key===k ? {key:k, dir:-foSort.dir} : {key:k, dir:(k==='player'||k==='contract')?1:-1};
+  renderFoSquad($('dash-team-select').value);
+}
+function toggleFoRow(name){ foOpenRows.has(name)?foOpenRows.delete(name):foOpenRows.add(name); renderFoSquad($('dash-team-select').value); }
+function foJump(filter){
+  if (filter){ foFilter=filter; const s=$('fo-squad-search'); if (s) s.value=''; renderFoSquad($('dash-team-select').value); }
+  const el=$(filter?'fo-contracts-card':'fo-desk-card');
+  if (el && el.scrollIntoView) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function foAttn(count,label,color,target,title){
+  return `<button type="button" class="attn ${count?'hot':''}" style="--c:${color}" title="${title}" onclick="foJump(${target?`'${target}'`:''})"><b>${count}</b>${label}</button>`;
 }
 
 function renderOffice(){
@@ -2737,15 +3021,22 @@ function renderOffice(){
   const asPlayer=myNegs.filter(n=>n.pending==='player').length;
   const legacy=players.filter(p=>p.TeamName===at&&isLegacyContract(p)).length;
   const expiring=players.filter(p=>p.TeamName===at&&(p.ContractMonths||0)<=2).length;
+  const openTalks=myNegs.length+buyTalks.length;
+
+  const starterRoleSet=new Set(players.filter(p=>p.TeamName===at&&p.Roster==='Starter').flatMap(p=>p.roleList||[]));
+  const missingRoles=ROLE_OPTIONS.filter(r=>!starterRoleSet.has(r.value));
 
   $('fo-pipeline').innerHTML =
-    `<div class="fo-team-tag" style="cursor:pointer;" onclick="openTeamProfile('${at.replace(/'/g,"\\'")}')">${getTeamLogo(at,64)||''}<div><div class="fo-team-name" style="text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:3px;">${at}</div><div class="fo-team-bank">${fmt(team.CurrentBank||0)}</div></div></div>` +
-    foChip('🗣','TALKS OPEN', myNegs.length, 'var(--cyan)') +
-    foChip('🔑','CLAUSE TALKS', buyTalks.length+sellTalks.length, 'var(--orange)') +
-    foChip('🔔','NEED ACTION', needsMe, needsMe?'var(--red)':'var(--green)') +
-    foChip('🎮','AS-PLAYER', asPlayer, asPlayer?'var(--purple)':'var(--text-dim)') +
-    foChip('⌛','EXPIRING ≤2m', expiring, expiring?'var(--orange)':'var(--green)') +
-    foChip('📜','LEGACY DEALS', legacy, legacy?'var(--yellow)':'var(--green)');
+    foAttn(needsMe,'waiting on your reply','var(--red)','','Talks where the next move is yours') +
+    foAttn(sellTalks.length,'offers for your players','var(--orange)','','Clubs that paid a clause or bid on one of your players') +
+    foAttn(openTalks,'talks you opened','var(--cyan)','','Signings, renewals and fee talks in progress') +
+    foAttn(asPlayer,'waiting on the player','var(--purple)','','Offers the player has not answered yet') +
+    foAttn(expiring,'contracts end within 2 months','var(--orange)','expiring','Show these players in the table') +
+    foAttn(legacy,'legacy contracts','var(--yellow)','legacy','Contracts that still use the old salary rule. Show them in the table') +
+    (missingRoles.length?`<span class="attn hot note" style="--c:var(--orange)" title="Roles no starter covers">Starting five has no ${missingRoles.map(r=>r.label).join(', ')}</span>`:'');
+
+  const dc=$('fo-desk-count');
+  if (dc){ dc.textContent=needsMe?needsMe+' need you':''; dc.classList.toggle('hot', needsMe>0); }
 
   renderFoSquad(at);
   renderFoAchievements(at);
@@ -2757,44 +3048,75 @@ function renderOffice(){
 
 function renderFoSquad(at){
   const q=($('fo-squad-search')&&$('fo-squad-search').value||'').toLowerCase();
-  const squad=players.filter(p=>p.TeamName===at&&(!q||String(p.PlayerName).toLowerCase().includes(q)));
-  squad.sort((a,b)=>(a.ContractMonths||0)-(b.ContractMonths||0));
-  $('fo-squad').innerHTML = squad.length ? squad.map(p=>{
+  const all=players.filter(p=>p.TeamName===at);
+  if (!FO_FILTERS.some(f=>f[0]===foFilter)) foFilter='all';
+  $('fo-squad-filters').innerHTML=FO_FILTERS.map(([k,label,test])=>
+    `<button type="button" class="${foFilter===k?'on':''}" aria-pressed="${foFilter===k}" onclick="setFoFilter('${k}')">${label}<span>${all.filter(test).length}</span></button>`).join('');
+
+  const test=FO_FILTERS.find(f=>f[0]===foFilter)[2];
+  const squad=all.filter(test).filter(p=>!q||String(p.PlayerName).toLowerCase().includes(q));
+  const key=FO_SORTS[foSort.key]||FO_SORTS.contract;
+  squad.sort((a,b)=>{ const x=key(a), y=key(b); return (x<y?-1:x>y?1:0)*foSort.dir; });
+
+  const th=(k,label,tip)=>`<th aria-sort="${foSort.key===k?(foSort.dir>0?'ascending':'descending'):'none'}"><button type="button" class="fo-th ${foSort.key===k?'on':''}" title="${tip||'Sort by '+label.toLowerCase()}" onclick="setFoSort('${k}')">${label}<span class="arr">${foSort.dir>0?'▲':'▼'}</span></button></th>`;
+  const price=(v,fn,e,tip)=>`<button type="button" class="fo-cell ${v>0?'on':''}" title="${tip}" onclick="${fn}('${e}')">${v>0?fmtK(v):'Set'}</button>`;
+
+  const rows=squad.map(p=>{
     const pn=String(p.PlayerName), e=escN(pn);
     const mo=p.ContractMonths||0;
-    const moCol=mo<=0?'var(--red)':mo<=2?'var(--orange)':'var(--text)';
     const busy=activeNegFor(pn);
-    return `<div class="fo-player">
-      <div class="fo-player-top">
-        <span class="name" style="cursor:pointer;" onclick="openPlayerProfile('${e}')">${p.Country?getCountryFlag(p.Country,14)+' ':''}${pn}</span>
-        <span style="font-family:var(--font-data); font-size:10px; color:${moCol}; font-weight:700;">${mo}m</span>
-      </div>
-      <div class="fo-player-mid">
-        <span>${fmt(getPlayerSalary(p))}/mo · MV ${fmtK(p.MarketValue||0)} ${isLegacyContract(p)?'<span class="badge" style="font-size:8px;">LEGACY</span>':''}</span>
-        <span style="color:var(--text-dim);">${p.Roster||'—'}</span>
-      </div>
-      <div class="fo-player-tags">
-        ${p.Buyout>0?`<span class="fo-tag" style="--c:var(--cyan)" title="Buyout — instant pay-take">⚡ ${fmtK(p.Buyout)}</span>`:''}
-        ${p.ReleaseClause>0?`<span class="fo-tag" style="--c:var(--orange)" title="Release clause — unlocks negotiation">🔑 ${fmtK(p.ReleaseClause)}</span>`:''}
-        ${p.OnSale>0?`<span class="fo-tag" style="--c:var(--green)" title="Listed on the market">🏷 ${fmtK(p.OnSale)}</span>`:''}
-        ${isUserManaged(p)?`<span class="fo-tag" style="--c:var(--purple)">🎮 USER</span>`:''}
-        ${busy?`<span class="fo-tag" style="--c:var(--red)">🗣 IN TALKS</span>`:''}
-        ${p.OpenToOffers>0?`<button class="fo-tag fo-tag-btn" style="--c:var(--green)" title="OPEN TO OFFERS — clubs can bid a fee directly. Click to protect again." onclick="toggleOpenToOffers('${e}')">📬 OPEN TO OFFERS</button>`:((!p.Buyout&&!p.ReleaseClause&&!p.OnSale)?`<button class="fo-tag fo-tag-btn" style="--c:var(--text-dim)" title="PROTECTED — untouchable. Click to set OPEN TO OFFERS so clubs can bid a fee directly (no clause / no sale listing needed)." onclick="toggleOpenToOffers('${e}')">🔒 PROTECTED</button>`:'')}
-      </div>
-      <div class="fo-player-actions">
-        <button class="fo-ico" title="Edit player data manually — team not included, use transfers for that" onclick="openPlayerEditModal('${e}')">✎</button>
-        <button class="fo-ico" title="Toggle Starter / Bench" onclick="toggleRoster('${e}')">🔄</button>
-        <button class="fo-ico" title="Set / remove buyout" onclick="setPlayerBuyout('${e}')">⚡</button>
-        <button class="fo-ico" title="Set / remove release clause" onclick="setPlayerClause('${e}')">🔑</button>
-        <button class="fo-ico" title="List / unlist on sale" onclick="setPlayerSale('${e}')">🏷</button>
-        <button class="fo-ico" title="Toggle user-controlled" onclick="toggleManaged('${e}')">🎮</button>
-        <button class="fo-ico fo-ico-wide" title="Open renewal talks" onclick="startRenewal('${e}')" ${busy?'disabled':''}>📋 RENEW</button>
-        <button class="fo-ico fo-ico-wide" title="Event & award history" onclick="togglePlayerHist(this,'${e}')">🏛 HIST</button>
-        <button class="fo-ico fo-ico-wide fo-ico-danger" title="Release to free agency — player leaves for free, any club can sign him" onclick="releasePlayer('${e}')" ${busy?'disabled':''}>🗑 RELEASE</button>
-      </div>
-    </div>`;
-  }).join('') : '<div class="fo-empty">No players match.</div>';
+    const open=foOpenRows.has(pn);
+    const starter=p.Roster==='Starter';
+    const offers = p.OpenToOffers>0
+      ? `<button type="button" class="fo-pill open" title="Clubs can bid a fee directly. Click to protect the player again." onclick="toggleOpenToOffers('${e}')">Open</button>`
+      : ((!p.Buyout&&!p.ReleaseClause&&!p.OnSale)
+          ? `<button type="button" class="fo-pill" title="Nobody can approach this player. Click to let clubs bid a fee directly." onclick="toggleOpenToOffers('${e}')">Protected</button>`
+          : `<span class="fo-dim" title="Reachable through the prices set on this row">By price</span>`);
+    return `<tr class="fo-row ${open?'open':''}">
+      <td><div class="fo-who">
+        <span class="fo-av">${playerAvatarImg(pn, pn.charAt(0).toUpperCase(), '')}</span>
+        <div>
+          <button type="button" class="fo-name" title="Open player profile" onclick="openPlayerProfile('${e}')">${p.Country?getCountryFlag(p.Country,14):''}${pn}</button>
+          <div class="fo-marks">
+            <span class="fo-mark">${p.Roster||'No slot'}</span>${roleBadges(p)}
+            ${isUserManaged(p)?'<span class="fo-mark c">You control</span>':''}
+            ${busy?'<span class="fo-mark c red">In talks</span>':''}
+            ${isLegacyContract(p)?'<span class="fo-mark c gold" title="Salary still follows the old rule until the contract is renewed">Legacy</span>':''}
+          </div>
+        </div>
+      </div></td>
+      <td>${fmt(getPlayerSalary(p))}</td>
+      <td><span class="fo-term ${mo<=0?'bad':mo<=2?'warn':''}">${mo<=0?'Expired':mo+' mo'}<span class="fo-term-bar"><i style="width:${Math.max(4,Math.min(100,mo/24*100))}%"></i></span></span></td>
+      <td class="fo-dim">${fmtK(p.MarketValue||0)}</td>
+      <td>${price(p.Buyout,'setPlayerBuyout',e,'Buyout: any club pays this and takes the player at once. Click to set or remove.')}</td>
+      <td>${price(p.ReleaseClause,'setPlayerClause',e,'Release clause: a club pays this to open fee talks. Click to set or remove.')}</td>
+      <td>${price(p.OnSale,'setPlayerSale',e,'Sale price: lists the player on the market at this price. Click to set or remove.')}</td>
+      <td>${offers}</td>
+      <td><span class="fo-acts">
+        <button type="button" class="fo-btn" title="Open renewal talks with the player" onclick="startRenewal('${e}')" ${busy?'disabled':''}>Renew</button>
+        <button type="button" class="fo-btn more" aria-expanded="${open}" title="More actions for ${pn.replace(/"/g,'&quot;')}" onclick="toggleFoRow('${e}')">${open?'Close':'More'}</button>
+      </span></td>
+    </tr>` + (open?`<tr class="fo-detail"><td colspan="9"><div class="fo-player">
+        <button type="button" class="fo-btn" title="Edit player data by hand. The team is not editable here, use transfers for that." onclick="openPlayerEditModal('${e}')">Edit details</button>
+        <button type="button" class="fo-btn" onclick="toggleRoster('${e}')">${starter?'Move to bench':'Make starter'}</button>
+        <button type="button" class="fo-btn" title="${isUserManaged(p)?'The NPC answers offers again':'You answer contract offers for this player'}" onclick="toggleManaged('${e}')">${isUserManaged(p)?'Hand back to NPC':'Take control'}</button>
+        <button type="button" class="fo-btn" title="Events and awards" onclick="togglePlayerHist(this,'${e}')">History</button>
+        <button type="button" class="fo-btn danger" title="The player leaves for free and any club can sign him" onclick="releasePlayer('${e}')" ${busy?'disabled':''}>Release to free agency</button>
+      </div></td></tr>`:'');
+  }).join('');
+
+  const payroll=squad.reduce((s,p)=>s+getPlayerSalary(p),0), value=squad.reduce((s,p)=>s+(p.MarketValue||0),0);
+  $('fo-squad').innerHTML = squad.length ? `<table class="fo-table">
+    <thead><tr>
+      ${th('player','Player')}${th('salary','Salary / month')}${th('contract','Contract left')}${th('value','Value','Sort by market value')}
+      ${th('buyout','Buyout')}${th('clause','Clause','Sort by release clause')}${th('sale','Sale price')}
+      <th>Offers</th><th></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>${squad.length} ${squad.length===1?'player':'players'}${squad.length!==all.length?' shown of '+all.length:''}</td><td>${fmt(payroll)}</td><td></td><td>${fmtK(value)}</td><td colspan="5"></td></tr></tfoot>
+  </table>` : `<div class="fo-table-empty">${all.length?'No player matches this filter. <button type="button" class="fo-btn" onclick="$(\'fo-squad-search\').value=\'\'; setFoFilter(\'all\')">Show everyone</button>':'This team has no players under contract. Sign someone from the Market tab.'}</div>`;
 }
+
 
 function negBubbles(neg){
   return neg.thread.map(m=>{
@@ -2816,45 +3138,45 @@ function renderNegCard(neg){
   const lastOffer=[...neg.thread].reverse().find(m=>m.by==='team'&&m.salary!==undefined);
   const um=isUserManaged(p);
   const typeBadge=neg.type==='renewal'
-    ? '<span class="badge badge-orange">RENEWAL</span>'
-    : `<span class="badge badge-cyan">SIGNING</span> <span class="badge">${(ROUTE_ICON[neg.origin]||'')+' '+neg.origin.toUpperCase()}</span>`;
+    ? '<span class="badge badge-orange">Renewal</span>'
+    : `<span class="badge badge-cyan">Signing</span> <span class="badge badge-ghost">${neg.origin}</span>`;
   const defSal=Math.round(lastCounter?lastCounter.salary:(lastOffer?lastOffer.salary:b.fair));
   const defMon=lastCounter?lastCounter.months:(lastOffer?lastOffer.months:12);
 
   let controls='';
   if (neg.pending==='team'){
     controls=`
-      ${lastCounter?`<button class="btn btn-green btn-sm btn-full" style="margin-bottom:6px;" onclick="negAcceptCounter('${neg.id}')">✅ ACCEPT COUNTER — ${fmt(lastCounter.salary)}/mo × ${lastCounter.months}m</button>`:''}
+      ${lastCounter?`<button class="btn btn-green btn-sm btn-full" style="margin-bottom:6px;" onclick="negAcceptCounter('${neg.id}')">Accept counter: ${fmt(lastCounter.salary)}/mo for ${lastCounter.months} months</button>`:''}
       <div class="ng-form">
-        <div class="ng-field"><label>SALARY/mo</label><input type="number" class="nx-input" id="ng-sal-${neg.id}" value="${defSal}"></div>
-        <div class="ng-field"><label>MONTHS</label><input type="number" class="nx-input" id="ng-mon-${neg.id}" min="1" max="24" value="${defMon}"></div>
-        <div class="ng-field"><label>BUYOUT (opt)</label><input type="number" class="nx-input" id="ng-buy-${neg.id}" value="${neg.buyout||''}" placeholder="none"></div>
-        <div class="ng-field"><label>CLAUSE (opt)</label><input type="number" class="nx-input" id="ng-cla-${neg.id}" value="${neg.clause||''}" placeholder="none"></div>
+        <div class="ng-field"><label>Salary per month</label><input type="number" class="nx-input" id="ng-sal-${neg.id}" value="${defSal}"></div>
+        <div class="ng-field"><label>Months</label><input type="number" class="nx-input" id="ng-mon-${neg.id}" min="1" max="24" value="${defMon}"></div>
+        <div class="ng-field"><label>Buyout (optional)</label><input type="number" class="nx-input" id="ng-buy-${neg.id}" value="${neg.buyout||''}" placeholder="none"></div>
+        <div class="ng-field"><label>Release clause (optional)</label><input type="number" class="nx-input" id="ng-cla-${neg.id}" value="${neg.clause||''}" placeholder="none"></div>
       </div>
-      <button class="btn btn-cyan btn-sm btn-full" onclick="negPropose('${neg.id}')">📨 SEND PROPOSAL</button>`;
+      <button class="btn btn-cyan btn-sm btn-full" onclick="negPropose('${neg.id}')">Send proposal</button>`;
   } else if (um){
     controls=`
-      <div class="ng-asplayer">🎮 YOU DECIDE AS ${String(neg.playerName).toUpperCase()}</div>
-      <button class="btn btn-green btn-sm btn-full" style="margin-bottom:6px;" onclick="negPlayerAccept('${neg.id}')">✅ ACCEPT ${lastOffer?fmt(lastOffer.salary)+'/mo × '+lastOffer.months+'m':''}</button>
+      <div class="ng-asplayer">You decide as ${String(neg.playerName)}</div>
+      <button class="btn btn-green btn-sm btn-full" style="margin-bottom:6px;" onclick="negPlayerAccept('${neg.id}')">Accept ${lastOffer?fmt(lastOffer.salary)+'/mo for '+lastOffer.months+' months':''}</button>
       <div class="ng-form ng-form-2">
-        <div class="ng-field"><label>COUNTER SALARY</label><input type="number" class="nx-input" id="ngp-sal-${neg.id}" value="${defSal}"></div>
-        <div class="ng-field"><label>MONTHS</label><input type="number" class="nx-input" id="ngp-mon-${neg.id}" min="1" max="24" value="${defMon}"></div>
+        <div class="ng-field"><label>Counter salary</label><input type="number" class="nx-input" id="ngp-sal-${neg.id}" value="${defSal}"></div>
+        <div class="ng-field"><label>Months</label><input type="number" class="nx-input" id="ngp-mon-${neg.id}" min="1" max="24" value="${defMon}"></div>
       </div>
-      <button class="btn btn-orange btn-sm btn-full" onclick="negPlayerCounter('${neg.id}')">↩ SEND COUNTER (AS PLAYER)</button>`;
+      <button class="btn btn-orange btn-sm btn-full" onclick="negPlayerCounter('${neg.id}')">Send counter as the player</button>`;
   } else {
-    controls=`<div class="fo-empty">Awaiting player…</div>`;
+    controls=`<div class="fo-empty">Waiting for the player to answer.</div>`;
   }
 
   return `<div class="ng-card">
     <div class="ng-head">
-      <div>${typeBadge} <b>${neg.playerName}</b> ${um?'<span class="badge badge-purple">🎮 USER</span>':'<span class="badge">🤖 NPC</span>'} ${neg.mandatory?'<span class="badge badge-red" title="Fee already paid — terms must be agreed">MANDATORY</span>':''}</div>
-      <div class="ng-band">MV ${fmtK(p.MarketValue||0)} · FAIR SALARY ${fmtK(b.fair)}/mo · BAND ${fmtK(b.min)}–${fmtK(b.max)}${neg.type==='renewal'&&p.Salary>0?' · FLOOR '+fmtK(p.Salary):''}${neg.feePaid>0?' · FEE PAID '+fmtK(neg.feePaid):''}</div>
+      <div>${typeBadge} <b>${neg.playerName}</b> ${um?'<span class="badge badge-purple">You control</span>':'<span class="badge badge-ghost">NPC</span>'} ${neg.mandatory?'<span class="badge badge-red" title="Fee already paid, so terms must be agreed">Must close</span>':''}</div>
+      <div class="ng-band"><span>Value <b>${fmtK(p.MarketValue||0)}</b></span><span>Fair salary <b>${fmtK(b.fair)}/mo</b></span><span>Range <b>${fmtK(b.min)} to ${fmtK(b.max)}</b></span>${neg.type==='renewal'&&p.Salary>0?'<span>Floor <b>'+fmtK(p.Salary)+'</b></span>':''}${neg.feePaid>0?'<span>Fee paid <b>'+fmtK(neg.feePaid)+'</b></span>':''}</div>
     </div>
-    <div class="ng-thread">${negBubbles(neg)||'<div class="fo-empty">Send the opening proposal.</div>'}</div>
+    <div class="ng-thread">${negBubbles(neg)||'<div class="fo-empty">Send the opening proposal below.</div>'}</div>
     ${controls}
     <div style="display:flex; gap:6px; margin-top:6px;">
-      ${neg.type==='renewal'?`<button class="btn btn-red btn-sm" style="flex:1" onclick="negRefuseRenewal('${neg.id}')">🚫 PLAYER REFUSES RENEWAL</button>`:''}
-      ${!neg.mandatory?`<button class="btn btn-ghost btn-sm" style="flex:1" onclick="negWithdraw('${neg.id}')">🚪 WITHDRAW</button>`:''}
+      ${neg.type==='renewal'?`<button class="btn btn-red btn-sm" style="flex:1" onclick="negRefuseRenewal('${neg.id}')">Player refuses renewal</button>`:''}
+      ${!neg.mandatory?`<button class="btn btn-ghost btn-sm" style="flex:1" onclick="negWithdraw('${neg.id}')">Withdraw</button>`:''}
     </div>
   </div>`;
 }
@@ -2869,59 +3191,60 @@ function renderTalkCard(t, mySide){
   let controls='';
   if (myTurn){
     controls=`
-      ${last&&last.by!==mySide?`<button class="btn btn-green btn-sm btn-full" style="margin-bottom:6px;" onclick="ctAccept('${t.id}')">✅ ACCEPT ${fmt(last.amount)}</button>`:''}
+      ${last&&last.by!==mySide?`<button class="btn btn-green btn-sm btn-full" style="margin-bottom:6px;" onclick="ctAccept('${t.id}')">Accept ${fmt(last.amount)}</button>`:''}
       <div class="ng-form ng-form-2">
-        <div class="ng-field"><label>${last?'COUNTER FEE':'OPENING FEE'} · BASE ${fmtK(mv)}</label><input type="number" class="nx-input" id="ct-amt-${t.id}" value="${last?last.amount:Math.round(mv)}" placeholder="transfer fee"></div>
-        <button class="btn btn-cyan btn-sm" style="align-self:end;" onclick="ctSend('${t.id}')">📨 SEND</button>
+        <div class="ng-field"><label>${last?'Counter fee':'Opening fee'} (player value ${fmtK(mv)})</label><input type="number" class="nx-input" id="ct-amt-${t.id}" value="${last?last.amount:Math.round(mv)}" placeholder="transfer fee"></div>
+        <button class="btn btn-cyan btn-sm" style="align-self:end;" onclick="ctSend('${t.id}')">Send</button>
       </div>
-      <button class="btn btn-red btn-sm btn-full" style="margin-top:6px;" onclick="ctReject('${t.id}')">❌ ${mySide==='buyer'?(isOffer?'WITHDRAW OFFER':'WALK AWAY (fee lost)'):(isOffer?'REFUSE TO SELL':'REFUSE TO SELL (their fee kept)')}</button>`;
+      <button class="btn btn-red btn-sm btn-full" style="margin-top:6px;" onclick="ctReject('${t.id}')">${mySide==='buyer'?(isOffer?'Withdraw offer':'Walk away (clause fee is lost)'):(isOffer?'Refuse to sell':'Refuse to sell (you keep their clause fee)')}</button>`;
   } else {
-    controls=`<div class="fo-empty">Awaiting ${t.pending==='buyer'?t.buyer:t.seller}…</div>`;
+    controls=`<div class="fo-empty">Waiting for ${t.pending==='buyer'?t.buyer:t.seller} to answer.</div>`;
   }
   return `<div class="ng-card ${isOffer?'ng-card-offer':'ng-card-clause'}">
     <div class="ng-head">
-      <div>${isOffer?'<span class="badge badge-purple">📨 TRANSFER OFFER</span>':'<span class="badge badge-orange">🔑 CLAUSE TALK</span>'} <b>${t.playerName}</b></div>
-      <div class="ng-band">${t.buyer} ↔ ${t.seller} · BASE VALUE ${fmtK(mv)}${isOffer?'':' · CLAUSE PAID '+fmtK(t.clausePaid)}</div>
+      <div>${isOffer?'<span class="badge badge-purple">Transfer offer</span>':'<span class="badge badge-orange">Clause talk</span>'} <b>${t.playerName}</b></div>
+      <div class="ng-band"><span>${t.buyer} buying from ${t.seller}</span><span>Player value <b>${fmtK(mv)}</b></span>${isOffer?'':'<span>Clause paid <b>'+fmtK(t.clausePaid)+'</b></span>'}</div>
     </div>
-    <div class="ng-thread">${bubbles||`<div class="fo-empty">${isOffer?'Open with a transfer fee — player market value: '+fmt(mv)+'.':'Clause paid — buyer opens with a fee. Player market value: '+fmt(mv)+'.'}</div>`}</div>
+    <div class="ng-thread">${bubbles||`<div class="fo-empty">${isOffer?'Open with a transfer fee. Player market value: '+fmt(mv)+'.':'Clause paid. The buyer opens with a fee. Player market value: '+fmt(mv)+'.'}</div>`}</div>
     ${controls}
   </div>`;
 }
 
 function renderFoDesk(at, myNegs, buyTalks){
   let html='';
-  if (buyTalks.length) html+=`<div class="pm-section-title" style="margin-top:0;">💰 FEE TALKS — BUYING (${buyTalks.length})</div>`+buyTalks.map(t=>renderTalkCard(t,'buyer')).join('');
+  if (buyTalks.length) html+=`<div class="pm-section-title" style="margin-top:0;">Fee talks, buying (${buyTalks.length})</div>`+buyTalks.map(t=>renderTalkCard(t,'buyer')).join('');
   const contracts=myNegs.filter(n=>n.type!=='renewal'), renewals=myNegs.filter(n=>n.type==='renewal');
-  if (contracts.length) html+=`<div class="pm-section-title" ${buyTalks.length?'':'style="margin-top:0;"'}>🖋 CONTRACT TALKS — PLAYER TERMS (${contracts.length})</div>`+contracts.map(renderNegCard).join('');
-  if (renewals.length) html+=`<div class="pm-section-title">📋 RENEWALS (${renewals.length})</div>`+renewals.map(renderNegCard).join('');
-  $('fo-desk').innerHTML = html || `<div class="fo-empty" style="padding:30px; text-align:center;">No active negotiations.<br>Scout the <b>MARKET</b>, renew from the <b>LOCKER ROOM</b>, pay a clause, or send an offer for an OPEN-TO-OFFERS player.</div>`;
+  if (contracts.length) html+=`<div class="pm-section-title" ${buyTalks.length?'':'style="margin-top:0;"'}>Player terms for signings (${contracts.length})</div>`+contracts.map(renderNegCard).join('');
+  if (renewals.length) html+=`<div class="pm-section-title" ${(buyTalks.length||contracts.length)?'':'style="margin-top:0;"'}>Renewals (${renewals.length})</div>`+renewals.map(renderNegCard).join('');
+  $('fo-desk').innerHTML = html || `<div class="fo-empty">No talks in progress. Press Renew on a contract, or start a deal from the Market tab, and it will show up here.</div>`;
 }
 
 function renderFoInbox(at, sellTalks){
   const box=$('fo-inbox'); if (!box) return;
-  const badge=$('fo-inbox-count'); if (badge) badge.textContent=sellTalks.length;
+  const badge=$('fo-inbox-count');
+  if (badge){ badge.textContent=sellTalks.length; badge.classList.toggle('hot', sellTalks.some(t=>t.pending==='seller')); }
   const card=$('fo-inbox-card');
-  if (card) card.style.boxShadow = sellTalks.some(t=>t.pending==='seller') ? '0 0 0 1px var(--orange)' : 'none';
+  if (card) card.classList.toggle('quiet', !sellTalks.length);
   box.innerHTML = sellTalks.length
     ? sellTalks.map(t=>renderTalkCard(t,'seller')).join('')
-    : '<div class="fo-empty">No incoming talks — clubs paying a clause or bidding on your OPEN-TO-OFFERS players appear here first.</div>';
+    : '<div class="fo-empty">Nothing yet. When a club pays a clause or bids on a player you opened to offers, it appears here first.</div>';
 }
 
 function renderFoManaged(){
   const q=($('fo-managed-search')&&$('fo-managed-search').value||'').toLowerCase();
   const managed=players.filter(isUserManaged);
+  const cnt=$('fo-managed-count'); if (cnt) cnt.textContent=managed.length;
   let list=managed;
   if (q) list=players.filter(p=>String(p.PlayerName).toLowerCase().includes(q)).slice(0,12);
-  $('fo-managed').innerHTML =
-    (q?'':'<div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:6px;">'+(managed.length?managed.length+' user-controlled player(s)':'No user-controlled players — search to add.')+'</div>') +
-    list.map(p=>{
+  $('fo-managed').innerHTML = list.length ? list.map(p=>{
       const e=escN(String(p.PlayerName));
-      return `<div class="list-row" style="padding:5px 0;">
-        <span style="font-size:11px;">${String(p.PlayerName)} <span style="color:var(--text-dim); font-size:10px;">[${p.TeamName}]</span></span>
-        <button class="btn ${isUserManaged(p)?'btn-red':'btn-cyan'} btn-sm" style="padding:3px 8px; font-size:9px;" onclick="toggleManaged('${e}')">${isUserManaged(p)?'✖ NPC':'🎮 USER'}</button>
+      return `<div class="fo-managed-row">
+        <span>${String(p.PlayerName)}<span>${p.TeamName==='none'?'Free agent':p.TeamName}</span></span>
+        <button type="button" class="fo-btn" onclick="toggleManaged('${e}')">${isUserManaged(p)?'Hand back to NPC':'Take control'}</button>
       </div>`;
-    }).join('');
+    }).join('') : `<div class="fo-empty">${q?'No player matches that search.':'You control no players yet. Search for one above to take control.'}</div>`;
 }
+
 
 function renderFoHistory(at){
   const rows=transferHistory.filter(o=>o.buyer===at||o.seller===at).slice(0,12);
@@ -3815,7 +4138,7 @@ function openPlayerProfile(name) {
 function updateAll() {
   populateDropdowns();
   populateCompareDrops();
-  updateCommand();
+  refreshActiveTeam();
   updateLeague();
   updateContractAlerts();
   updateTicker();
@@ -3837,7 +4160,9 @@ function populateDropdowns() {
   const dashSel = $('dash-team-select');
   const cur = dashSel.value;
   dashSel.innerHTML = opts;
-  if (cur && finances.some(t=>t.TeamName===cur)) dashSel.value=cur;
+  let keep = cur;
+  if (!keep) { try { keep = localStorage.getItem('nexus-active-team') || ''; } catch(e) {} }
+  if (keep && finances.some(t=>t.TeamName===keep)) dashSel.value=keep;
   const playerOpts = players.map(p=>`<option value="${String(p.PlayerName)}">${String(p.PlayerName)} (${p.TeamName})</option>`).join('');
   $('perf-player-select').innerHTML = playerOpts;
   $('grant-player-select').innerHTML = playerOpts;
@@ -4046,8 +4371,11 @@ function updateTicker() {
   tickerEl.classList.add('animated');
 }
 
-/* ═══ COMMAND PANEL ═══ */
-function updateCommand() {
+/* ═══ ACTIVE TEAM VIEW ═══
+   Runs whenever the managed team or its numbers change: fills the Front
+   Office account header and team health, then refreshes the views that
+   depend on which team is active (market, proposals, action badge). */
+function refreshActiveTeam() {
   const tName = $('dash-team-select').value;
   const team = finances.find(t=>t.TeamName===tName);
   if (!team) return;
@@ -4056,115 +4384,103 @@ function updateCommand() {
   const bank = team.CurrentBank||0;
   const oracle = getOracleScore(tName);
   const risk = getRiskIndex(tName);
-  const starters = players.filter(p=>p.TeamName===tName&&p.Roster==='Starter').length;
-  const bench = players.filter(p=>p.TeamName===tName&&p.Roster==='Bench').length;
+  const squad = players.filter(p=>p.TeamName===tName);
+  const starters = squad.filter(p=>p.Roster==='Starter').length;
+  const bench = squad.filter(p=>p.Roster==='Bench').length;
   const teamRegion = getTeamRegion(tName);
   const rSty = teamRegion ? (REGION_STYLE[teamRegion] || {color:'var(--text-dim)',icon:'🌐'}) : null;
-
-  // ── COMMAND: clean team header (HLTV-style) ──
   const titlesWon = teamHistory.filter(e=>e.team===tName&&e.position==='Winner').length;
-  $('cmd-team-header').innerHTML = `
-    <div class="pm-crest">${crestInner(tName)}</div>
-    <div>
-      <div class="cmd-team-name">${tName}</div>
-      <div class="cmd-team-sub">
-        <span>${team.Tier||'Unranked'}</span>
-        <span style="color:var(--border-strong)">|</span> <span>${starters} Starters &middot; ${bench} Bench</span>
-        ${rSty ? `<span style="color:var(--border-strong)">|</span> <span style="color:${rSty.color}">${rSty.icon} ${teamRegion}</span>` : ''}
-        ${titlesWon ? `<span style="color:var(--border-strong)">|</span> <span style="color:var(--yellow); display:inline-flex; align-items:center; gap:4px;"><span class="medal-ic medal-ic-trophy"></span> ${titlesWon}× Champion</span>` : ''}
-      </div>
-    </div>
-  `;
+  const squadValue = squad.reduce((s,p)=>s+(p.MarketValue||0),0);
+  const e = escN(tName);
 
-  // ── FRONT OFFICE: relocated overview stats, finances, team health ──
-  if ($('cmd-stat-row')) {
-    const months = salaries>0?(bank/salaries).toFixed(1):'∞';
-    $('cmd-stat-row').innerHTML = `
-      <div class="stat-box cyan"><div class="lbl">BANK BALANCE</div><div class="val">${fmtK(bank)}</div><div class="sub">${months}mo runway</div></div>
-      <div class="stat-box ${net>=0?'green':'red'}"><div class="lbl">MONTHLY NET</div><div class="val">${net>=0?'+':''}${fmtK(net)}</div><div class="sub">${net>=0?'Profitable':'LOSING MONEY'}</div></div>
-      <div class="stat-box ${starters>=5?'green':'orange'}"><div class="lbl">STARTERS</div><div class="val">${starters}/5</div><div class="sub">${bench} benched</div></div>
-      <div class="stat-box ${oracle.score>=65?'cyan':'red'}"><div class="lbl">ORACLE SCORE</div><div class="val" style="color:${oracle.color}">${oracle.score}</div><div class="sub">Grade ${oracle.grade}</div></div>
-      ${rSty ? `<div class="stat-box" style="border-color:${rSty.color}44;"><div class="lbl">REGION</div><div class="val" style="color:${rSty.color};font-size:22px;">${rSty.icon}</div><div class="sub" style="color:${rSty.color};">${teamRegion}</div></div>` : ''}
-    `;
-  }
+  if ($('team-trigger-name')) { $('team-trigger-name').textContent = tName; $('team-trigger-crest').innerHTML = crestInner(tName); }
 
-  if ($('cmd-oracle-wrap')) {
-    const circ = 2*Math.PI*45;
-    const dash = circ*(oracle.score/100);
-    $('cmd-oracle-wrap').innerHTML = `
-      <div class="oracle-ring" style="margin-bottom:12px;">
-        <svg viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg3)" stroke-width="6"/>
-          <circle cx="50" cy="50" r="45" fill="none" stroke="${oracle.color}" stroke-width="6"
-            stroke-dasharray="${dash} ${circ-dash}" stroke-linecap="round"
-            style="filter:drop-shadow(0 0 6px ${oracle.color});"/>
-        </svg>
-        <div class="oracle-score-text">
-          <div class="num" style="color:${oracle.color}">${oracle.score}</div>
-          <div class="lbl">GRADE ${oracle.grade}</div>
+  if ($('fo-account')) {
+    const months = salaries>0 ? (bank/salaries).toFixed(1) : null;
+    const whole = Math.trunc(Math.abs(bank)), cents = Math.round((Math.abs(bank)-whole)*100);
+    const scale = Math.max(sponsor, fixed+salaries, 1);
+    const pct = v => (v/scale*100).toFixed(2)+'%';
+    $('fo-account').innerHTML = `
+      <div class="acct-top">
+        <div class="acct-crest">${crestInner(tName)}</div>
+        <div class="acct-id">
+          <h1 class="acct-name">${tName}</h1>
+          <div class="acct-tags">
+            <span class="acct-tag">${team.Tier||'Unranked'}</span>
+            ${rSty ? `<span class="acct-tag" style="color:${rSty.color}">${rSty.icon} ${teamRegion}</span>` : ''}
+            <span class="acct-tag">${starters} of 5 starters</span>
+            <span class="acct-tag">${bench} of 3 on the bench</span>
+            ${titlesWon ? `<span class="acct-tag gold"><span class="medal-ic medal-ic-trophy"></span>${titlesWon} ${titlesWon===1?'title':'titles'}</span>` : ''}
+          </div>
+        </div>
+        <div class="acct-actions">
+          <button type="button" class="btn btn-ghost" onclick="openTeamProfile('${e}')">Team profile</button>
+          <button type="button" class="btn btn-cyan" onclick="openTeamPicker(this)" aria-haspopup="listbox">Switch team</button>
         </div>
       </div>
-      <div style="font-family:var(--font-data); font-size:11px; display:flex; justify-content:space-between; margin-bottom:4px;">
-        <span style="color:var(--text-dim);">RISK INDEX</span>
-        <span style="color:${risk>60?'var(--red)':risk>35?'var(--orange)':'var(--green)'}">${risk}/100</span>
-      </div>
-      <div class="risk-bar"><div class="risk-indicator" style="left:${risk}%"></div></div>
-    `;
+      <div class="acct-body">
+        <div class="acct-cell">
+          <div class="acct-lbl">Bank balance</div>
+          <div class="acct-balance ${bank<0?'neg':''}">${bank<0?'−':''}$${whole.toLocaleString()}<span class="cents">.${String(cents).padStart(2,'0')}</span></div>
+          <div class="acct-sub">${months===null ? 'No payroll to cover yet' : `Covers payroll for <b>${months} months</b>`}</div>
+        </div>
+        <div class="acct-cell">
+          <div class="acct-kpis">
+            <div class="acct-kpi"><div class="acct-lbl">Net each month</div><div class="v ${net>=0?'pos':'neg'}">${net>=0?'+':'−'}${fmtK(Math.abs(net))}</div><div class="s">${net>=0?'Running a surplus':'Losing money'}</div></div>
+            <div class="acct-kpi"><div class="acct-lbl">Squad value</div><div class="v">${fmtK(squadValue)}</div><div class="s">${squad.length} ${squad.length===1?'player':'players'}</div></div>
+            <div class="acct-kpi"><div class="acct-lbl">Payroll</div><div class="v">${fmtK(salaries)}</div><div class="s">per month</div></div>
+            <div class="acct-kpi"><div class="acct-lbl">Staff and fixed costs</div><div class="v">${fmtK(fixed)}</div><div class="s">per month</div></div>
+          </div>
+        </div>
+        <div class="acct-cell">
+          <div class="acct-lbl">Money in and out each month</div>
+          <div class="flow-row"><span>Coming in</span><div class="flow-track"><div class="flow-seg flow-in" style="width:${pct(sponsor)}"></div></div><span class="amt pos">+${fmtK(sponsor)}</span></div>
+          <div class="flow-row"><span>Going out</span><div class="flow-track"><div class="flow-seg flow-pay" style="width:${pct(salaries)}"></div><div class="flow-seg flow-fix" style="width:${pct(fixed)}"></div></div><span class="amt">−${fmtK(fixed+salaries)}</span></div>
+          <div class="flow-legend">
+            <span><i class="flow-in"></i>Sponsors <b>${fmtK(sponsor)}</b>${team.sponsorshipBoost?' <span class="badge badge-green">50% boost</span>':''}</span>
+            <span><i class="flow-pay"></i>Payroll <b>${fmtK(salaries)}</b></span>
+            <span><i class="flow-fix"></i>Staff and fixed <b>${fmtK(fixed)}</b></span>
+          </div>
+        </div>
+      </div>`;
   }
 
-  if ($('cmd-finances')) {
-    const boostBadge = team.sponsorshipBoost?`<span class="badge badge-green" style="margin-left:8px;">50% BOOST</span>`:'';
-    $('cmd-finances').innerHTML = `
-      <div style="font-family:var(--font-data); font-size:22px; font-weight:700; color:var(--cyan); margin-bottom:10px;">${fmt(bank)}</div>
-      <div class="list-row" style="padding:5px 0;"><span style="color:var(--text-dim);">Sponsor Income</span><span style="color:var(--green);">+${fmt(sponsor)}${boostBadge}</span></div>
-      <div class="list-row" style="padding:5px 0;"><span style="color:var(--text-dim);">Fixed Costs</span><span style="color:var(--red);">−${fmt(fixed)}</span></div>
-      <div class="list-row" style="padding:5px 0;"><span style="color:var(--text-dim);">Player Salaries</span><span style="color:var(--red);">−${fmt(salaries)}</span></div>
-      <div style="border-top:1px solid var(--border); margin-top:8px; padding-top:8px; display:flex; justify-content:space-between; font-weight:700; font-family:var(--font-display); font-size:13px;">
-        <span>NET / MONTH</span><span style="color:${net>=0?'var(--green)':'var(--red)'}">${net>=0?'+':''}${fmt(net)}</span>
+  if ($('fo-health')) {
+    const circ = 2*Math.PI*45;
+    const dash = circ*(oracle.score/100);
+    const starterRoleSet = new Set(squad.filter(p=>p.Roster==='Starter').flatMap(p=>p.roleList||[]));
+    const missingRoles = ROLE_OPTIONS.filter(r => !starterRoleSet.has(r.value));
+    $('fo-health').innerHTML = `
+      <div class="health">
+        <div class="oracle-ring">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg4)" stroke-width="5"/>
+            <circle cx="50" cy="50" r="45" fill="none" stroke="${oracle.color}" stroke-width="5"
+              stroke-dasharray="${dash} ${circ-dash}" stroke-linecap="round"/>
+          </svg>
+          <div class="oracle-score-text">
+            <div class="num" style="color:${oracle.color}">${oracle.score}</div>
+            <div class="lbl">Grade ${oracle.grade}</div>
+          </div>
+        </div>
+        <div>
+          <div class="health-rows">
+            <div><span>Oracle score</span><b>${oracle.score} of 100</b></div>
+            <div><span>Risk index</span><b style="color:${risk>60?'var(--red)':risk>35?'var(--orange)':'var(--green)'}">${risk} of 100</b></div>
+          </div>
+          <div class="risk-bar" style="margin-top:12px;"><div class="risk-indicator" style="left:${risk}%"></div></div>
+        </div>
       </div>
-    `;
+      <div class="health-roles">${missingRoles.length
+        ? `No starter plays <b>${missingRoles.map(r=>r.label).join(', ')}</b>.`
+        : 'Every tactical role is covered by a starter.'}</div>`;
   }
 
-  // ── COMMAND: clean roster grid, HLTV-style — no actions ──
-  const starterRoleSet = new Set(players.filter(p=>p.TeamName===tName&&p.Roster==='Starter').flatMap(p=>p.roleList||[]));
-  const missingRoles = ROLE_OPTIONS.filter(r => !starterRoleSet.has(r.value));
-  $('cmd-missing-roles').innerHTML = missingRoles.length
-    ? `<div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:4px;">⚠ MISSING ROLES IN STARTING 5:</div><div>${missingRoles.map(r=>`<span class="badge badge-orange" style="margin-right:4px; margin-bottom:4px;">${r.label}</span>`).join('')}</div>`
-    : `<div style="font-family:var(--font-data); font-size:10px; color:var(--green);">✓ All tactical roles covered by starters.</div>`;
-
-  const rosterCard = p => `
-    <div class="roster-card" onclick="openPlayerProfile('${String(p.PlayerName).replace(/'/g,"\\'")}')">
-      <div class="rc-avatar">${playerAvatarImg(p.PlayerName, String(p.PlayerName).charAt(0).toUpperCase(), 'width:100%;height:100%;object-fit:cover;')}</div>
-      <div class="rc-name">${p.Country?getCountryFlag(p.Country,14)+' ':''}${String(p.PlayerName)}</div>
-      <div class="rc-role">${roleBadges(p) || '<span style="color:var(--text-faint); font-family:var(--font-data); font-size:10px;">No role</span>'}</div>
-      <div class="rc-contract">Contract ${p.ContractMonths||0}m</div>
-      <div class="rc-medals">${medals(p) || '<span style="color:var(--text-faint); font-family:var(--font-data); font-size:9px;">No medals yet</span>'}</div>
-    </div>`;
-  const starterPlayers = players.filter(p=>p.TeamName===tName&&p.Roster==='Starter');
-  const benchPlayers = players.filter(p=>p.TeamName===tName&&p.Roster==='Bench');
-  let rosterHtml = `<div class="roster-section-title">Starters (${starterPlayers.length}/5)</div><div class="roster-card-grid">${starterPlayers.map(rosterCard).join('') || '<div class="roster-empty-slot">No starters assigned.</div>'}</div>`;
-  rosterHtml += `<div class="roster-section-title">Bench (${benchPlayers.length}/3)</div><div class="roster-card-grid">${benchPlayers.map(rosterCard).join('') || '<div class="roster-empty-slot">No bench players.</div>'}</div>`;
-  $('cmd-roster').innerHTML = rosterHtml;
-
-  // ── COMMAND: team achievements — read-only trophy case ──
-  const evs = teamHistory.filter(e=>e.team===tName);
-  $('cmd-achievements').innerHTML = evs.length ? evs.map(e=>{
-    const L = teamHistoryLines(e);
-    return `
-    <div class="pm-hist-entry">
-      ${L.medal}
-      <div class="pm-hist-body">
-        <div class="pm-hist-title">${L.line1}${Number(e.tier)>=5?' <span class="badge badge-yellow" style="margin-left:5px;">MAJOR</span>':''}</div>
-        <div class="pm-hist-meta">${L.line2}</div>
-      </div>
-    </div>`;
-  }).join('') : '<div class="pm-hist-empty">No achievements recorded for this team yet.</div>';
-
-  // Inbound offers (notification banner now lives in Front Office)
   renderInboundOffers(tName);
   refreshMarket();
   renderOutboundOffers();
 }
+
 
 /* ═══ LEAGUE PANEL ═══ */
 function updateLeague() {
@@ -4529,22 +4845,20 @@ function runComparison() {
 }
 
 /* ═══ INBOUND OFFERS ═══ */
+/* Count of talks that need the active team's attention → badge on the Front Office tab */
 function renderInboundOffers(tName) {
   const inTalks=clauseTalks.filter(t=>t.status==='open'&&t.seller===tName&&t.pending==='seller').length;
-  const myTurn=negotiations.filter(n=>n.status==='open'&&n.team===tName&&n.pending==='team'&&n.thread.length).length
+  const myTurn=negotiations.filter(n=>n.status==='open'&&n.team===tName&&n.pending==='team').length
              + clauseTalks.filter(t=>t.status==='open'&&t.buyer===tName&&t.pending==='buyer').length;
-  const asPlayer=negotiations.filter(n=>n.status==='open'&&n.team===tName&&n.pending==='player').length;
-  const total=inTalks+myTurn+asPlayer;
-  $('cmd-notifications').innerHTML = total ? `<div class="offer-panel"><div class="offer-header">🛎 FRONT OFFICE — ACTION REQUIRED</div>
-    <div class="offer-row">
-      <div style="font-size:12px;">
-        ${inTalks?`<b style="color:var(--orange)">${inTalks}</b> incoming clause talk(s) · `:''}
-        ${myTurn?`<b style="color:var(--cyan)">${myTurn}</b> negotiation(s) awaiting your reply · `:''}
-        ${asPlayer?`<b style="color:var(--purple)">${asPlayer}</b> as-player decision(s)`:''}
-      </div>
-      <button class="btn btn-cyan btn-sm" onclick="gotoOffice()">▣ OPEN FRONT OFFICE</button>
-    </div></div>` : '';
+  const total=inTalks+myTurn; // same number as "waiting on your reply" inside the panel
+  const tab=$('tab-office'); if (!tab) return;
+  let badge=tab.querySelector('.badge');
+  if (!total){ if (badge) badge.remove(); return; }
+  if (!badge){ badge=document.createElement('span'); badge.className='badge'; tab.appendChild(badge); }
+  badge.textContent=total;
+  badge.title=`${total} ${total===1?'talk is':'talks are'} waiting on your reply`;
 }
+
 
 function renderOutboundOffers() {
   const at=$('dash-team-select').value;
