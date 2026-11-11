@@ -625,7 +625,7 @@ function renderGlobalTable(combined) {
     const rc = regionCls(r.region);
     const rh = r.region ? `<span class="region-tag ${rc}"><span class="region-dot"></span>${escHtml(regionLabel(r.region))}</span>` : '<span class="text-muted">—</span>';
     return `<tr class="${rowClass(r.newPos)}">
-      <td>${rankBadgeHtml(r.newPos)}</td><td>${teamNameHtml(r.team, r.newPos)}</td>
+      <td>${rankBadgeHtml(r.newPos)}</td><td>${teamLinkHtml(r.team, r.newPos)}</td>
       <td class="right mono">${ptsFmt(r.points)}</td><td class="right">${pc}</td>
       <td class="right">${streakHtml(r.streak)}</td><td>${rh}</td><td>${th}</td>
       <td class="right">${dc}</td><td class="right mono text-xs text-muted">${o2n}</td>
@@ -3812,4 +3812,132 @@ document.getElementById('btnClearEvFilters').addEventListener('click', () => {
   try {
     if (localStorage.getItem(HIDE_KEY) === '1') setSidebarHidden(true, false);
   } catch (e) {}
+})();
+
+
+/* ════════════════════════════════════════
+   TEAM PAGES + ROSTER HOVER CARD (Global Ranking only)
+   - Team names in the Global Ranking link to team.html?team=<name>
+   - Hovering a team shows its roster, read from file/players_updated.xlsx
+     (the same file the Finances page uses). Loaded once, in the background;
+     if the file is missing the ranking simply works as before.
+════════════════════════════════════════ */
+const PLAYERS_URL = 'file/players_updated.xlsx';
+const RH_COUNTRY_CODES = {"brazil":"br","brasil":"br","united states":"us","usa":"us","us":"us","canada":"ca","argentina":"ar","chile":"cl","colombia":"co","mexico":"mx","peru":"pe","uruguay":"uy","venezuela":"ve","ecuador":"ec","bolivia":"bo","paraguay":"py","france":"fr","germany":"de","sweden":"se","denmark":"dk","finland":"fi","norway":"no","ukraine":"ua","poland":"pl","czech republic":"cz","czechia":"cz","slovakia":"sk","hungary":"hu","portugal":"pt","spain":"es","italy":"it","netherlands":"nl","belgium":"be","austria":"at","switzerland":"ch","uk":"gb","united kingdom":"gb","england":"gb","latvia":"lv","lithuania":"lt","estonia":"ee","serbia":"rs","croatia":"hr","romania":"ro","bulgaria":"bg","greece":"gr","turkey":"tr","turkiye":"tr","iceland":"is","ireland":"ie","georgia":"ge","moldova":"md","north macedonia":"mk","slovenia":"si","bosnia":"ba","bosnia and herzegovina":"ba","albania":"al","montenegro":"me","belarus":"by","kosovo":"xk","luxembourg":"lu","south africa":"za","israel":"il","jordan":"jo","lebanon":"lb","palestine":"ps","russia":"ru","kazakhstan":"kz","uzbekistan":"uz","china":"cn","south korea":"kr","korea":"kr","japan":"jp","australia":"au","new zealand":"nz","indonesia":"id","malaysia":"my","singapore":"sg","thailand":"th","vietnam":"vn","philippines":"ph","india":"in","pakistan":"pk","mongolia":"mn","taiwan":"tw","hong kong":"hk","iraq":"iq","uae":"ae","united arab emirates":"ae","guatemala":"gt","united kingom":"gb"};
+const RH_ROLE_LABELS = { 'igl': 'IGL', 'rifler': 'Rifler', 'entry fragger': 'Entry Fragger', 'star player': 'Star Player', 'awper': 'AWPer', 'anchor': 'Anchor' };
+
+let rosterByTeam = null;      // Map(lowercase team name → [players]); null until loaded
+let rosterLoadState = 'idle'; // idle | loading | ready | error
+
+function teamPageUrl(teamName) { return 'team.html?team=' + encodeURIComponent(teamName); }
+
+function teamLinkHtml(teamName, pos) {
+  return `<a class="team-link" href="${teamPageUrl(teamName)}" data-team="${escHtml(teamName)}">${teamNameHtml(teamName, pos)}</a>`;
+}
+
+async function loadRosters() {
+  if (rosterLoadState === 'loading' || rosterLoadState === 'ready') return;
+  rosterLoadState = 'loading';
+  try {
+    const d = await readExcel(PLAYERS_URL);
+    const map = new Map();
+    for (const r of d.json) {
+      const name = String(r.PlayerName ?? '').trim();
+      const team = String(r.TeamName ?? '').trim();
+      if (!name || !team || team.toLowerCase() === 'none') continue;
+      const key = team.toLowerCase();
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push({
+        name,
+        roster: String(r.Roster ?? '').trim(),
+        roles: String(r.Role ?? '').split('|').map(x => x.trim().toLowerCase()).filter(Boolean),
+        country: String(r.Country ?? '').trim()
+      });
+    }
+    // Starters first, then bench; alphabetical inside each group
+    map.forEach(list => list.sort((a, b) =>
+      (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || a.name.localeCompare(b.name, 'en')));
+    rosterByTeam = map;
+    rosterLoadState = 'ready';
+  } catch (e) {
+    rosterLoadState = 'error';
+    console.warn('players_updated.xlsx not found or failed to load — roster hover disabled:', e);
+  }
+}
+
+function rosterFlagHtml(country) {
+  const code = RH_COUNTRY_CODES[String(country || '').toLowerCase().trim()];
+  if (!code) return '<span class="rh-flag rh-flag-empty"></span>';
+  return `<img class="rh-flag" src="https://flagcdn.com/w20/${code}.png" alt="" title="${escHtml(country)}" onerror="this.style.visibility='hidden'">`;
+}
+
+function rosterCardHtml(teamName) {
+  const head = `<div class="rh-head">${teamLogoImgHtml(teamName, 'team-logo-md')}<div><div class="rh-team">${escHtml(teamName)}</div><div class="rh-kicker">Roster</div></div></div>`;
+  let body;
+  if (rosterLoadState === 'error') body = '<div class="rh-empty">Roster file not available.</div>';
+  else if (rosterLoadState !== 'ready') body = '<div class="rh-empty">Loading roster…</div>';
+  else {
+    const list = rosterByTeam.get(teamName.trim().toLowerCase()) || [];
+    body = !list.length ? '<div class="rh-empty">No players registered for this team.</div>'
+      : '<ul class="rh-list">' + list.map(p => {
+          const roles = p.roles.map(r => RH_ROLE_LABELS[r] || r).join(' · ');
+          const bench = p.roster && p.roster !== 'Starter' ? ` <span class="rh-bench">${escHtml(p.roster)}</span>` : '';
+          return `<li>${rosterFlagHtml(p.country)}<span class="rh-name">${escHtml(p.name)}${bench}</span><span class="rh-role">${escHtml(roles)}</span></li>`;
+        }).join('') + '</ul>';
+  }
+  return head + body + '<div class="rh-foot">Click to open team page →</div>';
+}
+
+(() => {
+  const tbody = $('#tbody');
+  if (!tbody) return;
+  const card = document.createElement('div');
+  card.id = 'rosterHoverCard';
+  card.className = 'roster-hover';
+  card.setAttribute('role', 'tooltip');
+  document.body.appendChild(card);
+  let currentLink = null;
+
+  function place(link) {
+    const r = link.getBoundingClientRect();
+    const cw = card.offsetWidth, ch = card.offsetHeight, gap = 12;
+    let left = r.right + gap;
+    if (left + cw > window.innerWidth - 8) left = Math.max(8, r.left - cw - gap);
+    let top = r.top + r.height / 2 - ch / 2;
+    top = Math.max(8, Math.min(top, window.innerHeight - ch - 8));
+    card.style.left = left + 'px';
+    card.style.top = top + 'px';
+  }
+  function show(link) {
+    currentLink = link;
+    card.innerHTML = rosterCardHtml(link.dataset.team || '');
+    card.classList.add('visible');
+    place(link);
+    if (rosterLoadState === 'idle' || rosterLoadState === 'loading') {
+      loadRosters().then(() => { if (currentLink === link) { card.innerHTML = rosterCardHtml(link.dataset.team || ''); place(link); } });
+    }
+  }
+  function hide() { currentLink = null; card.classList.remove('visible'); }
+
+  tbody.addEventListener('mouseover', e => {
+    const link = e.target.closest('a.team-link');
+    if (link && link !== currentLink) show(link);
+  });
+  tbody.addEventListener('mouseout', e => {
+    const link = e.target.closest('a.team-link');
+    if (link && !link.contains(e.relatedTarget)) hide();
+  });
+  // Keyboard users get the same card when tabbing through the links
+  tbody.addEventListener('focusin', e => { const link = e.target.closest('a.team-link'); if (link) show(link); });
+  tbody.addEventListener('focusout', hide);
+  window.addEventListener('scroll', hide, true);
+
+  loadRosters(); // warm up in the background so the first hover is instant
+})();
+
+/* Deep link: index.html#global (or any panel name) opens straight on that
+   section — used by the "back to ranking" link on team pages. */
+(() => {
+  const name = decodeURIComponent(location.hash.slice(1));
+  if (name && document.getElementById('panel-' + name)) switchPanel(name);
 })();
