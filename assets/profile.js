@@ -501,15 +501,13 @@ function renderAchievements() {
   const t = state.team.team;
   const events = state.teamHistory.filter(e => sameTeam(e.team, t)).sort(byNewest);
   const results = events.filter(e => e.kind === 'EVENT');
-  const podium = events.filter(e => isPodium(e) || e.kind === 'BADGE');
-  const others = results.length - results.filter(isPodium).length;
+  const podium = events;   // every recorded placement goes on the shelf, 4th–8th included
   $('#tpCabCount').textContent = podium.length ? `${podium.length} on the shelf` : '';
 
   if (view === 'icons') {
     box.innerHTML = (podium.length
         ? `<div class="shelf lg">${podium.map(e => trophyIconHtml(e, { showPrize: true, focusable: true })).join('')}</div>`
-        : '<div class="shelf-none">No top-3 finishes yet.</div>')
-      + (others ? `<div class="cab-foot">${others} top 4–8 finish${others > 1 ? 'es' : ''} in the expanded view</div>` : '');
+        : '<div class="shelf-none">No trophies yet.</div>');
     return;
   }
   if (!events.length) { box.innerHTML = '<div class="shelf-none">No achievements recorded for this team yet.</div>'; return; }
@@ -574,6 +572,15 @@ function teamPlayers() {
   return state.players.filter(p => sameTeam(p.team, state.team.team))
     .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue);
 }
+/* Majors won: the larger of the players sheet's "Major Winner" and the wins found in the history */
+function playerMajors(p) {
+  const won = state.playerHistory.filter(h => ownsRow(p, h.player, h.team) && h.kind === 'EVENT' && h.tier >= 5 && h.position === 'Winner').length;
+  return Math.max(p.majorWinner || 0, won);
+}
+function majorStarHtml(p) {
+  const n = playerMajors(p);
+  return n ? `<span class="mj-star" title="${n}× Major winner" aria-label="${n} times Major winner">★<b>${n}x</b></span>` : '';
+}
 function playerAwards(p) {
   const hist = state.playerHistory.filter(h => ownsRow(p, h.player, h.team)).sort(byNewest);
   return { hist, trophies: hist.filter(isPodium), placements: hist.filter(h => h.kind === 'EVENT'), medals: hist.filter(h => h.kind !== 'EVENT') };
@@ -595,7 +602,7 @@ function renderRoster() {
     return `<button type="button" class="tp-player" data-player="${esc(p.name)}">
       <div class="tp-photo">${photoHtml(p.name)}${p.roster && p.roster !== 'Starter' ? `<span class="tp-bench-tag">${esc(p.roster)}</span>` : ''}</div>
       <div class="tp-pbody">
-        <div class="tp-phead"><div class="tp-pname">${flagImg(p.country)}<span>${esc(p.name)}</span></div>${medals}</div>
+        <div class="tp-phead"><div class="tp-pname">${flagImg(p.country)}<span>${esc(p.name)}</span>${majorStarHtml(p)}</div>${medals}</div>
         <div class="tp-roles">${roleChips(p.roles)}</div>
         <div class="tp-awards">${trophies}</div>
       </div>
@@ -742,7 +749,7 @@ function renderPlayerPanel(resetScroll) {
     <div class="pp-photo">${photoHtml(p.name)}</div>
     <div class="pp-id">
       <div class="pp-kicker">Player</div>
-      <div class="pp-name" id="ppName">${flagImg(p.country)}<span>${esc(p.name)}</span></div>
+      <div class="pp-name" id="ppName">${flagImg(p.country)}<span>${esc(p.name)}</span>${majorStarHtml(p)}</div>
       <div class="pp-meta">${meta}</div>
       <div class="tp-roles" style="margin-top:10px;min-height:0">${roleChips(p.roles) || '<span class="tp-role">No role assigned</span>'}</div>
     </div>
@@ -762,11 +769,10 @@ function renderPlayerPanel(resetScroll) {
   if (!state.historyLoaded) body += '<div class="tp-empty" style="margin-top:12px">Achievements file could not be loaded.</div>';
   else if (!a.hist.length) body += '<div class="tp-empty" style="margin-top:12px">No achievements recorded for this player yet.</div>';
   else if (view === 'icons') {
-    const others = a.placements.length - a.trophies.length;
-    body += `<div class="pp-shelfbox" style="margin-top:12px">${a.trophies.length
-      ? `<div class="shelf md">${a.trophies.map(h => trophyIconHtml(h, { playerRow: true, focusable: true })).join('')}</div>`
-      : '<div class="shelf-none">No top-3 finishes yet.</div>'}</div>
-      <div class="cab-foot">Hover an icon for details${others ? ` · ${others} top 4–8 finish${others > 1 ? 'es' : ''} in the expanded view` : ''}</div>`;
+    body += `<div class="pp-shelfbox" style="margin-top:12px">${a.placements.length
+      ? `<div class="shelf md">${a.placements.map(h => trophyIconHtml(h, { playerRow: true, focusable: true })).join('')}</div>`
+      : '<div class="shelf-none">No trophies yet.</div>'}</div>
+      <div class="cab-foot">Hover an icon for details</div>`;
   } else {
     if (a.medals.length) body += `<div class="ach-sub">Individual awards · ${a.medals.length}</div><div class="ach-grid">${a.medals.map(h => achItemHtml(h, { playerRow: true, showTeam: true })).join('')}</div>`;
     if (a.placements.length) body += `<div class="ach-sub">Trophies &amp; placements · ${a.placements.length}</div><div class="ach-grid">${a.placements.map(h => achItemHtml(h, { playerRow: true, showTeam: true })).join('')}</div>`;
@@ -1065,7 +1071,7 @@ function renderPlayerHero() {
         <div class="hero-kicker"><span>Player profile</span>
           ${p.country ? `<span class="hero-chip">${flagImg(p.country)} ${esc(p.country)}</span>` : ''}
           <span class="hero-chip accent">${hasTeam ? esc(p.roster || 'Player') : 'Free agent'}</span></div>
-        <h1 class="hero-name">${esc(p.name)}</h1>
+        <h1 class="hero-name">${esc(p.name)}${majorStarHtml(p)}</h1>
         <div class="hero-form"><span class="pl-team">${hasTeam ? teamLink(p.team, true) : 'No team'}</span>
           <span class="tp-roles" style="min-height:0 !important">${roleChips(p.roles)}</span></div>
       </div>
@@ -1088,13 +1094,11 @@ function renderPlayerCabinet() {
   const p = state.player, box = $('#plAch'), btn = $('#ppAchToggle');
   const a = playerAwards(p), view = getView('player');
   btn.textContent = toggleLabel(view); btn.setAttribute('aria-pressed', view === 'detailed'); btn.hidden = !a.hist.length;
-  $('#plCabCount').textContent = a.trophies.length ? `${a.trophies.length} on the shelf` : '';
+  $('#plCabCount').textContent = a.placements.length ? `${a.placements.length} on the shelf` : '';
   if (!state.historyLoaded) { box.innerHTML = '<div class="shelf-none">Achievements file (file/history_updated.xlsx) could not be loaded.</div>'; return; }
   if (!a.hist.length) { box.innerHTML = '<div class="shelf-none">No achievements recorded for this player yet.</div>'; return; }
   if (view === 'icons') {
-    const others = a.placements.length - a.trophies.length;
-    box.innerHTML = (a.trophies.length ? `<div class="shelf lg">${a.trophies.map(h => trophyIconHtml(h, { playerRow: true, focusable: true })).join('')}</div>` : '<div class="shelf-none">No top-3 finishes yet.</div>')
-      + (others ? `<div class="cab-foot">${others} top 4–8 finish${others > 1 ? 'es' : ''} in the expanded view</div>` : '');
+    box.innerHTML = a.placements.length ? `<div class="shelf lg">${a.placements.map(h => trophyIconHtml(h, { playerRow: true, focusable: true })).join('')}</div>` : '<div class="shelf-none">No trophies yet.</div>';
     return;
   }
   let html = '';

@@ -477,3 +477,9 @@ a.pl-link:hover{ color:var(--accent); border-bottom-color:var(--accent); }
   .shelf.hm{ justify-content:flex-start; --ico:46px; }
   .pl-medals{ max-width:none; }
 }
+
+/* Major winner mark beside a player's name */
+.mj-star{ display:inline-flex; align-items:baseline; gap:2px; margin-left:8px; color:var(--gold); font-size:.62em; line-height:1; white-space:nowrap; vertical-align:middle; }
+.mj-star b{ font-family:var(--font-mono); font-size:.8em; font-weight:600; }
+.tp-pname .mj-star{ font-size:13px; margin-left:0; }
+.hero .mj-star{ color:#e3c475; font-size:.4em; margin-left:14px; }
