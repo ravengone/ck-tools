@@ -574,8 +574,8 @@ function teamPlayers() {
   return state.players.filter(p => sameTeam(p.team, state.team.team))
     .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue);
 }
-function playerAwards(name) {
-  const hist = state.playerHistory.filter(h => h.player === name).sort(byNewest);
+function playerAwards(p) {
+  const hist = state.playerHistory.filter(h => ownsRow(p, h.player, h.team)).sort(byNewest);
   return { hist, trophies: hist.filter(isPodium), placements: hist.filter(h => h.kind === 'EVENT'), medals: hist.filter(h => h.kind !== 'EVENT') };
 }
 function renderRoster() {
@@ -585,7 +585,7 @@ function renderRoster() {
   if (!list.length) { box.innerHTML = '<div class="tp-empty">No players registered for this team.</div>'; return; }
   $('#tpRosterNote').textContent = 'Squad value ' + fmtMoney(list.reduce((s, p) => s + p.marketValue, 0));
   box.innerHTML = '<div class="tp-roster">' + list.map(p => {
-    const a = playerAwards(p.name);
+    const a = playerAwards(p);
     const shown = a.trophies.slice(0, CARD_TROPHY_LIMIT), hidden = a.trophies.length - shown.length;
     const groups = groupMedals(a.medals);
     const medals = groups.length ? `<div class="shelf xs tp-cardmedals">${groups.map(g => medalIconHtml(g)).join('')}</div>` : '';
@@ -710,7 +710,7 @@ function closePlayer() {
 const titleCase = s => String(s).toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase()).replace(/\bFa\b/, 'Free-agent');
 function careerHtml(p, noTitle) {
   const seen = new Set();
-  const moves = state.transactions.filter(x => x.player.toLowerCase() === p.name.toLowerCase()).sort((a, b) => a.id - b.id)
+  const moves = state.transactions.filter(x => nameEq(x.player, p.name)).sort((a, b) => a.id - b.id)
     .filter(x => { const k = [x.month, x.type, x.from, x.to].join('|'); if (seen.has(k)) return false; seen.add(k); return true; });
   const hasTeam = p.team && p.team.toLowerCase() !== 'none';
   const teamCell = n => /^free agen/i.test(n) ? '<span class="cr-fa">Free agency</span>' : `<span class="cr-team">${teamLink(n, true)}</span>`;
@@ -719,7 +719,7 @@ function careerHtml(p, noTitle) {
       ${x.amount > 0 ? `<span class="cr-fee">Fee ${fmtMoney(x.amount)}</span>` : ''}</li>`).join('');
   rows += `<li class="cr-now"><span class="cr-month">Now</span><span class="cr-type">${hasTeam ? esc(p.roster || 'Player') : 'Unsigned'}</span><span class="cr-move">${hasTeam ? teamCell(p.team) : teamCell('Free agency')}</span></li>`;
   // teams the player collected results with, even without a logged transfer
-  const others = [...new Set(state.playerHistory.filter(h => h.player === p.name && h.team && h.team.toLowerCase() !== 'none' && !sameTeam(h.team, p.team)).map(h => h.team))];
+  const others = [...new Set(state.playerHistory.filter(h => ownsRow(p, h.player, h.team) && h.team && h.team.toLowerCase() !== 'none' && !sameTeam(h.team, p.team)).map(h => h.team))];
   return `${noTitle ? '' : '<div class="ach-sub">Career</div>'}<ul class="cr-list">${rows}</ul>`
     + (others.length ? `<div class="cab-foot">Also has results with ${others.map(esc).join(', ')}</div>` : '')
     + (!moves.length ? '<div class="cab-foot">No transfers on record · dates are the day each move was logged</div>' : '<div class="cab-foot">Dates are the day each move was logged</div>');
@@ -728,7 +728,7 @@ function renderPlayerPanel(resetScroll) {
   const p = state.players.find(x => x.name === state.openPlayer);
   if (!p) return;
   const hasTeam = p.team && p.team.toLowerCase() !== 'none';
-  const a = playerAwards(p.name);
+  const a = playerAwards(p);
   const majors = Math.max(p.majorWinner, a.placements.filter(h => h.tier >= 5 && h.position === 'Winner').length);
   const view = getView('player');
   const groups = groupMedals(a.medals);
@@ -795,9 +795,31 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.open
 ══════════════════════════════════════════════════════════════ */
 const playerUrl = name => 'player.html?player=' + encodeURIComponent(name);
 const teamUrl = name => 'team.html?team=' + encodeURIComponent(name);
-const findPlayer = name => state.players.find(p => p.name.toLowerCase() === String(name).trim().toLowerCase());
-function playerLink(name) {
-  const p = findPlayer(name);
+/* Names are matched ignoring capitals (files disagree on "Into The Beach" style details),
+   EXCEPT when two different players share a name apart from capitals (matys / MATYS).
+   Then the team decides: a row that says "MATYS, Fnatic" belongs to whichever of the two
+   plays for Fnatic; with no team to go by, the exact spelling wins. */
+function nameIndex() {
+  if (state._byLower && state._byLowerN === state.players.length) return state._byLower;
+  const m = new Map();
+  state.players.forEach(p => { const k = p.name.toLowerCase(); if (!m.has(k)) m.set(k, []); m.get(k).push(p); });
+  state._byLowerN = state.players.length;
+  return (state._byLower = m);
+}
+function findPlayer(name, team) {
+  name = String(name).trim();
+  const c = nameIndex().get(name.toLowerCase());
+  if (!c) return undefined;
+  if (c.length === 1) return c[0];
+  const onTeam = team ? c.filter(p => sameTeam(p.team, team)) : [];
+  return onTeam.find(p => p.name === name) || onTeam[0] || c.find(p => p.name === name) || c[0];
+}
+const hasTwin = name => (nameIndex().get(String(name).toLowerCase()) || []).length > 1;
+const nameEq = (a, b) => a === b || (a.toLowerCase() === b.toLowerCase() && !hasTwin(a));
+/* does this history / lineup entry (name + the team it was written for) belong to player p? */
+const ownsRow = (p, name, team) => name === p.name && !hasTwin(name) ? true : findPlayer(name, team) === p;
+function playerLink(name, team) {
+  const p = findPlayer(name, team);
   return p ? `<a class="pl-link" href="${playerUrl(p.name)}">${esc(p.name)}</a>` : `<span class="pl-link off" title="Not in the players file">${esc(name)}</span>`;
 }
 function teamLink(name, withLogo) {
@@ -840,7 +862,7 @@ function rosterAt(team, ms) {
   const names = state.players.filter(p => sameTeam(p.team, team))
     .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue).map(p => p.name);
   if (ms == null) return names;
-  const has = n => names.findIndex(x => x.toLowerCase() === n.toLowerCase());
+  const has = n => names.findIndex(x => nameEq(x, n));
   state.transactions.filter(x => x.id > ms).sort((a, b) => b.id - a.id).forEach(x => {
     const into = sameTeam(x.to, team), outOf = sameTeam(x.from, team);
     if (into && !outOf) { const i = has(x.player); if (i >= 0) names.splice(i, 1); }       // joined later → was not here yet
@@ -860,23 +882,24 @@ function lineupFor(team, key) {
 function lineupHtml(team, key) {
   const lu = lineupFor(team, key);
   if (!lu.players.length) return '';
-  return `<div class="lu"><span class="lu-l">Lineup</span><span class="lu-p">${lu.players.map(playerLink).join('')}</span>
+  return `<div class="lu"><span class="lu-l">Lineup</span><span class="lu-p">${lu.players.map(n => playerLink(n, team)).join('')}</span>
     <span class="lu-src ${lu.source}">${lu.source === 'recorded' ? 'recorded at the event' : 'estimated · today’s roster with later transfers undone'}</span></div>`;
 }
 
 /* ── former players of a team: logged departures + names seen in old lineups ── */
 function formerPlayers(team) {
-  const now = new Set(state.players.filter(p => sameTeam(p.team, team)).map(p => p.name.toLowerCase()));
+  const here = n => { const p = findPlayer(n, team); return !!p && sameTeam(p.team, team); };   // still on this team today
   const out = new Map();
   state.transactions.filter(x => sameTeam(x.from, team) && !sameTeam(x.to, team)).sort((a, b) => a.id - b.id).forEach(x => {
-    if (now.has(x.player.toLowerCase())) return;                       // came back
-    out.set(x.player.toLowerCase(), { name: x.player, tx: x, events: [] });
+    if (here(x.player)) return;                                        // came back
+    out.set(x.player, { name: x.player, tx: x, events: [] });
   });
   tournamentsOf(team).forEach(o => {
     const lu = lineupFor(team, o.key);
     if (lu.source !== 'recorded') return;
     lu.players.forEach(n => {
-      const k = n.toLowerCase(); if (now.has(k)) return;
+      if (here(n)) return;
+      const k = [...out.keys()].find(x => nameEq(x, n)) || n;
       if (!out.has(k)) out.set(k, { name: n, tx: null, events: [] });
       out.get(k).events.push(o.name);
     });
@@ -900,8 +923,7 @@ function renderFormer() {
 }
 
 /* ── events a player took part in (any team), with that team's result ── */
-function playerEvents(name) {
-  const nl = name.toLowerCase();
+function playerEvents(p) {
   const dates = eventDates();
   const keys = new Set([...(state.events || []).map(e => e.key), ...dates.keys()]);
   const found = new Map();
@@ -911,11 +933,11 @@ function playerEvents(name) {
     if (ev) ev.standings.forEach(s => s.names.forEach(n => { if (!teams.has(n.toLowerCase())) teams.set(n.toLowerCase(), n); }));
     teams.forEach(team => {
       const lu = lineupFor(team, key);
-      if (lu.players.some(p => p.toLowerCase() === nl)) found.set(key + '|' + team.toLowerCase(), { key, team, source: lu.source });
+      if (lu.players.some(n => ownsRow(p, n, team))) found.set(key + '|' + team.toLowerCase(), { key, team, source: lu.source });
     });
   });
   // results stored on the player always count, whatever the lineups say
-  state.playerHistory.filter(h => h.player.toLowerCase() === nl && h.kind === 'EVENT' && h.team && h.team.toLowerCase() !== 'none').forEach(h => {
+  state.playerHistory.filter(h => ownsRow(p, h.player, h.team) && h.kind === 'EVENT' && h.team && h.team.toLowerCase() !== 'none').forEach(h => {
     const key = evKey(h.event), id = key + '|' + h.team.toLowerCase();
     const sameEvent = [...found.keys()].filter(k => k.startsWith(key + '|'));
     sameEvent.forEach(k => { if (k !== id && found.get(k).source === 'estimated') found.delete(k); });   // the recorded result wins over a guess
@@ -1031,7 +1053,7 @@ function renderPlayerHero() {
   const p = state.player;
   document.title = `${p.name} · NEXUS`;
   const hasTeam = p.team && p.team.toLowerCase() !== 'none';
-  const a = playerAwards(p.name);
+  const a = playerAwards(p);
   const groups = groupMedals(a.medals);
   const majors = Math.max(p.majorWinner, a.placements.filter(h => h.tier >= 5 && h.position === 'Winner').length);
   const evs = state._plEvents || [];
@@ -1064,7 +1086,7 @@ function renderPlayerHero() {
 }
 function renderPlayerCabinet() {
   const p = state.player, box = $('#plAch'), btn = $('#ppAchToggle');
-  const a = playerAwards(p.name), view = getView('player');
+  const a = playerAwards(p), view = getView('player');
   btn.textContent = toggleLabel(view); btn.setAttribute('aria-pressed', view === 'detailed'); btn.hidden = !a.hist.length;
   $('#plCabCount').textContent = a.trophies.length ? `${a.trophies.length} on the shelf` : '';
   if (!state.historyLoaded) { box.innerHTML = '<div class="shelf-none">Achievements file (file/history_updated.xlsx) could not be loaded.</div>'; return; }
@@ -1096,7 +1118,7 @@ function renderPlayerOverview() {
 }
 function renderPlayerEvents() {
   const box = $('#plEvents');
-  const list = state._plEvents = playerEvents(state.player.name);
+  const list = state._plEvents = playerEvents(state.player);
   $('#tabHistCount').textContent = list.length || '';
   $('#plEventsNote').textContent = list.length ? `${list.length} event${list.length > 1 ? 's' : ''}` : '';
   if (!list.length) { box.innerHTML = '<div class="tp-empty">No events on record for this player.</div>'; return; }
