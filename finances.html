@@ -744,6 +744,200 @@ html[data-theme="light"] .attn.hot b{color:#fff;}
   .fo-deskcard .ng-form{grid-template-columns:1fr 1fr;}
   .team-trigger-lbl{display:none;}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PASS 2 — shared components and the other tabs
+   ═══════════════════════════════════════════════════════════════════ */
+.card{border-radius:14px;}
+.card-title{font-family:var(--font-ui);font-size:16px;font-weight:600;letter-spacing:0;text-transform:none;margin-bottom:16px;}
+.card-title::before{display:none;}
+.form-label{font-family:var(--font-ui);font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--text-dim);font-weight:500;}
+.nx-select,.nx-input{font-size:14px;border-radius:9px;padding:9px 12px;}
+.btn{font-family:var(--font-ui);font-size:13.5px;font-weight:600;letter-spacing:0;border-radius:9px;padding:9px 16px;}
+.btn-sm{font-size:12.5px;padding:6px 12px;}
+.btn-purple,.btn-red{color:var(--btn-ink);}
+html[data-theme="light"] .btn-purple,html[data-theme="light"] .btn-red{color:#fff;}
+.badge{font-family:var(--font-ui);font-size:11.5px;font-weight:600;letter-spacing:0;padding:2px 8px;border-radius:5px;}
+.alert-item{font-size:13.5px;border-left-width:2px;border-radius:9px;padding:11px 14px;}
+.list-row .name{font-size:14px;}
+.list-row .meta{font-family:var(--font-ui);font-size:12.5px;}
+.list-row:hover,.rank-item:hover,.travel-item:hover,.data-table tr:hover td{background:var(--bg3);}
+.status-pill{font-family:var(--font-ui);font-size:12.5px;letter-spacing:0;border-radius:999px;padding:5px 13px;}
+.theme-toggle{border-radius:999px;width:34px;}
+.topbar-nav-btn{font-family:var(--font-ui);font-size:12.5px;border-radius:999px;}
+.ticker-inner{font-family:var(--font-ui);font-size:12.5px;}
+#bottom-strip{height:54px;font-family:var(--font-ui);font-size:13px;}
+#month-counter{font-family:var(--font-ui);font-size:13px;font-weight:500;letter-spacing:0;color:var(--text-dim);}
+.pm-name{font-family:var(--font-serif);font-weight:600;}
+.upload-title{font-family:var(--font-serif);font-weight:600;letter-spacing:0;}
+.upload-title span,.upload-label,.upload-status,.scan-status{font-family:var(--font-ui);letter-spacing:.2px;}
+.pm-section-title{font-family:var(--font-ui);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;}
+.pm-hist-meta,.pm-hist-empty,.pm-sub{font-family:var(--font-ui);}
+.pm-hist-meta{font-size:12.5px;} .pm-hist-title{font-size:14px;}
+.log-area{font-family:var(--font-ui);}
+.panel code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:0 5px;}
+.panel > *{flex-shrink:0;}
+#p-market .card,#p-compare .card,#p-league .card,#p-history .card,#p-ops .card,#p-badges .card{padding:22px 24px;}
+.panel .card.fo-flush{padding:0 !important;overflow:hidden;}
+
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;}
+.field-grid .span2{grid-column:1 / -1;}
+.range{display:flex;gap:6px;}
+.range .nx-input{min-width:0;}
+.who{display:flex;align-items:center;gap:10px;min-width:0;}
+.who-crest{width:32px;height:32px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:grid;place-items:center;overflow:hidden;flex-shrink:0;}
+.who-crest img{width:24px;height:24px;object-fit:contain;}
+.who-crest .xfer-mono{font-size:11px;}
+.linkish{background:none;border:none;padding:0;font:inherit;font-weight:600;color:var(--text);cursor:pointer;text-align:left;}
+.linkish:hover{color:var(--cyan);}
+
+/* ── market ── */
+.mk{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start;}
+.mk-side{display:flex;flex-direction:column;gap:20px;min-width:0;}
+.mk-main{display:flex;flex-direction:column;}
+.mk-context{display:flex;gap:6px 22px;flex-wrap:wrap;padding:0 22px 16px;font-size:13.5px;color:var(--text-dim);}
+.mk-context b{color:var(--text);font-weight:600;}
+.mk-context:empty{display:none;}
+.mk-head,.list-row.mk-row{display:grid;grid-template-columns:minmax(210px,1fr) 84px 100px 118px 78px 104px 196px;gap:14px;align-items:center;}
+.mk-head{padding:10px 22px;font-size:12.5px;color:var(--text-dim);background:var(--bg3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.mk-head span{text-align:right;white-space:nowrap;}
+.mk-head span:first-child{text-align:left;}
+.mk-list{max-height:calc(100vh - 372px);min-height:320px;}
+.list-row.mk-row{padding:12px 22px;border-radius:0;justify-content:normal;}
+.mk-id{display:flex;align-items:center;gap:12px;min-width:0;}
+.mk-id .fo-av{width:40px;height:40px;}
+.mk-team{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+.mk-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;align-items:center;}
+.mk-row .badge,.cmp-card .badge,.lg-form .badge{background:transparent;border:1px solid var(--border-strong);color:var(--text-dim);font-weight:500;line-height:17px;padding:0 6px;display:inline-flex;align-items:center;gap:3px;}
+.mk-row .badge.badge-orange,.mk-row .badge.badge-purple{color:var(--c);border-color:color-mix(in srgb,var(--c) 45%,transparent);}
+.mk-row .badge.badge-orange{--c:var(--green);} .mk-row .badge.badge-purple{--c:var(--purple);}
+.mk-num{text-align:right;font-size:14px;white-space:nowrap;}
+.mk-num small{display:block;font-size:12px;color:var(--text-dim);}
+.mk-act{display:flex;flex-direction:column;align-items:stretch;gap:6px;}
+.mk-act .btn{width:100%;padding:7px 10px;}
+.mk-act .mk-state{font-size:13px;color:var(--text-dim);text-align:right;}
+.mk-act .mk-hist{align-self:flex-end;background:none;border:none;padding:0;font:inherit;font-size:12.5px;color:var(--text-dim);cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--border-strong);}
+.mk-act .mk-hist:hover{color:var(--cyan);}
+.mk-list .ph-expand{margin:4px 22px 12px 74px;}
+.mk-empty{padding:40px 22px;text-align:center;color:var(--text-dim);font-size:14px;}
+.deal-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 2px;border-bottom:1px solid var(--border);}
+.deal-row:last-child{border-bottom:none;}
+.deal-row .name{font-size:14px;font-weight:600;}
+.deal-row .meta{font-size:12.5px;color:var(--text-dim);margin-top:1px;}
+.deal-state{font-size:12.5px;font-weight:600;white-space:nowrap;}
+
+/* ── compare ── */
+.cmp-pick{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px;align-items:end;margin-top:6px;}
+.compare-grid{grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr);gap:20px;}
+.compare-vs{font-family:var(--font-serif);font-weight:500;font-style:italic;font-size:22px;color:var(--text-faint);}
+.compare-card.cmp-card{background:var(--bg2);border-radius:14px;padding:24px;}
+.compare-card.winner{border-color:var(--green);box-shadow:none;}
+.cmp-name{font-family:var(--font-serif);font-size:24px;font-weight:600;line-height:1.2;}
+.cmp-sub{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--text-dim);margin:6px 0 18px;}
+.cmp-score{display:flex;align-items:baseline;gap:8px;margin:20px 0 12px;}
+.cmp-score b{font-family:var(--font-serif);font-size:40px;font-weight:500;line-height:1;}
+.cmp-score span{font-size:13.5px;color:var(--text-dim);}
+.cmp-lines div{display:flex;justify-content:space-between;gap:14px;font-size:14px;padding:8px 0;border-bottom:1px solid var(--border);}
+.cmp-lines span:first-child{color:var(--text-dim);}
+.cmp-lines span:last-child{font-weight:600;}
+.cmp-bar{margin-bottom:10px;font-size:12.5px;color:var(--text-dim);}
+.cmp-bar > div:first-child{display:flex;justify-content:space-between;margin-bottom:3px;}
+.cmp-flags{margin-top:16px;display:grid;gap:6px;font-size:13.5px;}
+.cmp-verdict{font-size:14.5px;line-height:1.75;}
+.cmp-verdict p{margin:0;max-width:78ch;}
+
+/* ── league ── */
+.lg{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:20px;align-items:start;}
+.lg-table td:first-child{width:52px;}
+.lg-table td:nth-child(2),.lg-table th:nth-child(2){text-align:left;}
+.lg-rank{font-family:var(--font-serif);font-size:20px;font-weight:500;color:var(--text-faint);}
+.lg-rank.top{color:var(--cyan);}
+.lg-row{cursor:pointer;}
+.lg-grade{display:inline-grid;place-items:center;min-width:26px;height:22px;border-radius:6px;border:1px solid currentColor;font-size:12.5px;font-weight:700;padding:0 6px;}
+.lg-score{display:inline-flex;align-items:center;gap:10px;justify-content:flex-end;}
+.lg-score .progress-track{width:90px;height:4px;margin:0;}
+.lg-form{display:flex;align-items:center;gap:14px;padding:10px 2px;border-bottom:1px solid var(--border);}
+.lg-form:last-child{border-bottom:none;}
+.lg-form .lg-rank{width:24px;text-align:center;font-size:17px;}
+.lg-form-main{flex:1;min-width:0;}
+.lg-form-main .meta{font-size:12.5px;color:var(--text-dim);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.lg-form-score{font-family:var(--font-serif);font-size:20px;font-weight:500;color:var(--yellow);}
+.watch{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--border);font-size:14px;}
+.watch:last-child{border-bottom:none;}
+.watch b{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.watch span:last-child{white-space:nowrap;font-weight:600;}
+.all-clear{font-size:13.5px;color:var(--text-dim);display:flex;align-items:center;gap:8px;}
+.all-clear::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.rg-counts{display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;}
+.rg-chip{--c:var(--text-dim);color:var(--c);border:1px solid var(--c);border-color:color-mix(in srgb,var(--c) 40%,transparent);border-radius:999px;padding:1px 10px;white-space:nowrap;}
+.rg-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;max-height:420px;overflow-y:auto;}
+.rg-team{--c:var(--text-dim);display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:14px;font-weight:600;min-width:0;}
+.rg-team > span:nth-child(2){flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rg-team .rg-chip{font-weight:500;font-size:12px;}
+
+/* ── history ── */
+.hist-list{max-height:calc(100vh - 330px);min-height:300px;}
+.tx-row{display:flex;align-items:center;gap:14px;padding:10px 2px;border-bottom:1px solid var(--border);}
+.tx-row:last-child{border-bottom:none;}
+.tx-main{flex:1;min-width:0;}
+.tx-main .name{font-size:14px;font-weight:600;}
+.tx-main .meta{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+.tx-type{--c:var(--text-dim);font-size:12px;font-weight:600;color:var(--c);border:1px solid var(--c);border-color:color-mix(in srgb,var(--c) 40%,transparent);border-radius:5px;padding:1px 8px;white-space:nowrap;text-transform:capitalize;}
+.tx-side{text-align:right;font-size:13px;white-space:nowrap;}
+.tx-side small{display:block;font-size:12px;color:var(--text-dim);}
+
+/* ── operations ── */
+.ops-event{display:grid;grid-template-columns:minmax(260px,1.2fr) minmax(220px,1.3fr) 170px 170px;gap:18px;align-items:end;}
+.ops{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start;}
+.ops-rules{margin:0;padding:12px 14px 12px 30px;background:var(--bg3);border-radius:9px;font-size:13px;color:var(--text-dim);line-height:1.55;}
+.ops-rules li + li{margin-top:4px;}
+.ops-more summary{cursor:pointer;font-size:13.5px;color:var(--text-dim);font-weight:500;}
+.ops-more summary:hover{color:var(--text);}
+.travel-item{padding:9px 6px;font-size:14px;gap:12px;}
+.travel-cost{text-align:right;font-size:13px;white-space:nowrap;}
+.travel-cost small{display:block;font-size:12px;color:var(--text-dim);}
+#contract-alerts .alert-item{margin-bottom:8px;}
+
+/* ── badges ── */
+.bd{display:grid;grid-template-columns:minmax(320px,440px) minmax(0,1fr);gap:20px;align-items:start;}
+.bd-registry{max-height:calc(100vh - 330px);min-height:320px;}
+.award-registry-group-title{font-family:var(--font-ui);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;}
+.award-row{padding:10px 4px;gap:16px;}
+.award-row-icon{width:72px;height:72px;border-radius:14px;font-size:32px;}
+.award-row-label{font-size:14px;}
+.award-row-sub,.award-locked-note{font-family:var(--font-ui);font-size:12.5px;letter-spacing:0;}
+.award-locked-note{width:auto;}
+.award-row-score input[type=number]{width:70px;padding:6px 8px;font-size:13.5px;}
+
+@media (max-width:1500px){
+  .mk-head,.list-row.mk-row{grid-template-columns:minmax(200px,1fr) 84px 100px 118px 190px;}
+  .mk-c-con,.mk-c-net{display:none;}
+  .ops-event{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:1180px){
+  .mk,.lg,.bd{grid-template-columns:1fr;}
+  .mk-list,.hist-list,.bd-registry{max-height:640px;}
+  .ops{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:860px){
+  .g2,.ops,.ops-event,.cmp-pick,.compare-grid{grid-template-columns:1fr;}
+  .compare-vs{padding:0;}
+  .mk-head{display:none;}
+  .list-row.mk-row{grid-template-columns:1fr 1fr;}
+  .mk-id,.mk-act{grid-column:1 / -1;}
+  .mk-num{text-align:left;}
+}
+.lg-table{min-width:620px;}
+.fo-table.lg-table th:first-child{width:52px;}
+.mk-list .ph-expand{margin:4px 22px 12px 22px;}
+html[data-theme] .mk-row .badge,html[data-theme] .cmp-card .badge:not(.badge-green),html[data-theme] .lg-form .badge{color:var(--text-dim);}
+html[data-theme] .mk-row .badge.badge-orange,html[data-theme] .mk-row .badge.badge-purple{color:var(--c);}
+.tx-type{text-transform:none;display:inline-block;}
+.tx-type::first-letter{text-transform:uppercase;}
+.range input[type=number]{-moz-appearance:textfield;appearance:textfield;padding-left:10px;padding-right:8px;}
+.range input[type=number]::-webkit-outer-spin-button,.range input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
 
 </style>
@@ -826,10 +1020,10 @@ html[data-theme="light"] .attn.hot b{color:#fff;}
   </div>
   <div class="topbar-status">
     <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark">☾</button>
-    <div class="status-pill" id="status-season">MONTH <span id="month-num">1</span></div>
-    <div class="status-pill" id="status-teams">0 TEAMS</div>
-    <div class="status-pill" id="status-players">0 PLAYERS</div>
-    <div class="status-pill alert" id="status-alerts" style="display:none">⚠ ALERTS</div>
+    <div class="status-pill" id="status-season">Month <span id="month-num">1</span></div>
+    <div class="status-pill" id="status-teams">0 teams</div>
+    <div class="status-pill" id="status-players">0 players</div>
+    <div class="status-pill alert" id="status-alerts" style="display:none" title="Teams losing money each month, plus players whose contract has expired">Alerts</div>
   </div>
 </div>
 
@@ -953,65 +1147,39 @@ html[data-theme="light"] .attn.hot b{color:#fff;}
 
     <!-- ═══ MARKET PANEL ═══ -->
     <div class="panel" id="p-market">
-      <div class="g2">
+      <div class="mk">
         <!-- FILTERS -->
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          <div class="card">
-            <div class="card-title">🔭 SCOUTING FILTERS</div>
-            <div class="form-group" style="margin-bottom:10px;">
-              <div class="form-label">🔎 SEARCH PLAYER</div>
-              <input type="text" class="nx-input" id="market-name-search" placeholder="Type player name..." oninput="refreshMarket()" style="padding:6px 8px; width:100%;">
+        <div class="mk-side">
+          <section class="card">
+            <div class="fo-h-row">
+              <h2 class="fo-h">Filters</h2>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="clearMarketFilters()">Clear all</button>
             </div>
-            <div class="g3" style="gap:10px; margin-bottom:10px;">
+            <div class="field-grid">
               <div class="form-group">
-                <div class="form-label">ROSTER</div>
+                <label class="form-label" for="market-team-filter">Team</label>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <select class="nx-select" id="market-team-filter" onchange="refreshMarket(); updateMarketTeamLogo();" style="flex:1; min-width:0;">
+                    <option value="all">All Teams</option>
+                    <option value="my_roster">My roster</option>
+                    <option value="offers">On sale</option>
+                  </select>
+                  <span id="market-team-logo-preview" style="display:inline-flex; align-items:center;"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="market-roster-filter">Squad status</label>
                 <select class="nx-select" id="market-roster-filter" onchange="refreshMarket()">
-                  <option value="all">All</option>
-                  <option value="none">🚫 No Team</option>
+                  <option value="all">Anyone</option>
+                  <option value="none">Free agents</option>
                   <option value="Bench">Benched</option>
                   <option value="Starter">Starters</option>
                 </select>
               </div>
               <div class="form-group">
-                <div class="form-label">TEAM</div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <select class="nx-select" id="market-team-filter" onchange="refreshMarket(); updateMarketTeamLogo();" style="flex:1;">
-                    <option value="all">All Teams</option>
-                    <option value="my_roster">🛡 My Roster</option>
-                    <option value="offers">🔥 On Sale</option>
-                  </select>
-                  <span id="market-team-logo-preview" style="display:inline-flex; align-items:center; min-width:24px;"></span>
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="form-label">SORT</div>
-                <select class="nx-select" id="market-sort" onchange="refreshMarket()">
-                  <option value="mv-desc">↓ Market Value</option>
-                  <option value="mv-asc">↑ Market Value</option>
-                  <option value="imp-asc">↑ 6m Impact (Safe)</option>
-                  <option value="imp-desc">↓ 6m Impact (Risk)</option>
-                  <option value="buy-asc">↑ Buyout</option>
-                  <option value="buy-desc">↓ Buyout</option>
-                </select>
-              </div>
-            </div>
-            <div class="g3" style="gap:10px; margin-bottom:10px;">
-              <div class="form-group">
-                <div class="form-label">🌍 REGION</div>
-                <select class="nx-select" id="market-region-filter" onchange="onRegionChange(); refreshMarket()">
-                  <option value="all">All Regions</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <div class="form-label">🏳 COUNTRY</div>
-                <select class="nx-select" id="market-country-filter" onchange="refreshMarket()">
-                  <option value="all">All Countries</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <div class="form-label">🎯 ROLE</div>
+                <label class="form-label" for="market-role-filter">Role</label>
                 <select class="nx-select" id="market-role-filter" onchange="refreshMarket()">
-                  <option value="all">All Roles</option>
+                  <option value="all">All roles</option>
                   <option value="igl">IGL</option>
                   <option value="rifler">Rifler</option>
                   <option value="entry fragger">Entry Fragger</option>
@@ -1020,414 +1188,424 @@ html[data-theme="light"] .attn.hot b{color:#fff;}
                   <option value="anchor">Anchor</option>
                 </select>
               </div>
+              <div class="form-group">
+                <label class="form-label" for="market-region-filter">Region</label>
+                <select class="nx-select" id="market-region-filter" onchange="onRegionChange(); refreshMarket()">
+                  <option value="all">All Regions</option>
+                </select>
+              </div>
+              <div class="form-group span2">
+                <label class="form-label" for="market-country-filter">Country</label>
+                <select class="nx-select" id="market-country-filter" onchange="refreshMarket()">
+                  <option value="all">All Countries</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <div class="form-label">Market value ($)</div>
+                <div class="range">
+                  <input type="number" class="nx-input" id="filter-mv-min" placeholder="Min" aria-label="Minimum market value" onkeyup="refreshMarket()">
+                  <input type="number" class="nx-input" id="filter-mv-max" placeholder="Max" aria-label="Maximum market value" onkeyup="refreshMarket()">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-label">Asking price ($)</div>
+                <div class="range">
+                  <input type="number" class="nx-input" id="filter-buy-min" placeholder="Min" aria-label="Minimum asking price" onkeyup="refreshMarket()">
+                  <input type="number" class="nx-input" id="filter-buy-max" placeholder="Max" aria-label="Maximum asking price" onkeyup="refreshMarket()">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-label">Contract left (months)</div>
+                <div class="range">
+                  <input type="number" class="nx-input" id="filter-con-min" placeholder="Min" aria-label="Minimum months left" onkeyup="refreshMarket()">
+                  <input type="number" class="nx-input" id="filter-con-max" placeholder="Max" aria-label="Maximum months left" onkeyup="refreshMarket()">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-label">Prize money won ($)</div>
+                <div class="range">
+                  <input type="number" class="nx-input" id="filter-prize-min" placeholder="Min" aria-label="Minimum prize money" onkeyup="refreshMarket()">
+                  <input type="number" class="nx-input" id="filter-prize-max" placeholder="Max" aria-label="Maximum prize money" onkeyup="refreshMarket()">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-label">Titles</div>
+                <div class="range">
+                  <input type="number" class="nx-input" id="filter-titles-min" placeholder="Min" aria-label="Minimum titles" onkeyup="refreshMarket()">
+                  <input type="number" class="nx-input" id="filter-titles-max" placeholder="Max" aria-label="Maximum titles" onkeyup="refreshMarket()">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-label">Medals (MVP, EVP, VP)</div>
+                <div class="range">
+                  <input type="number" class="nx-input" id="filter-medals-min" placeholder="Min" aria-label="Minimum medals" onkeyup="refreshMarket()">
+                  <input type="number" class="nx-input" id="filter-medals-max" placeholder="Max" aria-label="Maximum medals" onkeyup="refreshMarket()">
+                </div>
+              </div>
             </div>
-            <div class="g3" style="gap:10px;">
-              <div class="form-group">
-                <div class="form-label">MV RANGE ($)</div>
-                <div style="display:flex; gap:5px;">
-                  <input type="number" class="nx-input" id="filter-mv-min" placeholder="Min" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                  <input type="number" class="nx-input" id="filter-mv-max" placeholder="Max" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="form-label">BUYOUT RANGE ($)</div>
-                <div style="display:flex; gap:5px;">
-                  <input type="number" class="nx-input" id="filter-buy-min" placeholder="Min" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                  <input type="number" class="nx-input" id="filter-buy-max" placeholder="Max" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="form-label">CONTRACT (MONTHS)</div>
-                <div style="display:flex; gap:5px;">
-                  <input type="number" class="nx-input" id="filter-con-min" placeholder="Min" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                  <input type="number" class="nx-input" id="filter-con-max" placeholder="Max" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                </div>
-              </div>
-            </div>
-            <div class="g3" style="gap:10px; margin-top:10px;">
-              <div class="form-group">
-                <div class="form-label"><span class="medal-ic medal-ic-trophy"></span> TOTAL TITLES</div>
-                <div style="display:flex; gap:5px;">
-                  <input type="number" class="nx-input" id="filter-titles-min" placeholder="Min" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                  <input type="number" class="nx-input" id="filter-titles-max" placeholder="Max" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="form-label"><span class="medal-ic medal-ic-mvp"></span> TOTAL MEDALS (MVP+EVP+VP)</div>
-                <div style="display:flex; gap:5px;">
-                  <input type="number" class="nx-input" id="filter-medals-min" placeholder="Min" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                  <input type="number" class="nx-input" id="filter-medals-max" placeholder="Max" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="form-label">💰 PRIZE POOL ($)</div>
-                <div style="display:flex; gap:5px;">
-                  <input type="number" class="nx-input" id="filter-prize-min" placeholder="Min" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                  <input type="number" class="nx-input" id="filter-prize-max" placeholder="Max" onkeyup="refreshMarket()" style="padding:6px 8px;">
-                </div>
-              </div>
-            </div>
-          </div>
+          </section>
 
           <!-- PROPOSALS -->
-          <div class="card purple">
-            <div class="card-title">📤 MY PROPOSALS</div>
-            <div id="outbound-offers" class="scroll-list" style="max-height:200px;"></div>
-          </div>
+          <section class="card">
+            <h2 class="fo-h fo-h-pad">Your deals in progress</h2>
+            <div id="outbound-offers" class="scroll-list" style="max-height:240px;"></div>
+          </section>
         </div>
 
-        <!-- SCOUTING LIST -->
-        <div class="card">
-          <div class="card-title" style="justify-content:space-between;">
-            <span>📡 SCOUTING FEED</span>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="form-label">CONTRACT (MO):</span>
-              <input type="number" class="nx-input" id="market-duration" min="1" max="24" value="12" style="width:60px; padding:5px 8px;">
-            </div>
+        <!-- PLAYER LIST -->
+        <section class="card fo-flush mk-main">
+          <div class="fo-card-head">
+            <h2 class="fo-h">Players</h2>
+            <span class="fo-count" id="market-count"></span>
+            <input type="text" class="nx-input fo-search" id="market-name-search" placeholder="Find a player" autocomplete="off" oninput="refreshMarket()" style="width:240px;">
+            <select class="nx-select" id="market-sort" onchange="refreshMarket()" aria-label="Sort players" style="width:auto;">
+              <option value="mv-desc">Highest value first</option>
+              <option value="mv-asc">Lowest value first</option>
+              <option value="imp-asc">Cheapest 6-month cost first</option>
+              <option value="imp-desc">Costliest 6-month cost first</option>
+              <option value="buy-asc">Lowest asking price first</option>
+              <option value="buy-desc">Highest asking price first</option>
+            </select>
           </div>
-          <div id="market-list" class="scroll-list" style="max-height:680px;"></div>
-        </div>
+          <div class="mk-context" id="market-context"></div>
+          <div class="mk-head" aria-hidden="true">
+            <span>Player</span><span>Value</span><span>Salary / month</span><span>6-month cost</span><span class="mk-c-con">Contract</span><span class="mk-c-net">Your net after</span><span>How to sign</span>
+          </div>
+          <div id="market-list" class="scroll-list mk-list"></div>
+        </section>
       </div>
     </div>
 
     <!-- ═══ COMPARE PANEL ═══ -->
     <div class="panel" id="p-compare">
-      <div class="card" style="margin-bottom:0;">
-        <div class="card-title">⇌ AI PLAYER COMPARISON ENGINE</div>
-        <p style="color:var(--text-dim); font-size:12px; margin-bottom:14px;">Select two players. The NEXUS AI will calculate who is the smarter acquisition for your active team right now, based on financials, form, and sustainability.</p>
-        <div class="g3" style="gap:10px; align-items:flex-end;">
+      <section class="card">
+        <h2 class="fo-h">Compare two players</h2>
+        <p class="fo-note" style="margin-top:6px;">Pick two players to see which is the smarter signing for the team you are managing right now. The score weighs price against value, what you can afford, the effect on your monthly net, and form.</p>
+        <div class="cmp-pick">
           <div class="form-group">
-            <div class="form-label">PLAYER A</div>
-            <select class="nx-select" id="compare-p1" style="font-weight:600;"></select>
+            <label class="form-label" for="compare-p1">Player A</label>
+            <select class="nx-select" id="compare-p1"></select>
           </div>
           <div class="form-group">
-            <div class="form-label">PLAYER B</div>
-            <select class="nx-select" id="compare-p2" style="font-weight:600;"></select>
+            <label class="form-label" for="compare-p2">Player B</label>
+            <select class="nx-select" id="compare-p2"></select>
           </div>
-          <button class="btn btn-cyan" onclick="runComparison()" style="height:38px;">⇌ RUN ANALYSIS</button>
+          <button class="btn btn-cyan" onclick="runComparison()">Compare</button>
         </div>
-      </div>
+      </section>
       <div id="comparison-result"></div>
     </div>
 
     <!-- ═══ LEAGUE PANEL ═══ -->
     <div class="panel" id="p-league">
-      <div class="g2">
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <!-- POWER RANKINGS -->
-          <div class="card">
-            <div class="card-title"><span class="medal-ic medal-ic-trophy"></span> POWER RANKINGS</div>
-            <div id="league-rankings"></div>
-          </div>
-          <!-- FINANCIAL HEALTH MATRIX -->
-          <div class="card orange">
-            <div class="card-title">⚠ FINANCIAL HEALTH MATRIX</div>
+      <div class="lg">
+        <section class="card fo-flush">
+          <div class="fo-card-head"><h2 class="fo-h">League table</h2><span class="fo-note" style="margin:0 0 0 auto;">Ranked by Oracle score. Click a team for its profile.</span></div>
+          <div class="fo-table-wrap" id="league-rankings"></div>
+        </section>
+        <div class="stack">
+          <section class="card">
+            <h2 class="fo-h fo-h-pad">Finances to watch</h2>
             <div id="league-health"></div>
-          </div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <!-- ROSTER ALERTS -->
-          <div class="card red">
-            <div class="card-title">🚨 ROSTER INTELLIGENCE</div>
+          </section>
+          <section class="card">
+            <h2 class="fo-h fo-h-pad">Short-handed squads</h2>
             <div id="league-roster"></div>
-          </div>
-          <!-- RISING STARS -->
-          <div class="card yellow">
-            <div class="card-title">⭐ FORM LEADERBOARD</div>
-            <div id="league-stars"></div>
-          </div>
-          <!-- MARKET ACTIVITY -->
-          <div class="card purple">
-            <div class="card-title">🔄 TRANSFER HISTORY</div>
-            <div id="league-transfers" class="scroll-list" style="max-height:200px;"></div>
-          </div>
+          </section>
         </div>
       </div>
 
-      <!-- ═══ TEAMS BY REGION ═══ -->
-      <div style="margin-top:16px;">
-        <div class="card purple" style="padding:20px;">
-          <div class="card-title" style="color:var(--purple); margin-bottom:16px;">
-            <span style="font-size:16px;">🌍</span> TEAMS BY REGION
-          </div>
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
-            <div class="form-group" style="margin:0; flex:0 0 auto;">
-              <select class="nx-select" id="region-filter" onchange="renderRegionMap()" style="width:200px; padding:6px 12px; font-size:12px;">
-                <option value="all">🌐 ALL REGIONS</option>
-                <option value="Americas">🌎 AMERICAS</option>
-                <option value="Europa">🌍 EUROPE</option>
-                <option value="Asia">🌏 ASIA</option>
-                <option value="MIXED">🌐 MIXED</option>
-                <option value="unknown">❓ UNCLASSIFIED</option>
-              </select>
-            </div>
-            <div id="region-count-bar" style="display:flex; gap:10px; font-family:var(--font-data); font-size:11px;"></div>
-          </div>
-          <div id="region-map-list" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; max-height:400px; overflow-y:auto;"></div>
-        </div>
+      <div class="g2">
+        <section class="card">
+          <h2 class="fo-h fo-h-pad">Players in form</h2>
+          <div id="league-stars"></div>
+        </section>
+        <section class="card">
+          <h2 class="fo-h fo-h-pad">Latest transfers</h2>
+          <div id="league-transfers" class="scroll-list" style="max-height:420px;"></div>
+        </section>
       </div>
+
+      <!-- ═══ TEAMS BY REGION ═══ -->
+      <section class="card">
+        <div class="fo-h-row" style="flex-wrap:wrap;">
+          <h2 class="fo-h">Teams by region</h2>
+          <div id="region-count-bar" class="rg-counts"></div>
+          <select class="nx-select" id="region-filter" onchange="renderRegionMap()" aria-label="Filter by region" style="width:200px; margin-left:auto;">
+            <option value="all">All regions</option>
+            <option value="Americas">Americas</option>
+            <option value="Europa">Europe</option>
+            <option value="Asia">Asia</option>
+            <option value="MIXED">Mixed</option>
+            <option value="unknown">Unclassified</option>
+          </select>
+        </div>
+        <div id="region-map-list" class="rg-list"></div>
+      </section>
     </div>
 
     <!-- ═══ GLOBAL HISTORY PANEL — league-wide market ledger ═══ -->
     <div class="panel" id="p-history">
-      <div class="g2">
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <div class="card purple">
-            <div class="card-title" style="justify-content:space-between;">
-              <span>🔄 TRANSACTIONS — ALL PLAYER MOVEMENTS</span>
-              <input type="text" class="nx-input" id="hist-tx-search" placeholder="🔍 Filter player / team..." oninput="renderTransactions()" style="max-width:200px; padding:4px 8px; font-size:11px;">
-            </div>
-            <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:8px;">Every move that touches the market — buys, sales, FA signings, releases, clause payments, bench moves.</div>
-            <div id="hist-transactions" class="scroll-list" style="max-height:560px;"></div>
+      <div class="g2" style="align-items:start;">
+        <section class="card">
+          <div class="fo-h-row">
+            <h2 class="fo-h">Player movements</h2>
+            <input type="text" class="nx-input fo-search" id="hist-tx-search" placeholder="Find a player or team" autocomplete="off" oninput="renderTransactions()" style="margin-left:0;">
           </div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <div class="card">
-            <div class="card-title" style="justify-content:space-between;">
-              <span>📜 DEAL HISTORY — ALL NEGOTIATED DEALS</span>
-              <input type="text" class="nx-input" id="hist-deal-search" placeholder="🔍 Filter player / team..." oninput="renderGlobalDeals()" style="max-width:200px; padding:4px 8px; font-size:11px;">
-            </div>
-            <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:8px;">League-wide outcome log of transfers, offers and clause talks (✅ closed / ❌ collapsed).</div>
-            <div id="hist-global-deals" class="scroll-list" style="max-height:420px;"></div>
+          <p class="fo-note">Every move across the league: purchases, sales, free-agent signings, releases, clause payments and bench changes.</p>
+          <div id="hist-transactions" class="scroll-list hist-list"></div>
+        </section>
+        <section class="card">
+          <div class="fo-h-row">
+            <h2 class="fo-h">Negotiated deals</h2>
+            <input type="text" class="nx-input fo-search" id="hist-deal-search" placeholder="Find a player or team" autocomplete="off" oninput="renderGlobalDeals()" style="margin-left:0;">
           </div>
-          <div class="card">
-            <div class="card-title">ℹ WHERE DID THE REST GO?</div>
-            <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); line-height:1.8;">
-              <span class="medal-ic medal-ic-trophy"></span> <b>Team achievements</b> now live inside each team — ▣ OFFICE → <span class="medal-ic medal-ic-trophy"></span> ACHIEVEMENTS card.<br>
-              <span class="medal-ic medal-ic-mvp"></span> <b>Player event &amp; award history</b> opens inside each player card — 🏛 button on ◈ MARKET rows, ⬡ COMMAND roster and ▣ OFFICE locker room, or in the player profile.
-            </div>
-          </div>
-        </div>
+          <p class="fo-note">How transfers, offers and clause talks ended across the league. A green edge means the deal closed, red means it fell through.</p>
+          <div id="hist-global-deals" class="scroll-list hist-list"></div>
+        </section>
       </div>
     </div>
 
     <!-- ═══ OPS PANEL ═══ -->
     <div class="panel" id="p-ops">
-      <div class="g3">
 
-        <!-- TRAVEL -->
-        <div class="card purple">
-          <div class="card-title">✈ BULK TRAVEL PLANNER</div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">TRAVEL TYPE</div>
-            <select class="nx-select" id="travel-type" onchange="renderTravelList()">
-              <option value="regional">Regional ($5,000)</option>
-              <option value="national">National ($15,000)</option>
-              <option value="international">International ($35,000)</option>
-            </select>
+      <!-- EVENT CONTEXT: shared by prize money, individual awards and the major trophy -->
+      <section class="card ops-event">
+        <div>
+          <h2 class="fo-h">Event</h2>
+          <p class="fo-note" style="margin:4px 0 0;">Prize money, individual awards and the Major trophy below are all recorded under this event. Five-star and Tier SS entries are always recorded as Global.</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ops-event-name">Event or tournament name</label>
+          <input type="text" class="nx-input" id="ops-event-name" placeholder="e.g. IEM Cologne 2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ops-event-scope">Scope</label>
+          <select class="nx-select" id="ops-event-scope" onchange="toggleOpsRegion()">
+            <option value="Global">Global</option>
+            <option value="Regional">Regional</option>
+          </select>
+        </div>
+        <div class="form-group" id="ops-event-region-wrap" style="display:none;">
+          <label class="form-label" for="ops-event-region">Region</label>
+          <select class="nx-select" id="ops-event-region">
+            <option value="Europe">Europe</option>
+            <option value="America">America</option>
+            <option value="Asia">Asia</option>
+          </select>
+        </div>
+      </section>
+
+      <div class="ops">
+        <!-- PRIZE MONEY -->
+        <section class="card">
+          <h2 class="fo-h fo-h-pad">Prize money</h2>
+          <div class="stack">
+            <div class="form-group">
+              <label class="form-label" for="tourney-team-select">Team</label>
+              <select class="nx-select" id="tourney-team-select"></select>
+            </div>
+            <div class="field-grid">
+              <div class="form-group">
+                <label class="form-label" for="ops-prize-rating">Event rating</label>
+                <select class="nx-select" id="ops-prize-rating">
+                  <option value="5">5 stars, SS+ (Major)</option>
+                  <option value="4">4 stars, S</option>
+                  <option value="3" selected>3 stars, A</option>
+                  <option value="2">2 stars, B</option>
+                  <option value="1">1 star, C</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ops-prize-place">Placement</label>
+                <select class="nx-select" id="ops-prize-place">
+                  <option value="none" selected>None (money only)</option>
+                  <option value="Winner">1st, champion</option>
+                  <option value="Second">2nd</option>
+                  <option value="Third">3rd</option>
+                  <option value="Fourth">4th to 8th</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="prize-amount">Prize amount ($)</label>
+              <input type="number" class="nx-input" id="prize-amount" placeholder="0.00">
+            </div>
+            <ul class="ops-rules">
+              <li>60% goes to the team bank, 40% is split across the starters' market value.</li>
+              <li>A placement from 1st to 8th is written to the history of the team and its active roster.</li>
+              <li>Only 1st place adds to the title count.</li>
+            </ul>
+            <details class="ops-more">
+              <summary>Trophy image for this placement (optional)</summary>
+              <p class="fo-note" style="margin-top:10px;">Shared with Badges, Record a result. Upload once and it stays loaded for every placement until you clear or replace it. An empty square keeps the normal Award Registry icon. It is applied to the placement selected above when you pay out.</p>
+              <div class="ach-icon-row" id="ops-icon-squares"></div>
+            </details>
+            <button class="btn btn-cyan btn-full" onclick="distributeTourneyPrize()">Pay out prize</button>
           </div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">SEARCH TEAM</div>
-            <input type="text" class="nx-input" id="travel-search" placeholder="Filter..." onkeyup="renderTravelList()">
-          </div>
-          <div id="travel-list" class="scroll-list" style="max-height:200px; margin-bottom:10px;"></div>
-          <button class="btn btn-purple btn-full" onclick="applyTravelExpenses()">CHARGE SELECTED TEAMS</button>
+        </section>
+
+        <div class="stack" style="gap:20px;">
+          <!-- INDIVIDUAL AWARDS -->
+          <section class="card">
+            <h2 class="fo-h fo-h-pad">Individual award</h2>
+            <div class="stack">
+              <div class="form-group">
+                <label class="form-label" for="perf-player-select">Player</label>
+                <select class="nx-select" id="perf-player-select"></select>
+              </div>
+              <div class="field-grid">
+                <div class="form-group">
+                  <label class="form-label" for="perf-tier">Tier</label>
+                  <select class="nx-select" id="perf-tier">
+                    <option value="ss">Tier SS, Major only (50k)</option>
+                    <option value="s">Tier S (40k)</option>
+                    <option value="a">Tier A (30k)</option>
+                    <option value="b">Tier B (20k)</option>
+                    <option value="c">Tier C (15k)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="perf-type">Award</label>
+                  <select class="nx-select" id="perf-type">
+                    <option value="mvp">MVP (33.33%)</option>
+                    <option value="evp">EVP (23.81%)</option>
+                    <option value="vp">VP (14.29%)</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-cyan btn-full" onclick="applyIndividualPerformance()">Grant award and medal</button>
+            </div>
+          </section>
+
+          <!-- MAJOR -->
+          <section class="card">
+            <h2 class="fo-h fo-h-pad">Major champion</h2>
+            <div class="stack">
+              <div class="form-group">
+                <label class="form-label" for="major-team-select">Winning team (active roster)</label>
+                <select class="nx-select" id="major-team-select"></select>
+              </div>
+              <ul class="ops-rules">
+                <li>Trophy only, no prize money. All 5 starters receive a Major trophy.</li>
+                <li>It uses the event name above and is written to each player's own history, so it survives later roster changes.</li>
+              </ul>
+              <button class="btn btn-yellow btn-full" onclick="applyMajorTrophy()">Crown Major champion</button>
+            </div>
+          </section>
+
+          <!-- CLUB SHARE -->
+          <section class="card">
+            <h2 class="fo-h fo-h-pad">Club share</h2>
+            <div class="stack">
+              <div class="field-grid">
+                <div class="form-group">
+                  <label class="form-label" for="clubshare-team-select">Team</label>
+                  <select class="nx-select" id="clubshare-team-select"></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="clubshare-amount">Amount ($)</label>
+                  <input type="number" class="nx-input" id="clubshare-amount" placeholder="0.00">
+                </div>
+              </div>
+              <ul class="ops-rules"><li>All of it goes to the team bank. Nothing is split with players.</li></ul>
+              <button class="btn btn-cyan btn-full" onclick="applyClubShare()">Deposit club share</button>
+            </div>
+          </section>
         </div>
 
-        <!-- TOURNAMENT -->
-        <div class="card green">
-          <div class="card-title"><span class="medal-ic medal-ic-trophy"></span> TOURNAMENT ENGINE</div>
-          <div class="alert-item info" style="margin-bottom:10px; font-size:10.5px; font-family:var(--font-data);">
-            📌 EVENT CONTEXT — shared by 💰 PRIZE, ⭐ INDIVIDUAL AWARDS and 👑 MAJOR CHAMPION.<br>5⭐ / Tier SS entries are always recorded as Global.
-          </div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">EVENT / TOURNAMENT NAME</div>
-            <input type="text" class="nx-input" id="ops-event-name" placeholder="e.g. IEM Cologne 2026">
-          </div>
-          <div class="g2" style="margin-bottom:10px;">
-            <div class="form-group">
-              <div class="form-label">SCOPE</div>
-              <select class="nx-select" id="ops-event-scope" onchange="toggleOpsRegion()">
-                <option value="Global">Global</option>
-                <option value="Regional">Regional</option>
-              </select>
+        <div class="stack" style="gap:20px;">
+          <!-- TRAVEL -->
+          <section class="card">
+            <h2 class="fo-h fo-h-pad">Travel costs</h2>
+            <div class="stack">
+              <div class="field-grid">
+                <div class="form-group">
+                  <label class="form-label" for="travel-type">Trip</label>
+                  <select class="nx-select" id="travel-type" onchange="renderTravelList()">
+                    <option value="regional">Regional ($5,000)</option>
+                    <option value="national">National ($15,000)</option>
+                    <option value="international">International ($35,000)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="travel-search">Find a team</label>
+                  <input type="text" class="nx-input" id="travel-search" placeholder="Team name" autocomplete="off" onkeyup="renderTravelList()">
+                </div>
+              </div>
+              <div id="travel-list" class="scroll-list" style="max-height:260px;"></div>
+              <button class="btn btn-cyan btn-full" onclick="applyTravelExpenses()">Charge selected teams</button>
             </div>
-            <div class="form-group" id="ops-event-region-wrap" style="display:none;">
-              <div class="form-label">REGION</div>
-              <select class="nx-select" id="ops-event-region">
-                <option value="Europe">Europe</option>
-                <option value="America">America</option>
-                <option value="Asia">Asia</option>
-              </select>
+          </section>
+
+          <!-- CONTRACT ALERTS -->
+          <section class="card">
+            <h2 class="fo-h">Contracts about to end</h2>
+            <p class="fo-note" style="margin-top:4px;">League-wide. Renewal talks happen in the Front Office.</p>
+            <div id="contract-alerts" class="scroll-list" style="max-height:260px;"></div>
+          </section>
+
+          <!-- INTERVENTIONS -->
+          <section class="card">
+            <h2 class="fo-h">Bailout</h2>
+            <p class="fo-note" style="margin-top:4px;">Gives the team $25,000 and a 50% sponsor boost. This shifts league balance, so use it sparingly.</p>
+            <div class="stack">
+              <div class="form-group">
+                <label class="form-label" for="reset-team-select">Team</label>
+                <select class="nx-select" id="reset-team-select"></select>
+              </div>
+              <button class="btn btn-orange btn-full" onclick="applyBailout()">Bail out this team</button>
             </div>
-          </div>
+          </section>
 
-          <hr class="sep">
-
-          <div class="card-title" style="margin-top:4px;">💰 PRIZE DISTRIBUTION</div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">TEAM</div>
-            <select class="nx-select" id="tourney-team-select"></select>
-          </div>
-          <div class="g2" style="margin-bottom:8px;">
-            <div class="form-group">
-              <div class="form-label">RATING</div>
-              <select class="nx-select" id="ops-prize-rating">
-                <option value="5">⭐⭐⭐⭐⭐ SS+ — Major</option>
-                <option value="4">⭐⭐⭐⭐ S</option>
-                <option value="3" selected>⭐⭐⭐ A</option>
-                <option value="2">⭐⭐ B</option>
-                <option value="1">⭐ C</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <div class="form-label">PLACEMENT</div>
-              <select class="nx-select" id="ops-prize-place">
-                <option value="none" selected>— None (money only)</option>
-                <option value="Winner">🥇 1st — Champion</option>
-                <option value="Second">🥈 2nd</option>
-                <option value="Third">🥉 3rd</option>
-                <option value="Fourth">4th–8th</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">PRIZE POOL ($)</div>
-            <input type="number" class="nx-input" id="prize-amount" placeholder="0.00">
-          </div>
-          <div class="alert-item info" style="margin-bottom:10px; font-size:11px; font-family:var(--font-data);">
-            60% → Team Bank&nbsp;&nbsp;|&nbsp;&nbsp;40% → Starter MV split<br>
-            Placement 1st–8th → history for team + active roster<br><span class="medal-ic medal-ic-trophy"></span> Title counter: 1st place only
-          </div>
-          <div class="form-label" style="margin-bottom:6px;">TROPHY IMAGE OVERRIDE (OPTIONAL)</div>
-          <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); margin:-2px 0 10px; line-height:1.5;">
-            Shared with 🏅 Badges → Record Achievement — upload once, it stays loaded for every placement (here or there) until you clear or replace it. Empty square = keep the normal Award Registry icon. Applied to the PLACEMENT selected above at the moment you distribute.
-          </div>
-          <div class="ach-icon-row" id="ops-icon-squares" style="margin-bottom:14px;"></div>
-          <button class="btn btn-green btn-full" onclick="distributeTourneyPrize()">DISTRIBUTE PRIZE</button>
-
-          <hr class="sep">
-
-          <div class="card-title" style="margin-top:4px;">⭐ INDIVIDUAL AWARDS</div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">PLAYER</div>
-            <select class="nx-select" id="perf-player-select"></select>
-          </div>
-          <div class="g2" style="margin-bottom:8px;">
-            <div class="form-group">
-              <div class="form-label">TIER</div>
-              <select class="nx-select" id="perf-tier">
-                <option value="ss">Tier SS ⭐⭐⭐⭐⭐ — Major Only (50k)</option>
-                <option value="s">Tier S ⭐⭐⭐⭐ (40k)</option>
-                <option value="a">Tier A ⭐⭐⭐ (30k)</option>
-                <option value="b">Tier B ⭐⭐ (20k)</option>
-                <option value="c">Tier C ⭐ (15k)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <div class="form-label">AWARD</div>
-              <select class="nx-select" id="perf-type">
-                <option value="mvp">🥇 MVP (33.33%)</option>
-                <option value="evp">🥈 EVP (23.81%)</option>
-                <option value="vp">🥉 VP (14.29%)</option>
-              </select>
-            </div>
-          </div>
-          <button class="btn btn-cyan btn-full" onclick="applyIndividualPerformance()">GRANT AWARD + MEDAL</button>
-
-          <hr class="sep">
-
-          <div class="card-title" style="margin-top:4px;">👑 MAJOR CHAMPION</div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">WINNING TEAM (ACTIVE ROSTER)</div>
-            <select class="nx-select" id="major-team-select"></select>
-          </div>
-          <div class="alert-item info" style="margin-bottom:10px; font-size:11px; font-family:var(--font-data);">
-            Trophy only — no prize money. Awards +1 <span class="medal-ic medal-ic-trophy"></span> Major Trophy to all 5 starters on the active roster.<br>Uses the EVENT / TOURNAMENT NAME above — written permanently to each player's own history, so it survives future roster/team changes.
-          </div>
-          <button class="btn btn-yellow btn-full" onclick="applyMajorTrophy()">👑 CROWN MAJOR CHAMPION</button>
-
-          <hr class="sep">
-
-          <div class="card-title" style="margin-top:4px;">🎟️ CLUB SHARE</div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">TEAM</div>
-            <select class="nx-select" id="clubshare-team-select"></select>
-          </div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <div class="form-label">AMOUNT ($)</div>
-            <input type="number" class="nx-input" id="clubshare-amount" placeholder="0.00">
-          </div>
-          <div class="alert-item info" style="margin-bottom:10px; font-size:11px; font-family:var(--font-data);">
-            100% → Team Bank only. Use for event-exclusive Club Share rewards (no player MV/prize pool split).
-          </div>
-          <button class="btn btn-cyan btn-full" onclick="applyClubShare()">🎟️ DEPOSIT CLUB SHARE</button>
+          <section class="card">
+            <h2 class="fo-h">Save your data</h2>
+            <p class="fo-note" style="margin-top:4px;">Downloads the updated spreadsheets so your changes are kept for next time.</p>
+            <button class="btn btn-ghost btn-full" onclick="exportExcels()">Export updated Excel files</button>
+          </section>
         </div>
-
-        <!-- INTERVENTIONS -->
-        <div class="card red">
-          <div class="card-title">⚡ LEAGUE INTERVENTIONS</div>
-
-          <div class="alert-item warning" style="margin-bottom:12px; font-size:12px;">
-            ⚠ These actions affect league balance. Use with caution.
-          </div>
-
-          <div class="form-group" style="margin-bottom:10px;">
-            <div class="form-label">TARGET TEAM</div>
-            <select class="nx-select" id="reset-team-select"></select>
-          </div>
-
-          <button class="btn btn-orange btn-full" onclick="applyBailout()">💊 BANKRUPT BAILOUT (+$25k + 50% Sponsor Boost)</button>
-
-          <hr class="sep">
-          <div class="card-title">📁 DATA MANAGEMENT</div>
-          <button class="btn btn-cyan btn-full" onclick="exportExcels()">📥 EXPORT UPDATED EXCELS</button>
-
-          <hr class="sep">
-          <div class="card-title">📋 CONTRACT ALERTS</div>
-          <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:8px;">Expiring deals — renewal talks happen in the FRONT OFFICE.</div>
-          <div id="contract-alerts" class="scroll-list" style="max-height:180px;"></div>
-        </div>
-
       </div>
     </div>
 
-    <!-- ═══ INTEL PANEL ═══ -->
-    <div class="panel" id="p-badges" style="padding:16px; overflow-y:auto;">
-      <div class="g2" style="align-items:start;">
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <div class="card yellow">
-            <div class="card-title" style="justify-content:space-between;">
-              <span>🏅 GRANT BADGE</span>
+    <!-- ═══ BADGES PANEL ═══ -->
+    <div class="panel" id="p-badges">
+      <div class="bd">
+        <div class="stack" style="gap:20px;">
+          <section class="card">
+            <h2 class="fo-h">Grant a badge</h2>
+            <p class="fo-note" style="margin-top:4px;">For role awards, Player of the Year and Team of the Year. Competition placements (Major, Global, Regional) go through Operations, so money and titles keep working.</p>
+            <div class="stack">
+              <div class="form-group">
+                <label class="form-label" for="grant-award-select">Award</label>
+                <select class="nx-select" id="grant-award-select" onchange="onGrantAwardChange()"></select>
+              </div>
+              <div class="form-group" id="grant-player-wrap">
+                <label class="form-label" for="grant-player-select">Player</label>
+                <select class="nx-select" id="grant-player-select"></select>
+              </div>
+              <div class="form-group" style="display:none;" id="grant-team-wrap">
+                <label class="form-label" for="grant-team-select">Team</label>
+                <select class="nx-select" id="grant-team-select"></select>
+              </div>
+              <div class="field-grid">
+                <div class="form-group"><label class="form-label" for="grant-event-name">Event or season (optional)</label><input type="text" class="nx-input" id="grant-event-name" placeholder="e.g. 2026 Season"></div>
+                <div class="form-group"><label class="form-label" for="grant-month">Month</label><input type="number" class="nx-input" id="grant-month" placeholder="1"></div>
+              </div>
+              <div class="form-group"><label class="form-label" for="grant-note">Note (optional)</label><input type="text" class="nx-input" id="grant-note" placeholder="Fixing an old nomination, jury vote, etc."></div>
+              <div class="alert-item info" id="grant-score-preview" style="margin-bottom:0;"></div>
+              <button class="btn btn-cyan btn-full" onclick="grantBadge()">Grant badge</button>
             </div>
-            <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:10px; line-height:1.6;">
-              For role awards, Player of the Year &amp; Team of the Year only — competition placements (Major/Global/Regional) still go through ⚙ OPS so money &amp; Titles keep working.
-            </div>
-            <div class="form-group" style="margin-bottom:8px;">
-              <div class="form-label">AWARD</div>
-              <select class="nx-select" id="grant-award-select" onchange="onGrantAwardChange()"></select>
-            </div>
-            <div class="form-group" style="margin-bottom:8px;" id="grant-player-wrap">
-              <div class="form-label">PLAYER</div>
-              <select class="nx-select" id="grant-player-select"></select>
-            </div>
-            <div class="form-group" style="margin-bottom:8px; display:none;" id="grant-team-wrap">
-              <div class="form-label">TEAM</div>
-              <select class="nx-select" id="grant-team-select"></select>
-            </div>
-            <div class="g2" style="gap:10px; margin-bottom:8px;">
-              <div class="form-group"><div class="form-label">EVENT / SEASON (optional)</div><input type="text" class="nx-input" id="grant-event-name" placeholder="e.g. 2026 Season"></div>
-              <div class="form-group"><div class="form-label">MONTH</div><input type="number" class="nx-input" id="grant-month" placeholder="1"></div>
-            </div>
-            <div class="form-group" style="margin-bottom:10px;"><div class="form-label">NOTE (optional)</div><input type="text" class="nx-input" id="grant-note" placeholder="Fixing an old nomination, jury vote, etc."></div>
-            <div class="alert-item info" id="grant-score-preview" style="margin-bottom:10px; font-size:11px; font-family:var(--font-data);"></div>
-            <button class="btn btn-yellow btn-full" onclick="grantBadge()">🏅 GRANT BADGE</button>
-          </div>
-          <div class="card">
-            <div class="card-title">🕘 RECENT BADGE GRANTS</div>
+          </section>
+          <section class="card">
+            <h2 class="fo-h fo-h-pad">Recently granted</h2>
             <div id="badges-recent-grants" class="scroll-list" style="max-height:340px;"></div>
-          </div>
+          </section>
         </div>
-        <div class="card purple">
-          <div class="card-title" style="justify-content:space-between;">
-            <span>🖼 AWARD REGISTRY — ICONS &amp; SCORE</span>
-          </div>
-          <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:10px; line-height:1.6;">
-            Upload each trophy's image once — every place it's used in the app updates instantly. Toggle whether it affects player score and by how much. Team-scoped badges never score, by design.<br>
-            Edits live for this session only — use 📥 EXPORT (Operations panel) to save <code>awards.json</code>, then re-upload it next time.
-          </div>
-          <div id="award-registry-list" class="scroll-list" style="max-height:640px;"></div>
-        </div>
+        <section class="card">
+          <h2 class="fo-h">Award registry</h2>
+          <p class="fo-note" style="margin-top:4px;">Click a trophy to upload its image once, and every place that shows it updates. Use the switch to decide whether an award adds to a player's score, and by how much. Team badges never score. Changes last for this session only: use Export to save <code>awards.json</code> and load it again next time.</p>
+          <div id="award-registry-list" class="scroll-list bd-registry"></div>
+        </section>
       </div>
     </div>
 
@@ -1443,11 +1621,11 @@ html[data-theme="light"] .attn.hot b{color:#fff;}
 
 <!-- BOTTOM STRIP -->
 <div id="bottom-strip">
-  <div id="month-counter">MONTH 01 — NEXUS COMMAND</div>
+  <div id="month-counter">Month 1</div>
   <div class="bottom-actions">
-    <button class="btn btn-cyan" onclick="runMonthlyCycle()" style="padding:6px 20px; font-size:11px; letter-spacing:2px;">⏭ RUN MONTHLY CYCLE</button>
-    <button class="btn btn-ghost btn-sm" onclick="undo()">↩ UNDO</button>
-    <button class="btn btn-ghost btn-sm" onclick="exportExcels()">📥 EXPORT</button>
+    <button class="btn btn-ghost btn-sm" onclick="undo()">Undo</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportExcels()">Export</button>
+    <button class="btn btn-cyan btn-sm" onclick="runMonthlyCycle()" title="Pays sponsors, salaries and fixed costs, and moves every contract one month forward">Run monthly cycle</button>
   </div>
 </div>
 
@@ -2490,23 +2668,21 @@ function renderRegionMap() {
   const counts = { 'Americas': 0, 'Europa': 0, 'Asia': 0, 'MIXED': 0, 'unknown': 0 };
   teamRegions.forEach(t => { counts[t.region] = (counts[t.region] || 0) + 1; });
 
-  // Render count bar
   const regionStyles = {
-    'Americas': { color: 'var(--green)', icon: '🌎' },
-    'Europa':   { color: 'var(--cyan)', icon: '🌍' },
-    'Asia':     { color: 'var(--purple)', icon: '🌏' },
-    'MIXED':    { color: 'var(--yellow)', icon: '🌐' },
-    'unknown':  { color: 'var(--text-dim)', icon: '❓' }
+    'Americas': { color: 'var(--green)',    label: 'Americas' },
+    'Europa':   { color: 'var(--cyan)',     label: 'Europe' },
+    'Asia':     { color: 'var(--purple)',   label: 'Asia' },
+    'MIXED':    { color: 'var(--yellow)',   label: 'Mixed' },
+    'unknown':  { color: 'var(--text-dim)', label: 'Unclassified' }
   };
 
   $('region-count-bar').innerHTML = Object.entries(counts)
     .filter(([,c]) => c > 0)
     .map(([r, c]) => {
       const s = regionStyles[r] || regionStyles['unknown'];
-      return `<span style="color:${s.color}; background:${s.color}15; border:1px solid ${s.color}33; padding:2px 8px; border-radius:3px;">${s.icon} ${r === 'unknown' ? 'N/A' : r}: <b>${c}</b></span>`;
+      return `<span class="rg-chip" style="--c:${s.color}">${s.label} <b>${c}</b></span>`;
     }).join('');
 
-  // Filter
   const filtered = filter === 'all' ? teamRegions : teamRegions.filter(t => t.region === filter);
 
   // Sort by region then name
@@ -2514,18 +2690,13 @@ function renderRegionMap() {
   filtered.sort((a, b) => (regionOrder[a.region] ?? 9) - (regionOrder[b.region] ?? 9) || a.name.localeCompare(b.name));
 
   if (!filtered.length) {
-    $('region-map-list').innerHTML = '<div style="grid-column:1/-1; color:var(--text-dim); font-family:var(--font-data); font-size:11px; padding:16px; text-align:center;">Nenhum time encontrado nessa região.</div>';
+    $('region-map-list').innerHTML = '<div class="fo-empty" style="grid-column:1/-1;">No team in this region.</div>';
     return;
   }
 
   $('region-map-list').innerHTML = filtered.map(t => {
     const s = regionStyles[t.region] || regionStyles['unknown'];
-    return `
-      <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--bg3); border:1px solid ${s.color}22; border-left:3px solid ${s.color};">
-        ${getTeamLogo(t.name, 18)}
-        <span style="font-family:var(--font-ui); font-size:13px; font-weight:600; color:var(--text); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.name}</span>
-        <span style="font-family:var(--font-data); font-size:10px; color:${s.color}; background:${s.color}15; border:1px solid ${s.color}33; padding:1px 6px; border-radius:3px; white-space:nowrap; flex-shrink:0;">${s.icon} ${t.region === 'unknown' ? 'N/A' : t.region.toUpperCase()}</span>
-      </div>`;
+    return `<div class="rg-team"><span class="who-crest">${crestInner(t.name)}</span><span>${t.name}</span><span class="rg-chip" style="--c:${s.color}">${s.label}</span></div>`;
   }).join('');
 }
 
@@ -3427,7 +3598,7 @@ function renderGlobalDeals(){
   const box=$('hist-global-deals'); if (!box) return;
   const q=($('hist-deal-search')&&$('hist-deal-search').value||'').toLowerCase();
   const rows=transferHistory.filter(o=>!q||String(o.playerName).toLowerCase().includes(q)||String(o.buyer).toLowerCase().includes(q)||String(o.seller).toLowerCase().includes(q)).slice(0,60);
-  box.innerHTML = rows.length ? rows.map(transferRowHTML).join('') : '<div class="fo-empty">No negotiated deals yet — closed and collapsed talks will appear here.</div>';
+  box.innerHTML = rows.length ? rows.map(transferRowHTML).join('') : '<div class="fo-empty">No deal has been negotiated yet. Closed and failed talks will be listed here.</div>';
 }
 /* ── 🏆 ACHIEVEMENTS — per-team trophy case (▣ OFFICE) ─────── */
 function renderFoAchievements(team){
@@ -3710,14 +3881,18 @@ function renderTransactions(){
   const box=$('hist-transactions'); if (!box) return;
   const q=($('hist-tx-search')&&$('hist-tx-search').value||'').toLowerCase();
   const TXC={'TRANSFER':'var(--green)','FA SIGNING':'var(--cyan)','LEFT TEAM':'var(--red)','BENCHED':'var(--orange)','PROMOTED':'var(--cyan)','CLAUSE PAID':'var(--yellow)'};
+  const TXL={'FA SIGNING':'Free-agent signing'};
+  const club=v=>(!v||v==='none'||v==='—')?'no club':v;
   const rows=transactions.filter(t=>!q||String(t.playerName).toLowerCase().includes(q)||String(t.from).toLowerCase().includes(q)||String(t.to).toLowerCase().includes(q)).slice(0,80);
   box.innerHTML = rows.length ? rows.map(t=>`
-    <div class="list-row" style="padding:5px 0;">
-      <div style="flex:1;">
-        <div class="name" style="font-size:11px;">${t.playerName} <span class="badge badge-ghost" style="color:${TXC[t.type]||'var(--text)'};">${t.type}</span></div>
-        <div class="meta" style="font-size:9px;">${t.from} → ${t.to}${t.amount?' · '+fmt(t.amount):''}${t.note?' · '+t.note:''} · Month ${t.month}</div>
+    <div class="tx-row">
+      <div class="tx-main">
+        <div class="name">${t.playerName}</div>
+        <div class="meta">${t.from===t.to?club(t.to):club(t.from)+' to '+club(t.to)}${t.note?', '+t.note:''}</div>
       </div>
-    </div>`).join('') : '<div class="fo-empty">No player movements yet — buys, signings, releases and bench moves will appear here.</div>';
+      <span class="tx-type" style="--c:${TXC[t.type]||'var(--text-dim)'}">${TXL[t.type]||String(t.type).toLowerCase()}</span>
+      <div class="tx-side">${t.amount?fmtK(t.amount):''}<small>Month ${t.month}</small></div>
+    </div>`).join('') : `<div class="fo-empty">${q?'Nothing matches that search.':'No player has moved yet. Purchases, signings, releases and bench changes will be listed here.'}</div>`;
 }
 function loadHistoryWB(wb){
   const sheet=n=>wb.Sheets[n]?XLSX.utils.sheet_to_json(wb.Sheets[n]):[];
@@ -4244,8 +4419,8 @@ function renderRecentGrants(){
     return `<div class="pm-hist-entry">
       ${awardMedalHTML(g.awardKey, 20)}
       <div class="pm-hist-body">
-        <div class="pm-hist-title">${g._label} <span style="color:var(--text-dim); font-weight:500;">— ${a?a.label:g.event}</span></div>
-        <div class="pm-hist-meta">${g.note?g.note+' · ':''}Month ${g.month}</div>
+        <div class="pm-hist-title">${g._label} <span style="color:var(--text-dim); font-weight:500;">${a?a.label:g.event}</span></div>
+        <div class="pm-hist-meta">${g.note?g.note+', ':''}Month ${g.month}</div>
       </div>
       <div class="pm-hist-acts">
         <button class="fo-ico fo-ico-danger" title="Delete grant" onclick="${g._type==='team'?`deleteTeamEvent('${g.id}')`:`deletePlayerAward('${g.id}')`}"><svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
@@ -4268,9 +4443,9 @@ function renderAwardRegistry(){
       const sub = a.label.split('\u2014').pop().trim();
       const iconInner = a.icon ? `<img src="${a.icon}" alt="">` : AWARD_TIER_FALLBACK_GLYPH[a.tierColor];
       const scoreControl = a.system
-        ? `<div class="award-locked-note">Scored via ⚙ OPS</div>`
+        ? `<div class="award-locked-note">Scored in Operations</div>`
         : a.appliesTo === 'team'
-          ? `<div class="award-locked-note">🚫 Trophy only</div>`
+          ? `<div class="award-locked-note">Trophy only</div>`
           : `<div class="award-row-score">
               <label class="award-toggle" title="Affects player score">
                 <input type="checkbox" ${a.affectsScore?'checked':''} onchange="setAwardAffectsScore('${k}',this.checked)"><span></span>
@@ -4284,7 +4459,7 @@ function renderAwardRegistry(){
         </div>
         <div style="flex:1; min-width:0;">
           <div class="award-row-label">${sub}</div>
-          <div class="award-row-sub">${a.appliesTo==='team'?'Team':'Player'} badge${a.icon?' · icon set':''}</div>
+          <div class="award-row-sub">${a.appliesTo==='team'?'Team':'Player'} badge${a.icon?', image set':''}</div>
         </div>
         ${scoreControl}
       </div>`;
@@ -4319,15 +4494,15 @@ function setAwardScoreValue(key, val){
 
 
 function updateTopbarStatus() {
-  $('status-teams').textContent = finances.length + ' TEAMS';
-  $('status-players').textContent = players.length + ' PLAYERS';
-  $('month-counter').textContent = `MONTH ${String(monthCounter).padStart(2,'0')} — NEXUS COMMAND`;
+  $('status-teams').textContent = finances.length + (finances.length===1?' team':' teams');
+  $('status-players').textContent = players.length + (players.length===1?' player':' players');
+  $('month-counter').textContent = `Month ${monthCounter}`;
   $('month-num').textContent = monthCounter;
 
   const critAlerts = finances.filter(t=>getTeamFinances(t).net<0).length + players.filter(p=>p.TeamName!=='none'&&p.ContractMonths<=0).length;
   if (critAlerts > 0) {
     $('status-alerts').style.display='flex';
-    $('status-alerts').textContent = `⚠ ${critAlerts} CRITICAL`;
+    $('status-alerts').textContent = `${critAlerts} need attention`;
     $('alert-badge').style.display='inline';
     $('alert-badge').textContent = critAlerts;
   } else {
@@ -4343,16 +4518,16 @@ function updateTicker() {
     const {net} = getTeamFinances(t);
     const cls = net>=0?'up':'down';
     const tLogo = getTeamLogo(t.TeamName, 14);
-    items.push(`<span class="tick-item ${cls}">${tLogo} ${t.TeamName}: ${net>=0?'+':''}${fmtK(net)}/mo</span>`);
+    items.push(`<span class="tick-item ${cls}">${tLogo} ${t.TeamName} ${net>=0?'+':'−'}${fmtK(Math.abs(net))} a month</span>`);
   });
   // Add top form players
   players.filter(p=>getFormScore(p)>5).sort((a,b)=>getFormScore(b)-getFormScore(a)).slice(0,4).forEach(p=>{
-    items.push(`<span class="tick-item up">⭐ ${String(p.PlayerName)} FORM:${getFormScore(p)}</span>`);
+    items.push(`<span class="tick-item up">${String(p.PlayerName)} in form (${getFormScore(p)})</span>`);
   });
   // Add expiring contracts
   const expiring = players.filter(p=>p.TeamName!=='none'&&p.ContractMonths<=1);
   expiring.slice(0,3).forEach(p=>{
-    items.push(`<span class="tick-item warn">⚡ ${String(p.PlayerName)} CONTRACT EXPIRING (${p.ContractMonths}m)</span>`);
+    items.push(`<span class="tick-item warn">${String(p.PlayerName)}: contract ${p.ContractMonths<=0?'expired':'ends in '+p.ContractMonths+' month'}</span>`);
   });
   
   // Create the content string
@@ -4484,78 +4659,72 @@ function refreshActiveTeam() {
 
 /* ═══ LEAGUE PANEL ═══ */
 function updateLeague() {
-  // Power Rankings
+  // League table
   const ranked = finances.map(t=>{
     const o=getOracleScore(t.TeamName);
     const fins=getTeamFinances(t);
     const formTotal=players.filter(p=>p.TeamName===t.TeamName).reduce((s,p)=>s+getFormScore(p),0);
     return {name:t.TeamName, score:o.score, grade:o.grade, color:o.color, net:fins.net, form:formTotal, bank:t.CurrentBank||0};
   }).sort((a,b)=>b.score-a.score);
+  const active=$('dash-team-select').value;
 
-  $('league-rankings').innerHTML = ranked.map((t,i)=>`
-    <div class="rank-item" style="cursor:pointer;" onclick="openTeamProfile('${t.name.replace(/'/g,"\\'")}')">
-      <div class="rank-num ${i===0?'gold':i===1?'silver':i===2?'bronze':'other'}">${i+1}</div>
-      <div style="flex:1">
-        <div style="font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px;">
-          ${getTeamLogo(t.name, 20)}
-          <span style="text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:3px;">${t.name}</span>
-          <span class="badge badge-ghost" style="font-size:10px; color:${t.color}; border-color:${t.color};">${t.grade}</span>
-        </div>
-        <div style="margin-top:4px;">
-          <div class="progress-track" style="height:3px;">
-            <div class="progress-fill" style="width:${t.score}%; background:${t.color};"></div>
-          </div>
-        </div>
-        <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-top:2px;">
-          Score: ${t.score} | Net: <span style="color:${t.net>=0?'var(--green)':'var(--red)'}">${t.net>=0?'+':''}${fmtK(t.net)}</span> | Form: ${t.form} | Bank: ${fmtK(t.bank)}
-        </div>
-      </div>
-    </div>
-  `).join('');
+  $('league-rankings').innerHTML = ranked.length ? `<table class="fo-table lg-table">
+    <thead><tr><th></th><th>Team</th><th>Grade</th><th>Oracle score</th><th>Net / month</th><th>Form</th><th>Balance</th></tr></thead>
+    <tbody>${ranked.map((t,i)=>`
+      <tr class="fo-row lg-row" onclick="openTeamProfile('${t.name.replace(/'/g,"\\'")}')">
+        <td><span class="lg-rank ${i<3?'top':''}">${i+1}</span></td>
+        <td><div class="who"><span class="who-crest">${crestInner(t.name)}</span><button type="button" class="linkish" title="Open team profile">${t.name}</button>${t.name===active?'<span class="fo-mark">Yours</span>':''}</div></td>
+        <td><span class="lg-grade" style="color:${t.color}">${t.grade}</span></td>
+        <td><span class="lg-score">${t.score}<span class="progress-track"><span class="progress-fill" style="display:block; width:${t.score}%; background:${t.color};"></span></span></span></td>
+        <td class="${t.net>=0?'pos':'neg'}">${t.net>=0?'+':'−'}${fmtK(Math.abs(t.net))}</td>
+        <td>${t.form}</td>
+        <td>${fmtK(t.bank)}</td>
+      </tr>`).join('')}</tbody></table>` : '<div class="fo-table-empty">No teams loaded.</div>';
 
-  // Financial health
+  // Finances to watch
   const losing=finances.filter(t=>getTeamFinances(t).net<0);
   const lowMargin=finances.filter(t=>{const n=getTeamFinances(t).net; return n>=0&&n<5000;});
   let hHtml='';
-  if (!losing.length&&!lowMargin.length) hHtml='<div class="alert-item success">✓ All teams operating profitably.</div>';
+  if (!losing.length&&!lowMargin.length) hHtml='<div class="all-clear">Every team is running a comfortable surplus.</div>';
   losing.forEach(t=>{
     const n=getTeamFinances(t).net;
-    hHtml+=`<div class="alert-item critical"><div><b>${getTeamLogo(t.TeamName,16)} ${t.TeamName}</b><br><span style="font-family:var(--font-data); font-size:11px; color:var(--red);">${fmt(n)}/mo — LOSING MONEY</span></div></div>`;
+    hHtml+=`<div class="watch"><span class="who-crest">${crestInner(t.TeamName)}</span><b>${t.TeamName}</b><span class="neg" title="Losing money each month">−${fmtK(Math.abs(n))} a month</span></div>`;
   });
   lowMargin.forEach(t=>{
     const n=getTeamFinances(t).net;
-    hHtml+=`<div class="alert-item warning"><div><b>${getTeamLogo(t.TeamName,16)} ${t.TeamName}</b><br><span style="font-family:var(--font-data); font-size:11px; color:var(--orange);">+${fmt(n)}/mo — LOW MARGIN</span></div></div>`;
+    hHtml+=`<div class="watch"><span class="who-crest">${crestInner(t.TeamName)}</span><b>${t.TeamName}</b><span style="color:var(--orange);" title="Surplus under $5,000 a month">+${fmtK(n)} a month</span></div>`;
   });
   $('league-health').innerHTML=hHtml;
 
-  // Roster alerts
+  // Short-handed squads
   let rHtml='';
   finances.forEach(t=>{
     const starters=players.filter(p=>p.TeamName===t.TeamName&&p.Roster==='Starter').length;
-    if (starters<5) rHtml+=`<div class="alert-item critical"><b>${getTeamLogo(t.TeamName,16)} ${t.TeamName}</b><span style="margin-left:auto; font-family:var(--font-data); color:var(--red);">${starters}/5 STARTERS</span></div>`;
+    if (starters<5) rHtml+=`<div class="watch"><span class="who-crest">${crestInner(t.TeamName)}</span><b>${t.TeamName}</b><span class="neg">${starters} of 5 starters</span></div>`;
   });
-  if (!rHtml) rHtml='<div class="alert-item success">✓ All teams have 5 active starters.</div>';
+  if (!rHtml) rHtml='<div class="all-clear">Every team has 5 starters.</div>';
   $('league-roster').innerHTML=rHtml;
 
-  // Form leaderboard
+  // Players in form
   const stars=[...players].filter(p=>getFormScore(p)>0).sort((a,b)=>getFormScore(b)-getFormScore(a)).slice(0,8);
   $('league-stars').innerHTML=stars.length ? stars.map((p,i)=>`
-    <div class="rank-item" style="padding:7px 10px;">
-      <div class="rank-num ${i===0?'gold':i===1?'silver':i===2?'bronze':'other'}" style="font-size:14px; width:24px;">${i+1}</div>
-      <div style="flex:1;">
-        <div style="font-size:13px; font-weight:600;"><span style="cursor:pointer; text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:3px;" onclick="openPlayerProfile('${String(p.PlayerName).replace(/'/g,"\\'")}')"> ${String(p.PlayerName)}</span> <span style="color:var(--text-dim); font-weight:400; font-size:11px;">(${p.TeamName})</span> ${medals(p)}</div>
-        <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim);">FORM SCORE: <span style="color:var(--yellow);">${getFormScore(p)}</span> | MV: ${fmt(p.MarketValue)}</div>
+    <div class="lg-form">
+      <span class="lg-rank ${i<3?'top':''}">${i+1}</span>
+      <div class="lg-form-main">
+        <button type="button" class="linkish" title="Open player profile" onclick="openPlayerProfile('${String(p.PlayerName).replace(/'/g,"\\'")}')">${String(p.PlayerName)}</button>
+        <div class="meta"><span>${p.TeamName==='none'?'Free agent':p.TeamName}</span><span>Value ${fmtK(p.MarketValue||0)}</span>${medals(p)}</div>
       </div>
+      <span class="lg-form-score" title="Form score">${getFormScore(p)}</span>
     </div>
-  `).join('') : '<div style="color:var(--text-dim); padding:10px; font-size:12px;">No medal holders yet.</div>';
+  `).join('') : '<div class="fo-empty">No player has won a medal yet.</div>';
 
-  // Transfer history
+  // Latest transfers
   const openTalks=clauseTalks.filter(t=>t.status==='open').map(t=>({playerName:t.playerName, buyer:t.buyer, seller:t.seller, amount:t.thread.length?t.thread[t.thread.length-1].amount:t.clausePaid, status:'🔑 CLAUSE TALK'}));
   const all=[...openTalks, ...transferHistory];
   $('league-transfers').innerHTML=all.length ? all.slice(0,10).map(transferRowHTML).join('')
-  : '<div class="fo-empty">No transfers recorded.</div>';
+  : '<div class="fo-empty">No transfers yet.</div>';
 
-  // Teams by Region (relocated from the removed Intel panel)
+  // Teams by region
   renderRegionMap();
 }
 
@@ -4653,6 +4822,10 @@ function refreshMarket() {
 
   const newNetAfter=(p)=>fins.net - p.sal;
   const container=$('market-list'); container.innerHTML='';
+  if ($('market-count')) $('market-count').textContent=data.length;
+  if ($('market-context')) $('market-context').innerHTML = activeTeam
+    ? `<span>Buying for <b>${activeTeam}</b></span><span>Balance <b>${fmt(bank)}</b></span><span>Net each month <b class="${fins.net>=0?'pos':'neg'}">${fins.net>=0?'+':'−'}${fmt(Math.abs(fins.net))}</b></span>`
+    : '';
 
   data.forEach(p=>{
     const pct=bank>0?(p.six/bank*100).toFixed(0):'∞';
@@ -4662,53 +4835,61 @@ function refreshMarket() {
     let btnHtml='';
     const eN=p.pn.replace(/'/g,"\\'");
     const busy=activeNegFor(p.pn);
-    if (p.TeamName==='none') btnHtml=busy?`<span class="badge">🗣 IN TALKS</span>`:`<button class="btn btn-cyan btn-sm" onclick="marketNegotiateFA('${eN}')">🖋 NEGOTIATE</button>`;
-    else if (p.TeamName===activeTeam) btnHtml=`<button class="btn btn-ghost btn-sm" onclick="gotoOffice()">▣ MANAGE</button>`;
+    if (p.TeamName==='none') btnHtml=busy?`<span class="mk-state">In talks</span>`:`<button class="btn btn-cyan btn-sm" onclick="marketNegotiateFA('${eN}')">Negotiate contract</button>`;
+    else if (p.TeamName===activeTeam) btnHtml=`<button class="btn btn-ghost btn-sm" onclick="gotoOffice()">Manage in Front Office</button>`;
     else {
       const bits=[];
       const myTalk=clauseTalks.find(t=>t.status==='open'&&t.buyer===activeTeam&&t.playerName===p.pn);
       if (myTalk){
-        bits.push(`<button class="btn btn-ghost btn-sm" onclick="gotoOffice()">${myTalk.kind==='offer'?'📨 OFFER SENT':'🔑 CLAUSE PAID'} — IN TALKS</button>`);
+        bits.push(`<button class="btn btn-ghost btn-sm" onclick="gotoOffice()">${myTalk.kind==='offer'?'Offer sent':'Clause paid'}, in talks</button>`);
       } else {
-        if (p.OnSale>0) bits.push(`<button class="btn btn-green btn-sm" onclick="buyListed('${eN}')">🏷 BUY ${fmtK(p.OnSale)}</button>`);
-        if (p.Buyout>0) bits.push(`<button class="btn btn-cyan btn-sm" onclick="payBuyout('${eN}')">⚡ BUYOUT ${fmtK(p.Buyout)}</button>`);
-        if (p.ReleaseClause>0) bits.push(`<button class="btn btn-orange btn-sm" onclick="payReleaseClause('${eN}')">🔑 CLAUSE ${fmtK(p.ReleaseClause)}</button>`);
-        if (p.OpenToOffers>0) bits.push(`<button class="btn btn-purple btn-sm" onclick="sendTransferOffer('${eN}')">📨 SEND OFFER</button>`);
+        if (p.OnSale>0) bits.push(`<button class="btn btn-cyan btn-sm" title="Listed for sale: buy at once at this price" onclick="buyListed('${eN}')">Buy for ${fmtK(p.OnSale)}</button>`);
+        if (p.Buyout>0) bits.push(`<button class="btn btn-cyan btn-sm" title="Pay the buyout and take the player at once" onclick="payBuyout('${eN}')">Buyout ${fmtK(p.Buyout)}</button>`);
+        if (p.ReleaseClause>0) bits.push(`<button class="btn btn-ghost btn-sm" title="Pay the clause to open fee talks with the club. It is not refunded." onclick="payReleaseClause('${eN}')">Pay clause ${fmtK(p.ReleaseClause)}</button>`);
+        if (p.OpenToOffers>0) bits.push(`<button class="btn btn-ghost btn-sm" title="Bid a fee directly, no clause needed" onclick="sendTransferOffer('${eN}')">Send an offer</button>`);
       }
-      btnHtml = bits.length ? `<div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;">${bits.join('')}</div>` : `<span class="badge" title="Protected — no buyout, clause or listing, and not open to offers">🔒 LOCKED</span>`;
+      btnHtml = bits.length ? bits.join('') : `<span class="mk-state" title="No buyout, clause or sale price, and not open to offers">Protected</span>`;
     }
 
-    const row=document.createElement('div'); row.className='list-row';
+    const fa=p.TeamName==='none';
+    const row=document.createElement('div'); row.className='list-row mk-row';
     row.innerHTML=`
-      <div style="flex:1; min-width:0;">
-        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-          ${p.Country ? `<span title="${p.Country}" style="display:inline-flex;align-items:center;cursor:default;">${getCountryFlag(p.Country, 18)}</span>` : ''}
-          <span class="name" style="cursor:pointer; text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:3px;" onclick="event.stopPropagation(); openPlayerProfile('${p.pn.replace(/'/g,"\\'")}')">${p.pn}</span>
-          <span style="color:var(--text-dim); font-size:11px; display:inline-flex; align-items:center; gap:3px;">${getTeamLogo(p.TeamName, 14)}[${teamLabel(p.TeamName)}]</span>
+      <div class="mk-id"><div style="min-width:0;">
+        <button type="button" class="fo-name" title="Open player profile" onclick="event.stopPropagation(); openPlayerProfile('${eN}')">${p.Country ? `<span title="${p.Country}" style="display:inline-flex;align-items:center;">${getCountryFlag(p.Country, 16)}</span>` : ''}${p.pn}</button>
+        <div class="mk-team">${getTeamLogo(p.TeamName, 14)}${fa?'<span class="pos">Free agent</span>':teamLabel(p.TeamName)}</div>
+        <div class="mk-tags">
           ${roleBadges(p)}
-          ${p.OnSale>0?'<span class="badge badge-orange">🏷 ON SALE</span>':''}
-          ${p.OpenToOffers>0?'<span class="badge badge-purple">📬 OPEN TO OFFERS</span>':''}
-          ${isLegacyContract(p)?'<span class="badge" style="color:var(--yellow)">LEGACY</span>':''}
+          ${p.OnSale>0?'<span class="badge badge-orange">On sale</span>':''}
+          ${p.OpenToOffers>0?'<span class="badge badge-purple">Open to offers</span>':''}
+          ${isLegacyContract(p)?'<span class="badge" title="Salary still follows the old rule until the contract is renewed">Legacy</span>':''}
           ${medals(p)}
         </div>
-        <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-top:3px; display:flex; gap:12px; flex-wrap:wrap;">
-          <span>MV: <b style="color:var(--text)">${fmt(p.MarketValue)}</b></span>
-          <span>Sal: <b style="color:var(--text)">${fmt(p.sal)}/mo</b></span>
-          <span>6m: <b style="color:${impColor}">${fmt(p.six)} (${pct}%)</b></span>
-          <span>Contract: <b style="color:${p.ContractMonths<=2?'var(--orange)':'var(--text)'}">${p.ContractMonths}m</b></span>
-          <span>New Net: <b style="color:${newNet>=0?'var(--green)':'var(--red)'}">${newNet>=0?'+':''}${fmt(newNet)}</b></span>
-        </div>
-      </div>
-      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
-        <span style="font-family:var(--font-data); font-size:10px; font-weight:700; color:${p.TeamName==='none'?'var(--green)':'var(--text)'};">${p.TeamName==='none'?'FREE AGENT':(p.routes.length?p.routes.map(r=>(ROUTE_ICON[r.key]||'')+' '+fmtK(r.price)).join(' '):'🔒 LOCKED')}</span>
+      </div></div>
+      <div class="mk-num">${fmtK(p.MarketValue||0)}</div>
+      <div class="mk-num">${fmt(p.sal)}</div>
+      <div class="mk-num"><span style="color:${impColor}">${fmtK(p.six)}</span><small>${pct}% of your balance</small></div>
+      <div class="mk-num mk-c-con" style="color:${!fa&&p.ContractMonths<=2?'var(--orange)':'inherit'}">${fa?'<span class="fo-dim">None</span>':(p.ContractMonths||0)+' mo'}</div>
+      <div class="mk-num mk-c-net ${newNet>=0?'pos':'neg'}">${newNet>=0?'+':'−'}${fmtK(Math.abs(newNet))}</div>
+      <div class="mk-act">
         ${btnHtml}
-        <button class="btn btn-ghost btn-sm" title="Event & award history" onclick="togglePlayerHist(this,'${eN}')">🏛 HISTORY</button>
+        <button type="button" class="mk-hist" title="Events and awards" onclick="togglePlayerHist(this,'${eN}')">History</button>
       </div>
     `;
     container.appendChild(row);
   });
 
-  if (!data.length) container.innerHTML='<div style="color:var(--text-dim); padding:20px; text-align:center; font-family:var(--font-data); font-size:12px;">NO RESULTS — Adjust filters</div>';
+  if (!data.length) container.innerHTML='<div class="mk-empty">No player matches these filters. <button type="button" class="fo-btn" onclick="clearMarketFilters()">Clear all filters</button></div>';
+}
+
+/* Resets every market filter to its default. Display only. */
+function clearMarketFilters(){
+  ['market-name-search','filter-mv-min','filter-mv-max','filter-buy-min','filter-buy-max','filter-con-min','filter-con-max',
+   'filter-titles-min','filter-titles-max','filter-medals-min','filter-medals-max','filter-prize-min','filter-prize-max'].forEach(id=>{ const el=$(id); if (el) el.value=''; });
+  ['market-roster-filter','market-role-filter','market-team-filter','market-region-filter'].forEach(id=>{ const el=$(id); if (el) el.value='all'; });
+  onRegionChange();
+  if ($('market-country-filter')) $('market-country-filter').value='all';
+  updateMarketTeamLogo();
+  refreshMarket();
 }
 
 /* ═══ COMPARISON ENGINE ═══ */
@@ -4722,11 +4903,11 @@ function populateCompareDrops() {
 function runComparison() {
   const p1n=$('compare-p1').value, p2n=$('compare-p2').value;
   const atName=$('dash-team-select').value;
-  if (p1n===p2n) { $('comparison-result').innerHTML='<div class="alert-item warning">Select two different players.</div>'; return; }
+  if (p1n===p2n) { $('comparison-result').innerHTML='<div class="alert-item warning" style="margin:0;">Pick two different players to compare.</div>'; return; }
 
   const p1=players.find(p=>String(p.PlayerName)===p1n), p2=players.find(p=>String(p.PlayerName)===p2n);
   const team=finances.find(t=>t.TeamName===atName);
-  if (!p1||!p2||!team) { $('comparison-result').innerHTML='<div class="alert-item critical">Load data first.</div>'; return; }
+  if (!p1||!p2||!team) { $('comparison-result').innerHTML='<div class="alert-item critical" style="margin:0;">Load your data and choose a team first.</div>'; return; }
 
   const bank=team.CurrentBank||0;
   const fins=getTeamFinances(team);
@@ -4744,30 +4925,30 @@ function runComparison() {
 
     // Value ratio (25)
     const vp=clamp(vRatio*5,0,25); sc+=vp;
-    bd.push({label:'Value Ratio (MV÷Buyout)', val:vp.toFixed(1), max:25, color:'#00ff88'});
+    bd.push({label:'Value for the price', val:vp.toFixed(1), max:25, color:'var(--green)'});
     // Affordability (25)
     let ap=bank>=buyout+safetyReserve?25:bank>=buyout?10:0; sc+=ap;
-    bd.push({label:'Affordability', val:ap, max:25, color:'#00d4ff'});
+    bd.push({label:'Affordability', val:ap, max:25, color:'var(--cyan)'});
     // Sustainability (20)
     let sp=newNet>=5000?20:newNet>=0?12:newNet>=-5000?4:0; sc+=sp;
-    bd.push({label:'Monthly Sustainability', val:sp, max:20, color:'#ff9800'});
+    bd.push({label:'Effect on monthly net', val:sp, max:20, color:'var(--orange)'});
     // 6m safety (15)
     const impPct=bank>0?six/bank:1;
     const ip=clamp(15-impPct*30,0,15); sc+=ip;
-    bd.push({label:'6-Month Cost Safety', val:ip.toFixed(1), max:15, color:'#b94fff'});
+    bd.push({label:'6-month salary against balance', val:ip.toFixed(1), max:15, color:'var(--purple)'});
     // Form (15)
     const fp=clamp(form*1.5,0,15); sc+=fp;
-    bd.push({label:'Form & Medals', val:fp.toFixed(1), max:15, color:'#ffd600'});
+    bd.push({label:'Form and medals', val:fp.toFixed(1), max:15, color:'var(--yellow)'});
 
     const flags=[];
-    if (bank<buyout) flags.push({type:'danger', msg:'Cannot afford buyout.'});
-    else if (bank<buyout+safetyReserve) flags.push({type:'warn', msg:'Buyout tight — safety reserve risk.'});
-    if (newNet<0) flags.push({type:'danger', msg:`Salary would cause ${fmt(Math.abs(newNet))}/mo loss.`});
-    if (impPct>0.5) flags.push({type:'warn', msg:`6m salary = ${(impPct*100).toFixed(0)}% of bank.`});
-    if (p.ContractMonths<=1&&p.TeamName!=='none') flags.push({type:'good', msg:'Expiring contract — leverage on buyout.'});
-    if (p.TeamName==='none') flags.push({type:'good', msg:'Free agent — zero acquisition cost.'});
-    if (locked) flags.push({type:'danger', msg:'PROTECTED — no buyout, clause or listing. Cannot be signed.'});
-    if (form>10) flags.push({type:'good', msg:`Top-form player (score ${form}).`});
+    if (bank<buyout) flags.push({type:'danger', msg:'Your balance does not cover the cost to sign.'});
+    else if (bank<buyout+safetyReserve) flags.push({type:'warn', msg:'Affordable, but it eats into your 3-month safety reserve.'});
+    if (newNet<0) flags.push({type:'danger', msg:`The salary would leave you losing ${fmt(Math.abs(newNet))} a month.`});
+    if (impPct>0.5) flags.push({type:'warn', msg:`Six months of salary is ${(impPct*100).toFixed(0)}% of your balance.`});
+    if (p.ContractMonths<=1&&p.TeamName!=='none') flags.push({type:'good', msg:'Contract is about to end, which gives you leverage on the price.'});
+    if (p.TeamName==='none') flags.push({type:'good', msg:'Free agent, so there is no fee to pay.'});
+    if (locked) flags.push({type:'danger', msg:'Protected: no buyout, clause or sale price, so he cannot be signed.'});
+    if (form>10) flags.push({type:'good', msg:`In top form (score ${form}).`});
 
     return {p, buyout, sal, six, bankAfter, newNet, form, score:clamp(sc,0,100), bd, flags, canAfford:bank>=buyout};
   }
@@ -4776,71 +4957,64 @@ function runComparison() {
   const winner=a1.score>=a2.score?'p1':'p2';
   const wData=winner==='p1'?a1:a2, lData=winner==='p1'?a2:a1;
   const diff=Math.abs(a1.score-a2.score);
-  const strength=diff<5?'CLOSE CALL':diff<15?'MODERATE ADVANTAGE':'CLEAR RECOMMENDATION';
+  const strength=diff<5?'a close call':diff<15?'a moderate advantage':'a clear recommendation';
 
   function card(a, side) {
     const w=side===winner;
+    const fa=a.p.TeamName==='none';
     return `
-      <div class="compare-card ${w?'winner':'loser'}">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <span style="font-family:var(--font-display); font-size:14px; font-weight:700; color:${w?'var(--green)':'var(--text)'};">${String(a.p.PlayerName)}</span>
-          ${w?'<span class="badge badge-green">RECOMMENDED ✓</span>':''}
+      <div class="compare-card cmp-card ${w?'winner':'loser'}">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+          <div class="cmp-name">${String(a.p.PlayerName)}</div>
+          ${w?'<span class="badge badge-green">Recommended</span>':''}
         </div>
-        <div style="font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:12px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${getTeamLogo(a.p.TeamName, 16)}[${a.p.TeamName}] • ${a.p.Roster} • ${roleBadges(a.p)}${a.p.ContractMonths}m left ${medals(a.p)}</div>
+        <div class="cmp-sub">${getTeamLogo(a.p.TeamName, 16)}<span>${fa?'Free agent':a.p.TeamName}</span>${a.p.Roster?`<span>${a.p.Roster}</span>`:''}${roleBadges(a.p)}${fa?'':`<span>${a.p.ContractMonths||0} months left</span>`}${medals(a.p)}</div>
 
-        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">
+        <div class="cmp-lines">
           ${[
-            ['Market Value', fmt(a.p.MarketValue), 'var(--cyan)'],
-            ['Buyout Cost', a.p.TeamName==='none'?'$0 (FREE)':fmt(a.buyout), a.canAfford?'var(--green)':'var(--red)'],
-            ['Monthly Salary', fmt(a.sal), 'var(--orange)'],
-            ['6-Month Impact', fmt(a.six), 'var(--red)'],
-            ['Bank After Buyout', fmt(a.bankAfter), a.bankAfter>=0?'var(--text)':'var(--red)'],
-            ['New Monthly Net', (a.newNet>=0?'+':'')+fmt(a.newNet), a.newNet>=0?'var(--green)':'var(--red)'],
-            ['Form Score', a.form, 'var(--yellow)'],
-          ].map(([l,v,c])=>`
-            <div style="display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-bottom:1px solid var(--border);">
-              <span style="color:var(--text-dim);">${l}</span>
-              <span style="font-family:var(--font-data); font-weight:700; color:${c};">${v}</span>
-            </div>`).join('')}
+            ['Market value', fmt(a.p.MarketValue), 'var(--text)'],
+            ['Cost to sign', fa?'Free':fmt(a.buyout), a.canAfford?'var(--green)':'var(--red)'],
+            ['Salary per month', fmt(a.sal), 'var(--text)'],
+            ['Salary over 6 months', fmt(a.six), 'var(--text)'],
+            ['Your balance after signing', fmt(a.bankAfter), a.bankAfter>=0?'var(--text)':'var(--red)'],
+            ['Your monthly net after', (a.newNet>=0?'+':'−')+fmt(Math.abs(a.newNet)), a.newNet>=0?'var(--green)':'var(--red)'],
+            ['Form score', a.form, 'var(--yellow)'],
+          ].map(([l,v,c])=>`<div><span>${l}</span><span style="color:${c};">${v}</span></div>`).join('')}
         </div>
 
-        <div style="font-family:var(--font-display); font-size:10px; letter-spacing:2px; color:${w?'var(--green)':'var(--text-dim)'}; margin-bottom:8px;">
-          AI SCORE: <span style="font-size:22px;">${a.score.toFixed(1)}</span><span style="font-size:12px;">/100</span>
-        </div>
+        <div class="cmp-score"><b style="color:${w?'var(--green)':'var(--text)'}">${a.score.toFixed(1)}</b><span>out of 100</span></div>
         ${a.bd.map(b=>`
-          <div style="margin-bottom:6px;">
-            <div style="display:flex; justify-content:space-between; font-family:var(--font-data); font-size:10px; color:var(--text-dim); margin-bottom:2px;">
-              <span>${b.label}</span><span style="color:${b.color}">${b.val}/${b.max}</span>
-            </div>
-            <div class="progress-track"><div class="progress-fill" style="width:${(parseFloat(b.val)/b.max*100)}%; background:${b.color};"></div></div>
+          <div class="cmp-bar">
+            <div><span>${b.label}</span><span>${b.val} of ${b.max}</span></div>
+            <div class="progress-track" style="margin-top:0;"><div class="progress-fill" style="width:${(parseFloat(b.val)/b.max*100)}%; background:${b.color};"></div></div>
           </div>`).join('')}
 
-        ${a.flags.length?`<div style="margin-top:10px; display:flex; flex-direction:column; gap:4px;">
-          ${a.flags.map(f=>`<div style="font-size:11px; color:${f.type==='good'?'var(--green)':f.type==='warn'?'var(--orange)':'var(--red)'}">${f.type==='good'?'✓':f.type==='warn'?'⚠':'✗'} ${f.msg}</div>`).join('')}
+        ${a.flags.length?`<div class="cmp-flags">
+          ${a.flags.map(f=>`<div style="color:${f.type==='good'?'var(--green)':f.type==='warn'?'var(--orange)':'var(--red)'}">${f.msg}</div>`).join('')}
         </div>`:''}
       </div>`;
   }
 
   const verdictColor=diff<5?'var(--orange)':'var(--green)';
   $('comparison-result').innerHTML=`
-    <div class="compare-grid" style="margin-top:16px;">
+    <div class="compare-grid">
       ${card(a1,'p1')}
-      <div class="compare-vs">VS</div>
+      <div class="compare-vs">vs</div>
       ${card(a2,'p2')}
     </div>
-    <div class="card" style="margin-top:12px; border-color:${verdictColor};">
-      <div class="card-title" style="color:${verdictColor};">🤖 NEXUS VERDICT — ${strength}</div>
+    <section class="card" style="margin-top:20px; border-color:${verdictColor};">
+      <h2 class="fo-h fo-h-pad">Verdict: ${strength}</h2>
       ${!wData.canAfford&&!lData.canAfford?
-        `<div class="alert-item critical">⛔ Your budget cannot cover either player's buyout right now. Build reserves first.</div>`:
-        `<div style="font-size:13px; line-height:1.8;">
-          <div>✅ <b>${String(wData.p.PlayerName)}</b> scores <b>${wData.score}/100</b> vs ${lData.score}/100 — ${diff<5?'narrowly':'clearly'} the better acquisition.</div>
-          ${wData.buyout<lData.buyout?`<div>💰 Saves ${fmt(lData.buyout-wData.buyout)} upfront in buyout costs.</div>`:''}
-          ${wData.sal<lData.sal?`<div>📆 Lower monthly commitment: ${fmt(wData.sal)} vs ${fmt(lData.sal)}/mo.</div>`:''}
-          ${wData.newNet>lData.newNet?`<div>📈 Healthier post-signing net: <span style="color:var(--green)">${wData.newNet>=0?'+':''}${fmt(wData.newNet)}</span> vs ${lData.newNet>=0?'+':''}${fmt(lData.newNet)}.</div>`:''}
-          ${wData.form>lData.form?`<div>⭐ Superior form (${wData.form} vs ${lData.form}) — higher MV growth potential.</div>`:''}
-          ${diff<5?`<div style="color:var(--text-dim); margin-top:8px; font-size:12px;">Scores nearly identical. Consider team positional needs.</div>`:''}
+        `<div class="alert-item critical" style="margin-bottom:0;">Your balance cannot cover the cost of signing either player right now. Build up reserves first.</div>`:
+        `<div class="cmp-verdict">
+          <p><b>${String(wData.p.PlayerName)}</b> scores <b>${wData.score.toFixed(1)}</b> against ${lData.score.toFixed(1)} and is ${diff<5?'narrowly':'clearly'} the better signing.</p>
+          ${wData.buyout<lData.buyout?`<p>Costs ${fmt(lData.buyout-wData.buyout)} less to sign.</p>`:''}
+          ${wData.sal<lData.sal?`<p>Lower salary: ${fmt(wData.sal)} a month against ${fmt(lData.sal)}.</p>`:''}
+          ${wData.newNet>lData.newNet?`<p>Leaves a healthier monthly net: <span class="${wData.newNet>=0?'pos':'neg'}">${wData.newNet>=0?'+':'−'}${fmt(Math.abs(wData.newNet))}</span> against ${lData.newNet>=0?'+':'−'}${fmt(Math.abs(lData.newNet))}.</p>`:''}
+          ${wData.form>lData.form?`<p>Better form (${wData.form} against ${lData.form}), so more room for market value to grow.</p>`:''}
+          ${diff<5?`<p class="fo-dim" style="margin-top:8px;">The scores are nearly identical, so let the role your team needs decide.</p>`:''}
         </div>`}
-    </div>
+    </section>
   `;
 }
 
@@ -4862,13 +5036,16 @@ function renderInboundOffers(tName) {
 
 function renderOutboundOffers() {
   const at=$('dash-team-select').value;
-  const talks=clauseTalks.filter(t=>t.status==='open'&&(t.buyer===at||t.seller===at)).map(t=>({playerName:t.playerName, amount:t.thread.length?t.thread[t.thread.length-1].amount:t.clausePaid, seller:t.seller, buyer:t.buyer, status:'🔑 CLAUSE TALK'}));
-  const negs=negotiations.filter(n=>n.status==='open'&&n.team===at).map(n=>({playerName:n.playerName, amount:0, seller:n.type==='renewal'?at:'—', buyer:at, status:n.type==='renewal'?'📋 RENEWAL TALKS':'🗣 SIGNING TALKS'}));
+  const talks=clauseTalks.filter(t=>t.status==='open'&&(t.buyer===at||t.seller===at)).map(t=>({playerName:t.playerName, amount:t.thread.length?t.thread[t.thread.length-1].amount:t.clausePaid, seller:t.seller, buyer:t.buyer, status:t.kind==='offer'?'Offer talks':'Clause talks'}));
+  const negs=negotiations.filter(n=>n.status==='open'&&n.team===at).map(n=>({playerName:n.playerName, amount:0, seller:n.type==='renewal'?at:'', buyer:at, status:n.type==='renewal'?'Renewal talks':'Signing talks'}));
   const all=[...talks, ...negs, ...transferHistory.filter(o=>o.buyer===at||o.seller===at)].slice(0,15);
   $('outbound-offers').innerHTML=all.length ? all.map(o=>{
-    const c=String(o.status).includes('✅')?'var(--green)':String(o.status).includes('❌')?'var(--red)':'var(--orange)';
-    return `<div class="list-row"><div><div class="name" style="font-size:12px;">${o.playerName}</div><div class="meta">${o.amount?fmt(o.amount)+' · ':''}${o.seller} → ${o.buyer}</div></div><span style="color:${c}; font-family:var(--font-data); font-size:11px; font-weight:700;">${o.status}</span></div>`;
-  }).join('') : '<div style="color:var(--text-dim); padding:10px; font-size:12px; font-family:var(--font-data);">No active business.</div>';
+    const st=String(o.status);
+    const c=st.includes('✅')?'var(--green)':st.includes('❌')?'var(--red)':'var(--orange)';
+    const seller=(o.seller&&o.seller!=='none'&&o.seller!=='—')?o.seller:'';
+    const route=seller&&seller!==o.buyer?`${seller} to ${o.buyer}`:o.buyer;
+    return `<div class="deal-row"><div style="min-width:0;"><div class="name">${o.playerName}</div><div class="meta">${route}${o.amount?', '+fmtK(o.amount):''}</div></div><span class="deal-state" style="color:${c};">${st.replace(/[✅❌]\s*/g,'')}</span></div>`;
+  }).join('') : '<div class="fo-empty">Nothing in progress. Deals you start from the player list show up here.</div>';
 }
 
 /* ═══ TRANSFER ACTIONS ═══ */
@@ -4903,15 +5080,14 @@ function updateContractAlerts() {
   const alerts=players.filter(p=>p.TeamName!=='none'&&p.ContractMonths<=2);
   $('contract-alerts').innerHTML=alerts.length ? alerts.map(p=>`
     <div class="alert-item ${p.ContractMonths<=0?'critical':'warning'}">
-      <div style="flex:1">
-        <b>${String(p.PlayerName)}</b> <span style="color:var(--text-dim);">(${p.TeamName})</span>
-        <div style="font-family:var(--font-data); font-size:10px; color:${p.ContractMonths<=0?'var(--red)':'var(--orange)'};">${p.ContractMonths}m remaining${p.ContractMonths<=0?' — LEAVES NEXT CYCLE':''}</div>
+      <div style="flex:1; min-width:0;">
+        <b>${String(p.PlayerName)}</b> <span style="color:var(--text-dim);">${p.TeamName}</span>
+        <div style="font-size:12.5px; color:${p.ContractMonths<=0?'var(--red)':'var(--orange)'};">${p.ContractMonths<=0?'Expired. Leaves at the next monthly cycle.':p.ContractMonths+(p.ContractMonths===1?' month left':' months left')}</div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="startRenewal('${String(p.PlayerName).replace(/'/g,"\\'")}')" style="padding:4px 8px;" ${activeNegFor(String(p.PlayerName))?'disabled':''}>RENEW TALKS</button>
+      <button class="btn btn-ghost btn-sm" onclick="startRenewal('${String(p.PlayerName).replace(/'/g,"\\'")}')" ${activeNegFor(String(p.PlayerName))?'disabled':''}>Renew</button>
     </div>`).join('')
-  : '<div class="alert-item success">✓ All contracts stable.</div>';
+  : '<div class="all-clear">No contract ends within 2 months.</div>';
 }
-
 
 
 /* ═══ TRAVEL ═══ */
@@ -4924,15 +5100,15 @@ function renderTravelList() {
     const fc=t3?cost*0.5:cost, nb=(t.CurrentBank||0)-fc;
     return `<label class="travel-item">
       <input type="checkbox" class="travel-cb" value="${t.TeamName}" ${checked.has(t.TeamName)?'checked':''}>
-      <div style="flex:1">
-        <span style="font-weight:600;">${t.TeamName}</span>${t3?` <span class="badge badge-orange">50% OFF</span>`:''}
+      <div style="flex:1; min-width:0;">
+        <span style="font-weight:600;">${t.TeamName}</span>${t3?` <span class="badge badge-ghost" title="Tier 3 teams pay half">Half price</span>`:''}
       </div>
-      <div style="text-align:right; font-family:var(--font-data); font-size:10px;">
-        <div style="color:var(--red);">−${fmt(fc)}</div>
-        <div style="color:${nb<0?'var(--red)':'var(--text-dim)'};">${fmt(nb)}</div>
+      <div class="travel-cost">
+        <span class="neg">−${fmtK(fc)}</span>
+        <small style="color:${nb<0?'var(--red)':'var(--text-dim)'};">leaves ${nb<0?'−':''}${fmtK(Math.abs(nb))}</small>
       </div>
     </label>`;
-  }).join('');
+  }).join('') || '<div class="fo-empty">No team matches that search.</div>';
 }
 
 function applyTravelExpenses() {
