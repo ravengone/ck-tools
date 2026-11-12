@@ -915,6 +915,7 @@ input[type="file"] { cursor: pointer; }
         <div class="status-line" style="margin-top:3px; color:var(--text-muted)">
           Elo + Dynamic-K + Streak + Tourney Bonus + Season Prestige
         </div>
+        <div class="status-line" style="margin-top:3px;" id="finSyncLabel" title="Export Excel also writes finances_updated.xlsx with these tiers">Finances: checking…</div>
       </div>
     </div>
     <div class="topbar-actions">
@@ -1277,6 +1278,7 @@ function updateStatsBar() {
   document.getElementById("st-avg").textContent   = avg.toFixed(0);
   document.getElementById("st-top").textContent   = top.toFixed(0);
   document.getElementById("st-active").textContent = active;
+  updateFinSyncLabel();
 }
 
 /* ─── RENDER TABLE ─── */
@@ -1553,13 +1555,111 @@ function toExportRows(){
   });
 }
 
-document.getElementById("btnDownload").addEventListener("click",()=>{
+/* ─── FINANCES TIER SYNC ───
+   The Finances page reads each team's tier (and so its sponsor income) from
+   file/finances_updated.xlsx, which nothing else keeps up to date. On export
+   we rewrite only the Tier column of that file from the ranking points, and
+   leave every other column (bank, staff costs, anything extra) untouched. */
+const FIN_PATH = "file/finances_updated.xlsx";
+const FIN_TEAM = "TeamName", FIN_TIER = "Tier";
+let finRows = null, finHeaders = [], finSheetName = "Finances", finError = "";
+
+function finKey(s){ return String(s ?? "").trim().toLowerCase(); }
+
+function parseFinances(ab){
+  const wb = XLSX.read(ab, { type:"array" });
+  finSheetName = wb.SheetNames[0] || "Finances";
+  const ws = wb.Sheets[finSheetName];
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  const headers = [];
+  for (let C = range.s.c; C <= range.e.c; C++){
+    const cell = ws[XLSX.utils.encode_cell({ r:range.s.r, c:C })];
+    if (cell && String(cell.v).trim()) headers.push(String(cell.v).trim());
+  }
+  if (!headers.includes(FIN_TEAM)) throw new Error(`no "${FIN_TEAM}" column`);
+  if (!headers.includes(FIN_TIER)) headers.splice(headers.indexOf(FIN_TEAM) + 1, 0, FIN_TIER);
+  finHeaders = headers;
+  finRows = XLSX.utils.sheet_to_json(ws, { defval:"" }).filter(r => String(r[FIN_TEAM] ?? "").trim());
+  finError = "";
+}
+
+async function loadFinances(){
+  try {
+    const url = new URL(FIN_PATH, new URL(".", window.location.href)).toString();
+    const r = await fetch(url, { cache:"no-store" });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    parseFinances(await r.arrayBuffer());
+  } catch (e) {
+    finRows = null; finError = e.message || String(e);
+  }
+  updateFinSyncLabel();
+  return !!finRows;
+}
+
+/* Which finance rows carry a tier that no longer matches the ranking */
+function finTierDiff(){
+  const byName = new Map(teams.map(t => [finKey(t[COL.TEAM]), t]));
+  const changes = [], notRanked = [];
+  for (const row of (finRows || [])){
+    const t = byName.get(finKey(row[FIN_TEAM]));
+    if (!t) { notRanked.push(String(row[FIN_TEAM])); continue; }
+    const to = tierFromPts(t[COL.PTS]);
+    const from = String(row[FIN_TIER] ?? "").trim();
+    if (from !== to) changes.push({ row, team:String(row[FIN_TEAM]), from:from || "none", to });
+  }
+  const inFin = new Set((finRows || []).map(r => finKey(r[FIN_TEAM])));
+  const notInFinances = teams.filter(t => !inFin.has(finKey(t[COL.TEAM]))).map(t => t[COL.TEAM]);
+  return { changes, notRanked, notInFinances };
+}
+
+function updateFinSyncLabel(){
+  const el = document.getElementById("finSyncLabel");
+  if (!el) return;
+  if (!finRows) {
+    el.style.color = "var(--gold)";
+    el.textContent = finError ? `Finances: ${FIN_PATH} not loaded (${finError})` : "Finances: checking…";
+    return;
+  }
+  if (!teams.length) { el.style.color = "var(--text-muted)"; el.textContent = `Finances: ${finRows.length} teams linked`; return; }
+  const n = finTierDiff().changes.length;
+  el.style.color = n ? "var(--gold)" : "var(--text-muted)";
+  el.textContent = n
+    ? `Finances: ${n} tier${n !== 1 ? "s" : ""} out of date · fixed on Export Excel`
+    : `Finances: ${finRows.length} teams linked · tiers match`;
+}
+
+function describeTierChanges(changes){
+  const shown = changes.slice(0, 8).map(c => `${htmlEsc(c.team)} ${htmlEsc(c.from)} → ${htmlEsc(c.to)}`).join(", ");
+  return shown + (changes.length > 8 ? ` and ${changes.length - 8} more` : "");
+}
+
+document.getElementById("btnDownload").addEventListener("click", async ()=>{
   if(!teams.length){ showAlert("Nothing to download.","warn"); return; }
   const ws=XLSX.utils.json_to_sheet(toExportRows());
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,"ranking");
   XLSX.writeFile(wb,"ranking_updated.xlsx");
-  showAlert("Excel exported: <strong>ranking_updated.xlsx</strong>","good");
+
+  // Re-read the published finances file right now, so bank balances are the latest ones
+  const ok = await loadFinances();
+  if (!ok) {
+    showAlert(`Exported <strong>ranking_updated.xlsx</strong>. Finances were NOT exported: could not read <code>${FIN_PATH}</code> (${htmlEsc(finError)}). Team tiers in Finances are unchanged.`, "warn");
+    return;
+  }
+  const { changes, notRanked } = finTierDiff();
+  if (!changes.length) {
+    showAlert(`Exported <strong>ranking_updated.xlsx</strong>. Finances already have the same tier for every ranked team, so no finances file was needed.`, "good");
+    return;
+  }
+  for (const c of changes) c.row[FIN_TIER] = c.to;
+  const fws = XLSX.utils.json_to_sheet(finRows, { header: finHeaders });
+  const fwb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(fwb, fws, finSheetName);
+  await new Promise(res => setTimeout(res, 400)); // let the first download start before the second
+  XLSX.writeFile(fwb, "finances_updated.xlsx");
+  updateFinSyncLabel();
+  showAlert(`Exported <strong>ranking_updated.xlsx</strong> and <strong>finances_updated.xlsx</strong>. ${changes.length} tier${changes.length !== 1 ? "s" : ""} updated in Finances: ${describeTierChanges(changes)}.` +
+    (notRanked.length ? ` ${notRanked.length} finance team${notRanked.length !== 1 ? "s are" : " is"} not in the ranking and kept ${notRanked.length !== 1 ? "their" : "its"} tier.` : ""), "good");
 });
 
 /* ─── LOAD ─── */
@@ -1877,6 +1977,7 @@ document.getElementById("aiModal").addEventListener("click",e=>{
 /* ─── INIT ─── */
 renderRecent();
 loadFromUrl();
+loadFinances();
 </script>
 </body>
 </html>
