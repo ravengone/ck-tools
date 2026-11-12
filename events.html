@@ -1254,8 +1254,13 @@ const regionMapReverse = {
 // ============================================================
 const INVITE_RULES = {
     TOP_CUTOFF: 16,               // ★4 = top 16; ★1/★2 = everyone below it
-    MAJOR_SIZE: 32,               // ★5 = global top 32
-    MAJOR_STAGES: { champions: [1, 8], legends: [9, 16], challengers: [17, 32] },
+    // ★5 Major: spots per region in each stage. Filled from the top of each REGION's ranking,
+    // last stage first: Stage 3 gets the best teams, then Stage 2, the rest go to Stage 1.
+    MAJOR_QUOTAS: {
+        champions:   { europe: 6, america: 1, asia: 1 },   // Stage 3 (last)
+        legends:     { europe: 6, america: 1, asia: 1 },   // Stage 2
+        challengers: { europe: 8, america: 4, asia: 4 }    // Stage 1 (played first)
+    },
     GROWING_MAX: { global: 64, regional: 40 }, // ★3 "Growing" bracket: #17 → this rank
     THREE_STAR_TOP_SHARE: 0.4,    // ★3: 40% of spots to the Top bracket, 60% to Growing
     LOW_TIER_LEAN: 8,             // ★2 leans to the upper part of the pool, ★1 to the lower part
@@ -1263,7 +1268,11 @@ const INVITE_RULES = {
     TIMER_PER_DAY: 0.5,           // timer score per day waited
     TIMER_CAP: 60                 // timer score cap (= 120 days)
 };
-const SUGGESTED_TEAM_COUNTS = { 1: 8, 2: 10, 3: 14, 4: 16, 5: 32 };
+const MAJOR_REGIONS = [['europe', 'EU'], ['america', 'AM'], ['asia', 'AS']];
+const MAJOR_STAGE_KEYS = ['champions', 'legends', 'challengers']; // seeding order: best teams first
+INVITE_RULES.MAJOR_SIZE = MAJOR_STAGE_KEYS.reduce((sum, key) =>
+    sum + MAJOR_REGIONS.reduce((s, [region]) => s + (INVITE_RULES.MAJOR_QUOTAS[key][region] || 0), 0), 0);
+const SUGGESTED_TEAM_COUNTS = { 1: 8, 2: 10, 3: 14, 4: 16, 5: INVITE_RULES.MAJOR_SIZE };
 
 // ============================================================
 // DATA LOADING
@@ -1526,7 +1535,7 @@ function starPartBadge(dateStr) {
 
 // ============================================================
 // INVITE SYSTEM - Tiered by star level, ranked inside the region
-//   ★5  global top 32 (Major stages by rank)
+//   ★5  Major: 32 teams by regional quota, stages by rank inside each region
 //   ★4  top 16 of the region, pure ranking
 //   ★3  Top bracket (#1–16) + Growing bracket (#17–64 global / #17–40 regional)
 //   ★2/★1  everyone below #16, rotated by the invite timer
@@ -1551,7 +1560,7 @@ function getInvitePool(stars, eventRegion) {
 
     if (stars === 5) {
         const max = Math.min(INVITE_RULES.MAJOR_SIZE, teams.length);
-        return { min: 1, max, total: teams.length, label: `#1–${max} global` };
+        return { min: 1, max, total: teams.length, label: `${max} teams by regional quota` };
     }
     if (stars === 4) {
         return { min: 1, max: top, total, label: `#1–${top}` };
@@ -1669,24 +1678,66 @@ function getInvitedTeams(event, teamsCount) {
     return { teams: picked.map(p => p.team), meta, stages: null, range: pool };
 }
 
-// ★5 Major: global top 32 split into stages by rank
-//   Stage 1 · Champions (Playoffs)  #1–8
-//   Stage 2 · Legends               #9–16
-//   Stage 3 · Challengers           #17–32 (played first)
+// ★5 Major: 32 teams picked by REGIONAL ranking with fixed quotas per stage.
+//   Stage 3 · Champions (Playoffs, last)  EU #1–6  · AM #1   · AS #1
+//   Stage 2 · Legends                     EU #7–12 · AM #2   · AS #2
+//   Stage 1 · Challengers (played first)  EU #13–20 · AM #3–6 · AS #3–6
+// Regional rank ranges of every stage, derived from MAJOR_QUOTAS
+function getMajorLayout() {
+    const Q = INVITE_RULES.MAJOR_QUOTAS;
+    const used = {};
+    const layout = {};
+    MAJOR_STAGE_KEYS.forEach(key => {
+        layout[key] = {};
+        MAJOR_REGIONS.forEach(([region]) => {
+            const count = Q[key][region] || 0;
+            const from = (used[region] || 0) + 1;
+            layout[key][region] = { from, to: from + count - 1, count };
+            used[region] = from + count - 1;
+        });
+    });
+    return layout;
+}
+
+// "EU #1–6 · AM #1 · AS #1"
+function majorStageDesc(stageLayout) {
+    return MAJOR_REGIONS
+        .filter(([region]) => stageLayout[region].count > 0)
+        .map(([region, label]) => {
+            const { from, to } = stageLayout[region];
+            return `${label} #${from}${to > from ? '–' + to : ''}`;
+        }).join(' · ');
+}
+
+function majorStageCount(key) {
+    return MAJOR_REGIONS.reduce((s, [region]) => s + (INVITE_RULES.MAJOR_QUOTAS[key][region] || 0), 0);
+}
+
 function getMajorTeams() {
-    const allSorted = [...teams].sort((a, b) => b.points - a.points);
-    const S = INVITE_RULES.MAJOR_STAGES;
-    const slice = ([from, to]) => allSorted.slice(from - 1, to);
-    const champions = slice(S.champions);
-    const legends = slice(S.legends);
-    const challengers = slice(S.challengers);
+    const layout = getMajorLayout();
+    const meta = {}; // teamName -> { label, localRank }
+    const picked = { champions: [], legends: [], challengers: [] };
+
+    MAJOR_REGIONS.forEach(([region, label]) => {
+        const ranking = getRegionalRanking(region);
+        MAJOR_STAGE_KEYS.forEach(key => {
+            const { from, to, count } = layout[key][region];
+            if (!count) return;
+            ranking.slice(from - 1, to).forEach(r => {
+                picked[key].push(r.team);
+                meta[r.team.name] = { label, localRank: r.localRank };
+            });
+        });
+    });
+    MAJOR_STAGE_KEYS.forEach(key => picked[key].sort((a, b) => b.points - a.points));
 
     return {
-        teams: [...champions, ...legends, ...challengers],
+        teams: [...picked.champions, ...picked.legends, ...picked.challengers],
+        meta,
         stages: {
-            champions:   { num: 1, name: 'Champions Stage (Playoffs)', desc: `Global #${S.champions[0]}–${S.champions[1]}`, teams: champions },
-            legends:     { num: 2, name: 'Legends Stage', desc: `Global #${S.legends[0]}–${S.legends[1]}`, teams: legends },
-            challengers: { num: 3, name: 'Challengers Stage', desc: `Global #${S.challengers[0]}–${S.challengers[1]}`, teams: challengers }
+            champions:   { num: 3, name: 'Champions Stage (Playoffs)', desc: majorStageDesc(layout.champions), teams: picked.champions },
+            legends:     { num: 2, name: 'Legends Stage', desc: majorStageDesc(layout.legends), teams: picked.legends },
+            challengers: { num: 1, name: 'Challengers Stage', desc: majorStageDesc(layout.challengers), teams: picked.challengers }
         }
     };
 }
@@ -2139,7 +2190,7 @@ function renderReviewStep() {
 }
 
 // ============================================================
-// MAJOR EVENT - global top 32, auto-split into 3 stages by rank
+// MAJOR EVENT - 32 teams by regional quota, auto-split into 3 stages by regional rank
 // ============================================================
 function renderMajorStep1() {
     const evt = modalState.event;
@@ -2178,17 +2229,17 @@ function renderMajorReviewStep(warnings = '') {
         <h2>🏆 ${evt.name}</h2>
         <div style="display:flex;gap:8px;margin:12px 0;">${starBadge(5)} ${regionBadge('global')}</div>
         <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">
-            <strong>MAJOR</strong> · Swiss System · 3 Stages · Top ${INVITE_RULES.MAJOR_SIZE} global
+            <strong>MAJOR</strong> · Swiss System · 3 Stages · ${INVITE_RULES.MAJOR_SIZE} times por quota regional
         </div>
         ${warnings}
 
         <div class="ai-tip" style="margin-top:12px;">
             <span class="ai-icon">🧠</span>
             <div>
-                <strong>Stage 1 · Champions (Playoffs):</strong> ${st.champions.teams.length} times — ${st.champions.desc}<br>
+                <strong>Stage 1 · Challengers:</strong> ${st.challengers.teams.length} times — ${st.challengers.desc}<br>
                 <strong>Stage 2 · Legends:</strong> ${st.legends.teams.length} times — ${st.legends.desc}<br>
-                <strong>Stage 3 · Challengers:</strong> ${st.challengers.teams.length} times — ${st.challengers.desc}<br>
-                <strong>Total: ${data.teams.length} times</strong>
+                <strong>Stage 3 · Champions (Playoffs):</strong> ${st.champions.teams.length} times — ${st.champions.desc}<br>
+                <strong>Total: ${data.teams.length} times</strong> · posições pelo ranking de cada região
             </div>
         </div>
 
@@ -2216,8 +2267,9 @@ function renderMajorReviewStep(warnings = '') {
             <div>`;
 
         stage.teams.forEach(t => {
-            html += `<div class="team-chip ${key === 'champions' ? 'locked' : ''}">
-                <span class="chip-rank">#${t.rank}</span>
+            const m = data.meta[t.name] || {};
+            html += `<div class="team-chip ${key === 'champions' ? 'locked' : ''}" title="Global #${t.rank}">
+                <span class="chip-rank">${m.label || ''} #${m.localRank || t.rank}</span>
                 ${t.name}
                 ${tierBadge(t.tier)}
             </div>`;
@@ -2230,7 +2282,7 @@ function renderMajorReviewStep(warnings = '') {
     html += `</div>
 
         <div style="margin-top:12px;font-size:12px;color:var(--text-muted);line-height:1.6;">
-            <strong>Flow:</strong> Stage 3 (Challengers, #17–32) → top 8 join Stage 2 (Legends, #9–16) → top 8 join Stage 1 (Champions/Playoffs, #1–8).
+            <strong>Flow:</strong> Stage 1 (Challengers, ${st.challengers.teams.length} invited) → top 8 join Stage 2 (Legends, ${st.legends.teams.length} invited) → top 8 join Stage 3 (Champions/Playoffs, ${st.champions.teams.length} invited).
             Swiss format: 3 wins to advance, 3 losses to be eliminated.
         </div>
 
@@ -2480,6 +2532,8 @@ function filterEvents() {
 // ============================================================
 function renderRules() {
     const R = INVITE_RULES;
+    const ML = getMajorLayout();
+    const majorTotalRange = MAJOR_REGIONS.map(([region, label]) => `${label} 1–${ML.challengers[region].to}`).join(' · ');
     const rules = [
         { star: 1, title: 'ROTATION · LOWER', teams: '~8', range: `${R.TOP_CUTOFF + 1}+`,
           desc: `Everyone ranked below the top ${R.TOP_CUTOFF} of the region. Picked by the invite timer: teams that never played a ★1/★2 go first, then whoever has waited longest since their last ★1 or ★2. Slight preference for the lower part of the pool.`,
@@ -2493,8 +2547,8 @@ function renderRules() {
         { star: 4, title: 'ELITE', teams: `${R.TOP_CUTOFF}`, range: `1–${R.TOP_CUTOFF}`,
           desc: `Only the top ${R.TOP_CUTOFF} teams are invited, by ranking only (no timer). Global event = global top ${R.TOP_CUTOFF}; regional event = that region's top ${R.TOP_CUTOFF}.`,
           freq: 'Every ~11-13 weeks' },
-        { star: 5, title: 'MAJOR', teams: `${R.MAJOR_SIZE}`, range: `1–${R.MAJOR_SIZE} global`,
-          desc: `Global top ${R.MAJOR_SIZE}, split by rank: #1–8 Stage 1 (Champions/Playoffs), #9–16 Stage 2 (Legends), #17–32 Stage 3 (Challengers). Swiss format. Max 2/year recommended.`,
+        { star: 5, title: 'MAJOR', teams: `${R.MAJOR_SIZE}`, range: majorTotalRange,
+          desc: `${R.MAJOR_SIZE} teams by regional quota, seeded by each region's own ranking. Stage 3 (Champions/Playoffs): ${majorStageDesc(ML.champions)}. Stage 2 (Legends): ${majorStageDesc(ML.legends)}. Stage 1 (Challengers): ${majorStageDesc(ML.challengers)}. Swiss format. Max 2/year recommended.`,
           freq: '2 per year max' }
     ];
 
@@ -2518,7 +2572,7 @@ function renderRules() {
                 <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${r.title}</div>
                 <div style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${r.desc}</div>
                 <div style="margin-top:6px;font-size:12px;">
-                    <span style="color:var(--text-muted);">Ranks:</span> <span style="color:var(--accent-cyan);">#${r.range}</span>
+                    <span style="color:var(--text-muted);">Ranks:</span> <span style="color:var(--accent-cyan);">${r.star === 5 ? '' : '#'}${r.range}</span>
                     · <span style="color:var(--text-muted);">Frequency:</span> <span style="color:var(--accent-orange);">${r.freq}</span>
                 </div>
             </div>
@@ -2527,41 +2581,41 @@ function renderRules() {
     detailHtml += `</div>
         <div style="margin-top:12px;font-size:12px;color:var(--text-muted);line-height:1.6;">
             ℹ️ For ★1–★4, ranks are counted <strong>inside the event's region</strong> (Americas, Europe, Asia). Global events use the global ranking.
-            The ★5 Major always uses the global ranking.
+            The ★5 Major uses <strong>each region's ranking</strong> with fixed quotas per stage.
         </div>`;
     document.getElementById('rulesDetail').innerHTML = detailHtml;
 
     document.getElementById('majorRulesDetail').innerHTML = `
         <div style="font-size:14px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px;">
-            The Major invites the <strong style="color:var(--accent-cyan);">global top ${R.MAJOR_SIZE}</strong> and uses a <strong style="color:var(--accent-cyan);">Swiss System</strong> across <strong>3 stages</strong>.
+            The Major invites <strong style="color:var(--accent-cyan);">${R.MAJOR_SIZE} teams by regional quota</strong> (seeded by each region's own ranking) and uses a <strong style="color:var(--accent-cyan);">Swiss System</strong> across <strong>3 stages</strong>.
             Teams need <strong>3 wins</strong> to advance and are eliminated after <strong>3 losses</strong>. Only <strong>2 Majors per year</strong> are recommended.
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
             <div class="major-stage">
                 <div class="major-stage-header">
-                    <div class="stage-num">3</div>
-                    <div><div class="stage-title">Challengers Stage</div><div class="stage-desc">Global #17–32 · played first</div></div>
+                    <div class="stage-num">1</div>
+                    <div><div class="stage-title">Challengers Stage</div><div class="stage-desc">${majorStageDesc(ML.challengers)} · played first</div></div>
                 </div>
                 <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-                    16 teams play Swiss. The top 8 advance to the Legends Stage.
+                    ${majorStageCount('challengers')} teams (${R.MAJOR_QUOTAS.challengers.europe} Europe · ${R.MAJOR_QUOTAS.challengers.america} America · ${R.MAJOR_QUOTAS.challengers.asia} Asia) play Swiss. The top 8 advance to the Legends Stage.
                 </div>
             </div>
             <div class="major-stage">
                 <div class="major-stage-header">
                     <div class="stage-num" style="background:rgba(0,212,255,0.15);color:var(--accent-cyan);">2</div>
-                    <div><div class="stage-title">Legends Stage</div><div class="stage-desc">Global #9–16</div></div>
+                    <div><div class="stage-title">Legends Stage</div><div class="stage-desc">${majorStageDesc(ML.legends)}</div></div>
                 </div>
                 <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-                    8 seeded teams + 8 from Challengers. The top 8 advance to the Champions Stage.
+                    ${majorStageCount('legends')} seeded teams (${R.MAJOR_QUOTAS.legends.europe} Europe · ${R.MAJOR_QUOTAS.legends.america} America · ${R.MAJOR_QUOTAS.legends.asia} Asia) + 8 from Challengers. The top 8 advance to the Champions Stage.
                 </div>
             </div>
             <div class="major-stage">
                 <div class="major-stage-header">
-                    <div class="stage-num" style="background:rgba(224,86,253,0.15);color:var(--star-5);">1</div>
-                    <div><div class="stage-title">Champions Stage</div><div class="stage-desc">Global #1–8 · Playoffs</div></div>
+                    <div class="stage-num" style="background:rgba(224,86,253,0.15);color:var(--star-5);">3</div>
+                    <div><div class="stage-title">Champions Stage</div><div class="stage-desc">${majorStageDesc(ML.champions)} · Playoffs · last</div></div>
                 </div>
                 <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-                    The top 8 teams are seeded straight into the Playoffs and joined by the 8 Legends qualifiers.
+                    The best ${majorStageCount('champions')} teams (${R.MAJOR_QUOTAS.champions.europe} Europe · ${R.MAJOR_QUOTAS.champions.america} America · ${R.MAJOR_QUOTAS.champions.asia} Asia) are seeded straight into the Playoffs and joined by the 8 Legends qualifiers.
                 </div>
             </div>
         </div>
