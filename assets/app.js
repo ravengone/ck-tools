@@ -946,7 +946,7 @@ function renderRegionTable(combined) {
     const dc = r.deltaText === 'NEW' ? '<span class="delta new">✦ NEW</span>' : `<span class="delta ${r.deltaCls}">${r.deltaText}</span>`;
     const pc = r.pointsDiffText === 'NEW' ? '<span class="delta new">✦ NEW</span>' : `<span class="delta ${r.pointsDiffCls}">${r.pointsDiffText}</span>`;
     const tc = tierBadgeClass(r.tier); const th = r.tier ? `<span class="tier-badge ${tc}">${escHtml(r.tier)}</span>` : '—';
-    return `<tr class="${rowClass(r.newPos)}"><td>${rankBadgeHtml(r.newPos)}</td><td>${teamNameHtml(r.team, r.newPos)}</td><td class="right mono">${ptsFmt(r.points)}</td><td class="right">${pc}</td><td class="right">${streakHtml(r.streak)}</td><td>${th}</td><td class="right">${dc}</td><td class="right mono text-xs text-muted">${o2n}</td></tr>`;
+    return `<tr class="${rowClass(r.newPos)}"><td>${rankBadgeHtml(r.newPos)}</td><td>${teamLinkHtml(r.team, r.newPos)}</td><td class="right mono">${ptsFmt(r.points)}</td><td class="right">${pc}</td><td class="right">${streakHtml(r.streak)}</td><td>${th}</td><td class="right">${dc}</td><td class="right mono text-xs text-muted">${o2n}</td></tr>`;
   }).join('');
 }
 
@@ -3929,17 +3929,20 @@ function rosterCardHtml(teamName) {
   }
   function hide() { currentLink = null; card.classList.remove('visible'); }
 
-  tbody.addEventListener('mouseover', e => {
-    const link = e.target.closest('a.team-link');
-    if (link && link !== currentLink) show(link);
+  // Global and Regional rankings share the same hover card and team links
+  [tbody, $('#tbodyRegion')].filter(Boolean).forEach(tb => {
+    tb.addEventListener('mouseover', e => {
+      const link = e.target.closest('a.team-link');
+      if (link && link !== currentLink) show(link);
+    });
+    tb.addEventListener('mouseout', e => {
+      const link = e.target.closest('a.team-link');
+      if (link && !link.contains(e.relatedTarget)) hide();
+    });
+    // Keyboard users get the same card when tabbing through the links
+    tb.addEventListener('focusin', e => { const link = e.target.closest('a.team-link'); if (link) show(link); });
+    tb.addEventListener('focusout', hide);
   });
-  tbody.addEventListener('mouseout', e => {
-    const link = e.target.closest('a.team-link');
-    if (link && !link.contains(e.relatedTarget)) hide();
-  });
-  // Keyboard users get the same card when tabbing through the links
-  tbody.addEventListener('focusin', e => { const link = e.target.closest('a.team-link'); if (link) show(link); });
-  tbody.addEventListener('focusout', hide);
   window.addEventListener('scroll', hide, true);
 
   loadRosters(); // warm up in the background so the first hover is instant
