@@ -3618,3 +3618,35 @@ a.team-link:hover, a.team-link:focus-visible{ border-bottom-color:var(--accent);
 .rh-empty{ padding:16px 14px; font-family:var(--font-mono); font-size:11px; color:var(--muted); }
 .rh-foot{ padding:8px 14px; border-top:1px solid var(--border); background:var(--bg3); font-family:var(--font-mono); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted2); }
 @media (prefers-reduced-motion: reduce){ .roster-hover{ transition:none; } }
+
+
+/* ════════════════════════════════════════════════════════
+   EVENTS v2 — format, stages from the match history
+════════════════════════════════════════════════════════ */
+.ev2-formatrow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.ev2-formatrow .form-control{ flex:1; min-width:240px; }
+.ev2-hint{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted); margin-top:5px; line-height:1.5; }
+.ev2-hint:empty{ display:none; }
+.ev2-unpaid{ opacity:.45; }
+.ev2-format{ display:inline-block; margin-bottom:12px; padding:5px 11px; border:1px solid var(--border-bright); border-radius:3px; font-family:var(--font-mono); font-size:11px; letter-spacing:.5px; color:var(--accent); background:var(--bg3); }
+.ev2-src{ font-family:var(--font-mono); font-size:9.5px; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted2); margin-left:8px; }
+.ev2-block{ border:1px solid var(--border); border-radius:3px; background:#fff; margin-bottom:10px; }
+.ev2-block > summary{ list-style:none; cursor:pointer; display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:10px 14px; font-family:var(--font-display); font-size:16px; font-weight:700; }
+.ev2-block > summary::-webkit-details-marker{ display:none; }
+.ev2-block > summary small{ font-family:var(--font-mono); font-size:10px; font-weight:500; letter-spacing:1px; text-transform:uppercase; color:var(--muted2); }
+.ev2-block[open] > summary{ border-bottom:1px solid var(--border); background:var(--bg3); }
+.ev2-cols{ display:flex; gap:14px; padding:12px 14px; overflow-x:auto; align-items:stretch; }
+.ev2-cols + .ev2-cols{ border-top:1px dashed var(--border-bright); }
+.ev2-col{ flex:1 0 190px; min-width:190px; display:flex; flex-direction:column; justify-content:space-around; gap:8px; }
+.ev2-col-title{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); }
+.ev2-third{ margin-top:10px; color:var(--muted); }
+.ev2-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:8px; padding:12px 14px; }
+.ev2-match{ border:1px solid var(--border); border-left:3px solid var(--border-bright); border-radius:3px; background:#fff; }
+.ev2-sub{ padding:3px 9px 0; font-family:var(--font-mono); font-size:9px; letter-spacing:1px; color:var(--muted2); }
+.ev2-row{ display:flex; align-items:center; gap:0; padding:5px 9px; font-size:12.5px; color:var(--muted); }
+.ev2-row + .ev2-row{ border-top:1px solid var(--border); }
+.ev2-row .team-logo{ width:16px; height:16px; margin-right:6px; }
+.ev2-name{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ev2-score{ font-family:var(--font-mono); font-weight:600; margin-left:8px; }
+.ev2-row.win{ color:var(--text); font-weight:700; }
+.ev2-row.win .ev2-score{ color:var(--good); }

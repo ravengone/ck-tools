@@ -2752,19 +2752,25 @@ function openEventDetails(idx) {
     }
   }
 
+  // Groups, stages and playoffs drawn from the match history (Events v2)
+  body += evStagesHtml(e);
+  const evHistoryBracket = evHasHistoryPlayoffs(e);
+
   // Playoff section
   const teams = e.playoffTeams || [];
-  if (teams.length === 8) {
-    body += `<div class="evd-section"><div class="evd-section-title">🏆 Playoff Bracket</div>`;
+  if (teams.length === 8 && teams.some(t => t && t.name)) {
+    body += `<div class="evd-section"><div class="evd-section-title">${evHistoryBracket ? '👥 Playoff Teams &amp; Lineups' : '🏆 Playoff Bracket'}</div>`;
 
     // Playoff teams with hover players
     const players = e.playoffPlayers || {};
     body += `<div class="evd-playoff-teams-list">`;
     teams.forEach((t, ti) => {
-      const tName = t.name || `Team ${ti+1}`;
+      if (!t || !t.name) return;            // empty slot (4- and 6-team playoffs)
+      const tName = t.name;
       const tPlayers = players[tName] || [];
       body += `<div class="evd-pt-chip" data-team-idx="${ti}">`;
-      if (t.logo) body += `<img src="${escHtml(t.logo)}" class="evd-pt-logo" alt="" onerror="this.style.display='none'">`;
+      const ptLogo = t.logo || getTeamLogoUrl(t.name || '');
+      if (ptLogo) body += `<img src="${escHtml(ptLogo)}" class="evd-pt-logo" alt="" onerror="this.style.display='none'">`;
       body += `<span class="evd-pt-seed">Seed ${ti+1}</span>`;
       body += `<span class="evd-pt-name">${escHtml(tName)}</span>`;
       if (tPlayers.filter(Boolean).length) {
@@ -2778,8 +2784,8 @@ function openEventDetails(idx) {
     });
     body += `</div>`;
 
-    // Bracket drawing
-    body += renderPlayoffBracket(e);
+    // Bracket drawing (the typed one is only used when the match history has no playoffs for this event)
+    if (!evHistoryBracket) body += renderPlayoffBracket(e);
     body += `</div>`;
   }
 
@@ -2810,11 +2816,11 @@ function renderPlayoffBracket(e) {
   const fn = bracket.final || {};
 
   const tName = i => teams[i] ? (teams[i].name || `Team ${i+1}`) : `Team ${i+1}`;
-  const tLogo = i => teams[i] ? teams[i].logo : '';
+  const tLogo = i => teams[i] ? (teams[i].logo || getTeamLogoUrl(teams[i].name || '')) : '';
 
   // Build a map: team name → logo
   const logoMap = {};
-  teams.forEach((t, i) => { if (t && t.name && t.logo) logoMap[t.name] = t.logo; });
+  teams.forEach((t, i) => { if (t && t.name) { const u = t.logo || getTeamLogoUrl(t.name); if (u) logoMap[t.name] = u; } });
 
   // QF: 0v7, 1v6, 2v5, 3v4
   const qfPairs = [[0,7],[1,6],[2,5],[3,4]];
@@ -3405,6 +3411,8 @@ function saveEvent() {
   // Final standings (all teams, independent of Winner/2nd/3rd/4th)
   ev.standings = collectStandingsFromDOM();
 
+  evFinishSave(ev);   // format + lineup snapshot (Events v2)
+
   if (!ev.name) {
     alert('Event name is required.');
     return;
@@ -3676,7 +3684,9 @@ function deleteEvent(idx) {
 
 /* ─── Download JSON ─── */
 function downloadEventsJson() {
-  const blob = new Blob([JSON.stringify(eventsData, null, 2)], { type: 'application/json' });
+  const slim = evSlimmedEvents();
+  if (slim.removed) setStatus(`Events exported · ${slim.removed} copied team logo(s) left out, they come from team_logo.json`, 'ok');
+  const blob = new Blob([JSON.stringify(slim.data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -3941,3 +3951,382 @@ function rosterCardHtml(teamName) {
   const name = decodeURIComponent(location.hash.slice(1));
   if (name && document.getElementById('panel-' + name)) switchPanel(name);
 })();
+
+
+/* ════════════════════════════════════════════════════════════════
+   EVENTS v2
+   - Team names: suggestions, logo and five players filled in automatically
+   - Lineup snapshot saved for every team of a NEW event (e.lineups)
+   - Event format (e.format)
+   - Groups, stages and playoffs drawn from the match history (history.xlsx)
+   - "Fill from match history": playoff teams, top four and final standings
+   - Prize tier hint + individual prizes from the prize pool value
+   - Export no longer stores a copy of logos that team_logo.json already has
+════════════════════════════════════════════════════════════════ */
+const EV_FORMATS = [
+  { id: '',            label: 'Not set',                                            teams: 0,  note: '' },
+  { id: 'se8',         label: 'Single elimination · 8 teams',                       teams: 8,  note: 'Quarter-finals, semi-finals, third place and grand final.' },
+  { id: 'de8',         label: 'Double elimination · 8 teams',                       teams: 8,  note: 'Upper and lower bracket, consolidation final and grand final.' },
+  { id: 'gsl2-se4',    label: '2 groups of 4 → 4-team playoffs',                    teams: 8,  note: 'Opening, winners, elimination and decider matches; top two of each group reach the semi-finals.' },
+  { id: 'gsl4-se8',    label: '4 groups of 4 → 8-team playoffs',                    teams: 16, note: 'Opening, winners, elimination and decider matches; top two of each group reach the quarter-finals.' },
+  { id: 'de2-se6',     label: '2 double-elimination groups of 8 → 6-team playoffs', teams: 16, note: 'Group winners go straight to the semi-finals; 2nd and 3rd play the quarter-finals.' },
+  { id: 'ko2-se8',     label: 'Stage 1 + Stage 2 knockout → 8-team playoffs',       teams: 32, note: '16 matches in Stage 1, 8 in Stage 2, the 8 winners play the playoffs.' },
+  { id: 'swiss3-se8',  label: 'Major · 3 Swiss stages → 8-team playoffs',           teams: 32, note: '16 teams per stage, 8 advance and meet 8 waiting teams; the 8 that pass Stage 3 play the playoffs.' },
+];
+const evFormatLabel = id => (EV_FORMATS.find(f => f.id === id) || {}).label || '';
+
+const evKeyOf = name => String(name || '').toLowerCase().replace(/\bmajor\b/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+const evSameTeam = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+const evOrd = n => { n = Number(n); const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+const evRange = (from, n) => n <= 1 ? evOrd(from) : `${evOrd(from)}-${evOrd(from + n - 1)}`;
+
+/* ── match history → series for one event (same rule as the team pages:
+      same two teams, same day, same stage; score = maps won) ── */
+function evSeriesFor(eventName) {
+  const key = evKeyOf(eventName);
+  if (!key || !Array.isArray(historyData)) return [];
+  const bag = new Map();
+  historyData.forEach((m, i) => {
+    if (evKeyOf(m.event) !== key) return;
+    const pair = [m.team1.toLowerCase(), m.team2.toLowerCase()].sort().join('|');
+    const k = [m.dateStr, pair, String(m.details).toLowerCase()].join('~');
+    let s = bag.get(k);
+    if (!s) { s = { dateStr: m.dateStr, details: m.details || '', a: m.team1, b: m.team2, wa: 0, wb: 0, maps: [], ord: i }; bag.set(k, s); }
+    const flip = !evSameTeam(m.team1, s.a);
+    const sa = flip ? m.score2 : m.score1, sb = flip ? m.score1 : m.score2;
+    if (sa > sb) s.wa++; else if (sb > sa) s.wb++;
+    s.maps.push(`${m.map || 'Map'} ${sa}-${sb}`);
+  });
+  // historyData is newest-first, so a larger index means earlier in the sheet
+  return [...bag.values()].sort((x, y) => (x.dateStr || '').localeCompare(y.dateStr || '') || y.ord - x.ord);
+}
+const evWinner = s => s.wa > s.wb ? s.a : s.wb > s.wa ? s.b : null;
+const evLoser = s => s.wa > s.wb ? s.b : s.wb > s.wa ? s.a : null;
+
+/* ── classify a stage name ── */
+function evStageInfo(details) {
+  const d = String(details || '').trim();
+  let m;
+  if (/^(quarter|semi)[\s-]*finals?$/i.test(d) || /^grand[\s-]*final$/i.test(d) || /^final$/i.test(d) || /third\s*place/i.test(d))
+    return { block: 'Playoffs', kind: 'playoffs', round: d };
+  if ((m = /^(group\s+\S+)\s*-\s*(.+)$/i.exec(d))) return { block: m[1].replace(/^group/i, 'Group'), kind: 'group', round: m[2].trim() };
+  if ((m = /^(stage\s+\d+)\s*\[(\d+):(\d+)\]$/i.exec(d))) return { block: m[1].replace(/^stage/i, 'Stage'), kind: 'swiss', round: `Round ${Number(m[2]) + Number(m[3]) + 1}`, record: `${m[2]}-${m[3]}`, w: Number(m[2]), l: Number(m[3]) };
+  return { block: d || 'Matches', kind: 'list', round: '' };
+}
+function evPlayoffRoundOrder(r) { return /quarter/i.test(r) ? 0 : /semi/i.test(r) ? 1 : /third/i.test(r) ? 3 : 2; }
+function evGroupRoundOrder(r) {
+  const lower = /lower|elimination|decider/i.test(r);
+  const step = /opening/i.test(r) ? 0 : /(round|ground)\s*1|elimination/i.test(r) ? 1 : /semi|winner/i.test(r) ? 2 : /decider/i.test(r) ? 3 : /final/i.test(r) ? 4 : 2;
+  return (lower ? 10 : 0) + step;
+}
+
+/* ── drawing ── */
+function evMatchBoxHtml(s, sub) {
+  const w = evWinner(s);
+  const row = (name, score) => `<div class="ev2-row${w && evSameTeam(w, name) ? ' win' : ''}">${teamLogoImgHtml(name, 'team-logo-sm')}<span class="ev2-name">${escHtml(name)}</span><span class="ev2-score">${score}</span></div>`;
+  return `<div class="ev2-match" title="${escHtml((s.dateStr ? s.dateStr + ' · ' : '') + s.maps.join(' · '))}">${sub ? `<div class="ev2-sub">${escHtml(sub)}</div>` : ''}${row(s.a, s.wa)}${row(s.b, s.wb)}</div>`;
+}
+function evColumnsHtml(cols) {
+  return `<div class="ev2-cols">${cols.map(c => `<div class="ev2-col"><div class="ev2-col-title">${escHtml(c.title)}</div>${c.html}</div>`).join('')}</div>`;
+}
+function evBlocksOf(series) {
+  const blocks = new Map();
+  series.forEach(s => {
+    const info = evStageInfo(s.details);
+    if (!blocks.has(info.block)) blocks.set(info.block, { name: info.block, kind: info.kind, items: [] });
+    blocks.get(info.block).items.push({ s, info });
+  });
+  return [...blocks.values()];
+}
+function evHasHistoryPlayoffs(e) { return evSeriesFor(e.name).some(s => evStageInfo(s.details).kind === 'playoffs'); }
+
+function evStagesHtml(e) {
+  const series = evSeriesFor(e.name);
+  const fmt = evFormatLabel(e.format);
+  if (!series.length) return fmt ? `<div class="evd-section"><div class="evd-section-title">🗂 Format</div><div class="ev2-format">${escHtml(fmt)}</div><div class="ev2-hint">No matches for this event in the match history yet.</div></div>` : '';
+  const blocks = evBlocksOf(series);
+  // playoffs first (the part people look for), then the rest from the latest stage back to the first
+  blocks.sort((x, y) => (y.kind === 'playoffs') - (x.kind === 'playoffs'));
+  const playoffs = blocks.filter(b => b.kind === 'playoffs'), rest = blocks.filter(b => b.kind !== 'playoffs').reverse();
+  let html = `<div class="evd-section"><div class="evd-section-title">🗂 Stages &amp; Brackets <span class="ev2-src">from the match history</span></div>`;
+  if (fmt) html += `<div class="ev2-format">${escHtml(fmt)}</div>`;
+  [...playoffs, ...rest].forEach(b => {
+    let inner;
+    if (b.kind === 'playoffs') {
+      const rounds = new Map();
+      b.items.forEach(x => { const k = evPlayoffRoundOrder(x.info.round); if (!rounds.has(k)) rounds.set(k, { title: x.info.round, list: [] }); rounds.get(k).list.push(x.s); });
+      const col = k => rounds.has(k) ? rounds.get(k).list.map(s => evMatchBoxHtml(s)).join('') : '';
+      const cols = [];
+      if (rounds.has(0)) cols.push({ title: 'Quarter-finals', html: col(0) });
+      if (rounds.has(1)) cols.push({ title: 'Semi-finals', html: col(1) });
+      if (rounds.has(2) || rounds.has(3)) cols.push({ title: 'Grand final', html: col(2) + (rounds.has(3) ? `<div class="ev2-col-title ev2-third">Third place</div>${col(3)}` : '') });
+      inner = evColumnsHtml(cols);
+    } else if (b.kind === 'group') {
+      const rounds = new Map();
+      b.items.forEach(x => { if (!rounds.has(x.info.round)) rounds.set(x.info.round, []); rounds.get(x.info.round).push(x.s); });
+      const sorted = [...rounds.entries()].sort((x, y) => evGroupRoundOrder(x[0]) - evGroupRoundOrder(y[0]));
+      const upper = sorted.filter(r => evGroupRoundOrder(r[0]) < 10), lower = sorted.filter(r => evGroupRoundOrder(r[0]) >= 10);
+      const mk = list => evColumnsHtml(list.map(r => ({ title: r[0], html: r[1].map(s => evMatchBoxHtml(s)).join('') })));
+      inner = mk(upper) + (lower.length ? mk(lower) : '');
+    } else if (b.kind === 'swiss') {
+      const rounds = new Map();
+      b.items.forEach(x => { if (!rounds.has(x.info.round)) rounds.set(x.info.round, []); rounds.get(x.info.round).push(x); });
+      const sorted = [...rounds.entries()].sort((x, y) => x[0].localeCompare(y[0], 'en', { numeric: true }));
+      inner = evColumnsHtml(sorted.map(r => ({ title: r[0], html: r[1].sort((x, y) => y.info.w - x.info.w).map(x => evMatchBoxHtml(x.s, x.info.record)).join('') })));
+    } else {
+      inner = `<div class="ev2-grid">${b.items.map(x => evMatchBoxHtml(x.s)).join('')}</div>`;
+    }
+    const teams = new Set(b.items.flatMap(x => [x.s.a.toLowerCase(), x.s.b.toLowerCase()])).size;
+    html += `<details class="ev2-block"${b.kind === 'playoffs' || b.items.length <= 12 ? ' open' : ''}><summary><span>${escHtml(b.name)}</span><small>${b.items.length} match${b.items.length > 1 ? 'es' : ''} · ${teams} teams</small></summary>${inner}</details>`;
+  });
+  return html + `</div>`;
+}
+
+/* ── standings worked out from the results ── */
+function evDeriveStandings(eventName) {
+  const series = evSeriesFor(eventName);
+  if (!series.length) return null;
+  // qualifiers (open qualifiers, RMRs) are part of the road to the event, not of its final standings
+  const items = series.map(s => ({ s, info: evStageInfo(s.details) })).filter(x => !(x.info.kind === 'list' && /\b(oq|rmrs?|qualifiers?)\b/i.test(x.info.block)));
+  const po = items.filter(x => x.info.kind === 'playoffs');
+  const gf = po.find(x => evPlayoffRoundOrder(x.info.round) === 2), third = po.find(x => evPlayoffRoundOrder(x.info.round) === 3);
+  const sf = po.filter(x => evPlayoffRoundOrder(x.info.round) === 1), qf = po.filter(x => evPlayoffRoundOrder(x.info.round) === 0);
+  const tiers = [], placed = new Set();
+  let next = 1;
+  const add = (teams, label) => {
+    teams = teams.filter(t => t && !placed.has(t.toLowerCase()));
+    if (!teams.length) return;
+    teams.forEach(t => placed.add(t.toLowerCase()));
+    tiers.push({ label: label || evRange(next, teams.length), teams: teams.map(name => ({ name, logo: '' })) });
+    next += teams.length;
+  };
+  const top = { winner: '', second: '', third: '', fourth: '' };
+  if (gf) { top.winner = evWinner(gf.s) || ''; top.second = evLoser(gf.s) || ''; add([top.winner]); add([top.second]); }
+  if (third) { top.third = evWinner(third.s) || ''; top.fourth = evLoser(third.s) || ''; add([top.third]); add([top.fourth]); }
+  else add(sf.map(x => evLoser(x.s)));
+  add(qf.map(x => evLoser(x.s)));
+  // everyone else: by the last stage they played, latest stage first
+  const last = new Map();   // team → { name, block, kind, order, wins }
+  items.forEach((x, i) => {
+    [x.s.a, x.s.b].forEach(t => {
+      const k = t.toLowerCase();
+      const cur = last.get(k);
+      const blk = x.info.kind === 'group' ? 'Group stage' : x.info.block;
+      if (!cur || cur.block !== blk) last.set(k, { name: t, block: blk, kind: x.info.kind, order: i, wins: 0 });
+      const rec = last.get(k); rec.order = i;
+      if (evWinner(x.s) && evSameTeam(evWinner(x.s), t)) rec.wins++;
+    });
+  });
+  const blocks = new Map();
+  [...last.values()].filter(r => !placed.has(r.name.toLowerCase())).forEach(r => {
+    if (!blocks.has(r.block)) blocks.set(r.block, { order: 0, kind: r.kind, teams: [] });
+    const b = blocks.get(r.block); b.teams.push(r); b.order = Math.max(b.order, r.order);
+  });
+  [...blocks.values()].sort((x, y) => y.order - x.order).forEach(b => {
+    if (b.kind === 'swiss') {           // Swiss: teams that left with two wins rank above the rest
+      add(b.teams.filter(r => r.wins >= 2).map(r => r.name));
+      add(b.teams.filter(r => r.wins < 2).map(r => r.name));
+    } else add(b.teams.sort((x, y) => y.wins - x.wins).map(r => r.name));
+  });
+  // playoff teams in bracket order (the form pairs seeds 1v8, 2v7, 3v6, 4v5)
+  const first = qf.length ? qf : sf;
+  const seeds = Array(8).fill('');
+  first.forEach((x, i) => { if (i < 4) { seeds[i] = x.s.a; seeds[7 - i] = x.s.b; } });
+  if (qf.length && qf.length < 4) sf.forEach(x => [x.s.a, x.s.b].forEach(t => { if (!seeds.some(n => n && evSameTeam(n, t))) { const free = seeds.indexOf(''); if (free >= 0) seeds[free] = t; } }));
+  return { tiers, top, seeds, matches: series.length };
+}
+
+/* ── rosters / lineups ── */
+function evRosterOf(team) {
+  if (!rosterByTeam || !team) return [];
+  return (rosterByTeam.get(String(team).trim().toLowerCase()) || []).map(p => p.name);
+}
+/* Lineup snapshot for every team of the event. Kept as it is once saved, so later
+   transfers never rewrite an old event. Only events created with this version carry
+   it (lineupsAuto); the older events keep being handled by the team pages' own rule. */
+function evBuildLineups(ev, prev) {
+  const out = {};
+  const old = (prev && prev.lineups) || {};
+  const oldKey = n => Object.keys(old).find(k => evSameTeam(k, n));
+  const names = new Map();
+  (ev.playoffTeams || []).forEach(t => { if (t && t.name) names.set(t.name.toLowerCase(), t.name); });
+  (ev.standings || []).forEach(s => (s.teams || []).forEach(t => { if (t && t.name) names.set(t.name.toLowerCase(), t.name); }));
+  evSeriesFor(ev.name).forEach(s => [s.a, s.b].forEach(t => { if (!names.has(t.toLowerCase())) names.set(t.toLowerCase(), t); }));
+  names.forEach(name => {
+    const typedKey = Object.keys(ev.playoffPlayers || {}).find(k => evSameTeam(k, name));
+    const typed = typedKey ? ev.playoffPlayers[typedKey].filter(Boolean) : [];
+    const kept = oldKey(name) ? old[oldKey(name)] : null;
+    const lineup = typed.length ? typed : (kept && kept.length ? kept : evRosterOf(name));
+    if (lineup.length) out[name] = lineup.slice();
+  });
+  return out;
+}
+
+/* ── prize tier from the prize pool value (Tournaments Models) ── */
+const EV_TIERS = [
+  { name: 'C Tier', stars: 1, max: 10000,    paid: 8,  awards: 15000 },
+  { name: 'B Tier', stars: 2, max: 50000,    paid: 8,  awards: 20000 },
+  { name: 'A Tier', stars: 3, max: 150000,   paid: 16, awards: 30000 },
+  { name: 'S Tier', stars: 4, max: 999999,   paid: 16, awards: 40000 },
+  { name: 'SS Tier', stars: 5, max: Infinity, paid: 24, awards: 50000 },
+];
+const evMoney = v => { const n = Number(String(v || '').replace(/[^0-9.]/g, '')); return Number.isFinite(n) ? n : 0; };
+const evTierFor = pool => { const v = evMoney(pool); return v > 0 ? EV_TIERS.find(t => v <= t.max) : null; };
+const evFmtUsd = n => '$' + (Math.round(n * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
+function evApplyPrizeTier() {
+  const hint = document.getElementById('evmTierHint'); if (!hint) return;
+  const tier = evTierFor(document.getElementById('evmPrizePool').value);
+  // awards pool split: MVP 7 parts, EVP 5, and 3 parts for each of the three VPs (21 in total)
+  const auto = tier ? { evmPrizeMVP: evFmtUsd(tier.awards * 7 / 21), evmPrizeEVP: evFmtUsd(tier.awards * 5 / 21), evmPrizeVP: evFmtUsd(tier.awards * 3 / 21) } : {};
+  Object.keys({ evmPrizeMVP: 1, evmPrizeEVP: 1, evmPrizeVP: 1 }).forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    if (!el.value.trim() || el.dataset.auto === '1') { el.value = auto[id] || ''; el.dataset.auto = auto[id] ? '1' : ''; }
+  });
+  const paidIds = [['evmPrize1st', 1], ['evmPrize2nd', 2], ['evmPrize34', 4], ['evmPrize58', 8], ['evmPrize911', 11], ['evmPrize1216', 16], ['evmPrize1724', 24]];
+  paidIds.forEach(([id, upto]) => { const el = document.getElementById(id); if (el) el.closest('.form-group').classList.toggle('ev2-unpaid', !!tier && upto > tier.paid); });
+  hint.textContent = tier ? `${tier.name} (${'★'.repeat(tier.stars)}) · pays the top ${tier.paid} · awards pool ${evFmtUsd(tier.awards)}` : '';
+}
+
+/* ── form additions (injected once; index.html stays as it is) ── */
+function evEnsureFormExtras() {
+  if (document.getElementById('evmFormat')) return;
+  const nameGroup = document.getElementById('evmName').closest('.form-group');
+  const wrap = document.createElement('div');
+  wrap.className = 'form-group ev2-formatbar';
+  wrap.style.gridColumn = '1/-1';
+  wrap.innerHTML = `
+    <label class="form-label" for="evmFormat">Event Format</label>
+    <div class="ev2-formatrow">
+      <select class="form-control" id="evmFormat">${EV_FORMATS.map(f => `<option value="${f.id}">${escHtml(f.label)}</option>`).join('')}</select>
+      <button type="button" class="btn btn-ghost" id="evmFillFromHistory" title="Uses the matches of this event in history.xlsx">⚡ Fill from match history</button>
+    </div>
+    <div class="ev2-hint" id="evmFormatNote"></div>
+    <div class="ev2-hint" id="evmFillNote"></div>`;
+  nameGroup.after(wrap);
+
+  const pool = document.getElementById('evmPrizePool');
+  const hint = document.createElement('div'); hint.className = 'ev2-hint'; hint.id = 'evmTierHint';
+  pool.after(hint);
+  pool.addEventListener('input', evApplyPrizeTier);
+  ['evmPrizeMVP', 'evmPrizeEVP', 'evmPrizeVP'].forEach(id => document.getElementById(id).addEventListener('input', e => { e.target.dataset.auto = ''; }));
+
+  const dl = document.createElement('datalist'); dl.id = 'evTeamNames'; document.body.appendChild(dl);
+
+  document.getElementById('evmFormat').addEventListener('change', e => {
+    const f = EV_FORMATS.find(x => x.id === e.target.value) || EV_FORMATS[0];
+    document.getElementById('evmFormatNote').textContent = f.note;
+    const tc = document.getElementById('evmTeamCount');
+    if (f.teams && !tc.value) tc.value = f.teams;
+  });
+  document.getElementById('evmFillFromHistory').addEventListener('click', evFillFromHistory);
+
+  // bracket section is optional now
+  const bk = document.getElementById('evmBracketEdit');
+  if (bk) { const n = document.createElement('div'); n.className = 'ev2-hint'; n.textContent = 'Optional: when this event has matches in history.xlsx, the brackets are drawn from there and these scores are not used.'; bk.before(n); }
+
+  const modal = document.getElementById('evModalOverlay');
+  const isTeamInput = el => el.matches && el.matches('.ev-pt-name, .ev-standing-team-name, #evmWinner, #evmSecond, #evmThird, #evmFourth, .ev-bk-team-input');
+  modal.addEventListener('focusin', e => {
+    if (!isTeamInput(e.target)) return;
+    e.target.setAttribute('list', 'evTeamNames');
+    if (!dl.children.length && currentNewTeams) dl.innerHTML = currentNewTeams.map(t => `<option value="${escHtml(t.team)}"></option>`).join('');
+  });
+  // typing or picking a team: fix the spelling to the ranking's, show its logo, fill its players
+  modal.addEventListener('change', e => {
+    const el = e.target;
+    if (!isTeamInput(el)) return;
+    const hit = (currentNewTeams || []).find(t => evSameTeam(t.team, el.value));
+    if (hit) el.value = hit.team;
+    if (el.matches('.ev-pt-name')) { evAutoTeamSlot(Number(el.dataset.ptIdx), true); refreshBracketEditLabels(); }
+    if (el.matches('.ev-standing-team-name')) evAutoStandingLogo(el.closest('.ev-standing-team-row'));
+  });
+}
+function evAutoLogoPreview(img, logoInput, name) {
+  if (!img) return;
+  const own = logoInput && logoInput.value.trim();
+  const url = own || getTeamLogoUrl(name);
+  img.src = url || ''; img.style.display = url ? '' : 'none';
+  if (logoInput) logoInput.placeholder = !own && url ? 'Logo from team_logo.json' : 'Logo URL';
+}
+function evAutoTeamSlot(i, fillPlayers) {
+  const nameEl = document.querySelector(`[data-pt-idx="${i}"][data-pt-field="name"]`);
+  if (!nameEl) return;
+  const name = nameEl.value.trim();
+  evAutoLogoPreview(document.querySelector(`[data-pt-preview="${i}"]`), document.querySelector(`[data-pt-idx="${i}"][data-pt-field="logo"]`), name);
+  const ref = document.querySelector(`.ev-players-team-name[data-players-idx="${i}"] .ev-players-team-ref`);
+  if (ref) ref.textContent = name || `Team ${i + 1}`;
+  if (!fillPlayers) return;
+  const inputs = [...document.querySelectorAll(`.ev-player-inp[data-team-idx="${i}"]`)];
+  const roster = evRosterOf(name);
+  const untouched = inputs.every(inp => !inp.value.trim() || inp.dataset.auto === '1');
+  if (untouched) inputs.forEach((inp, j) => { inp.value = roster[j] || ''; inp.dataset.auto = roster[j] ? '1' : ''; });
+}
+function evAutoStandingLogo(row) {
+  if (!row) return;
+  evAutoLogoPreview(row.querySelector('.ev-standing-team-preview'), row.querySelector('.ev-standing-team-logo'), row.querySelector('.ev-standing-team-name').value.trim());
+}
+function evRefreshAutoLogos() {
+  for (let i = 0; i < 8; i++) evAutoTeamSlot(i, false);
+  document.querySelectorAll('.ev-standing-team-row').forEach(evAutoStandingLogo);
+}
+
+function evFillFromHistory() {
+  const note = document.getElementById('evmFillNote');
+  const name = document.getElementById('evmName').value.trim();
+  if (!name) { note.textContent = 'Type the event name first: it has to match the Event column of history.xlsx.'; return; }
+  const d = evDeriveStandings(name);
+  if (!d) { note.textContent = `No matches found for “${name}” in history.xlsx. Check the spelling of the event name.`; return; }
+  if (document.getElementById('evmStatus').value === 'Finished') {
+    [['evmWinner', d.top.winner], ['evmSecond', d.top.second], ['evmThird', d.top.third], ['evmFourth', d.top.fourth]].forEach(([id, v]) => { const el = document.getElementById(id); if (el && v) el.value = v; });
+  }
+  d.seeds.forEach((t, i) => {
+    const el = document.querySelector(`[data-pt-idx="${i}"][data-pt-field="name"]`);
+    if (el && t && !el.value.trim()) { el.value = t; evAutoTeamSlot(i, true); }
+  });
+  refreshBracketEditLabels();
+  // prizes typed in the form go onto the tiers whose label matches
+  const pd = { '1st': 'evmPrize1st', '2nd': 'evmPrize2nd', '3rd': 'evmPrize34', '4th': 'evmPrize34', '3rd-4th': 'evmPrize34', '5th-8th': 'evmPrize58', '9th-11th': 'evmPrize911', '12th-16th': 'evmPrize1216', '17th-24th': 'evmPrize1724' };
+  d.tiers.forEach(t => { const id = pd[t.label]; t.prize = id ? document.getElementById(id).value.trim() : ''; });
+  renderStandingsEdit(d.tiers);
+  evRefreshAutoLogos();
+  const tc = document.getElementById('evmTeamCount'); if (!tc.value) tc.value = d.tiers.reduce((n, t) => n + t.teams.length, 0);
+  note.textContent = `Filled from ${d.matches} matches: top four, playoff teams with their players, and ${d.tiers.length} placement tiers. Review the tier labels before saving.`;
+}
+
+/* open / save hooks */
+const evOpenEventModalBase = openEventModal;
+openEventModal = function (editIdx = -1) {
+  evEnsureFormExtras();
+  evOpenEventModalBase(editIdx);
+  const e = editIdx >= 0 ? eventsData[editIdx] : null;
+  const sel = document.getElementById('evmFormat');
+  sel.value = (e && e.format) || '';
+  if (sel.value !== ((e && e.format) || '')) sel.value = '';
+  document.getElementById('evmFormatNote').textContent = (EV_FORMATS.find(f => f.id === sel.value) || {}).note || '';
+  document.getElementById('evmFillNote').textContent = '';
+  ['evmPrizeMVP', 'evmPrizeEVP', 'evmPrizeVP'].forEach(id => { document.getElementById(id).dataset.auto = ''; });
+  evApplyPrizeTier();
+  evRefreshAutoLogos();
+  loadRosters();
+};
+function evFinishSave(ev) {
+  const prev = evEditIndex >= 0 ? eventsData[evEditIndex] : null;
+  ev.format = (document.getElementById('evmFormat') || {}).value || '';
+  ev.lineupsAuto = prev ? !!prev.lineupsAuto : true;
+  if (ev.lineupsAuto) ev.lineups = evBuildLineups(ev, prev);
+  else if (prev && prev.lineups) ev.lineups = prev.lineups;
+}
+
+/* Export: a team logo that team_logo.json already provides is not stored again inside
+   the events file (that copy is what made the file so large). Logos of teams that are
+   not in team_logo.json are kept. */
+function evSlimmedEvents() {
+  let removed = 0;
+  const slim = t => { if (t && t.name && t.logo && getTeamLogoUrl(t.name)) { removed++; return { ...t, logo: '' }; } return t; };
+  const data = eventsData.map(e => ({
+    ...e,
+    playoffTeams: (e.playoffTeams || []).map(slim),
+    standings: (e.standings || []).map(s => ({ ...s, teams: (s.teams || []).map(slim) }))
+  }));
+  return { data, removed };
+}

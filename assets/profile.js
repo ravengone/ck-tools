@@ -218,7 +218,10 @@ async function loadEvents() {
     major: String(e.major || '').toLowerCase() === 'yes', city: e.city || '', country: e.country || '', prizePool: e.prizePool || '',
     standings: (e.standings || []).map(s => ({ label: String(s.label || '').trim(),
       names: (s.teams || []).map(t => String(t.name || '').trim()).filter(Boolean),
-      teams: (s.teams || []).map(t => String(t.name || '').trim().toLowerCase()) }))
+      teams: (s.teams || []).map(t => String(t.name || '').trim().toLowerCase()) })),
+    // lineup snapshot saved by the Events form for events created with it (older events have none)
+    lineups: e.lineupsAuto && e.lineups ? Object.fromEntries(Object.entries(e.lineups).map(([team, list]) =>
+      [String(team).trim().toLowerCase(), (list || []).map(n => String(n || '').trim()).filter(Boolean)]).filter(x => x[1].length)) : {}
   }));
 }
 
@@ -864,6 +867,10 @@ const LINEUP_OVERRIDES = [
   { event: 'DreamHack Winter 2026', team: 'Mythic',    in: ['fl0m'],                 out: ['hades'] },
 ];
 function lineupFor(team, key) {
+  // an event created with the Events form carries its own lineups: use them as they were saved
+  const ev = (state.events || []).find(e => e.key === key);
+  const saved = ev && ev.lineups && ev.lineups[team.toLowerCase()];
+  if (saved && saved.length) return { players: saved, source: 'saved', joined: saved };
   if (!state.playersLoaded) return { players: [], source: 'none', joined: [] };
   let names = state.players.filter(p => sameTeam(p.team, team))
     .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue).map(p => p.name);
@@ -878,7 +885,7 @@ function lineupHtml(team, key) {
   const lu = lineupFor(team, key);
   if (!lu.players.length) return '';
   return `<div class="lu"><span class="lu-l">Lineup</span><span class="lu-p">${lu.players.map(n => playerLink(n, team)).join('')}</span>
-    <span class="lu-src ${lu.source === 'override' ? 'recorded' : ''}">${lu.source === 'override' ? 'lineup at this event · differs from today' : 'current roster'}</span></div>`;
+    <span class="lu-src ${lu.source === 'roster' ? '' : 'recorded'}">${lu.source === 'saved' ? 'lineup saved with the event' : lu.source === 'override' ? 'lineup at this event · differs from today' : 'current roster'}</span></div>`;
 }
 
 /* ── former players of a team: logged departures + names seen in old lineups ── */
@@ -891,7 +898,7 @@ function formerPlayers(team) {
   });
   tournamentsOf(team).forEach(o => {
     const lu = lineupFor(team, o.key);
-    if (lu.source !== 'override') return;
+    if (lu.source !== 'override' && lu.source !== 'saved') return;
     lu.joined.forEach(n => {
       if (here(n)) return;
       const k = [...out.keys()].find(x => nameEq(x, n)) || n;
