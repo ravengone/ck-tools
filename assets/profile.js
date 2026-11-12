@@ -218,10 +218,7 @@ async function loadEvents() {
     major: String(e.major || '').toLowerCase() === 'yes', city: e.city || '', country: e.country || '', prizePool: e.prizePool || '',
     standings: (e.standings || []).map(s => ({ label: String(s.label || '').trim(),
       names: (s.teams || []).map(t => String(t.name || '').trim()).filter(Boolean),
-      teams: (s.teams || []).map(t => String(t.name || '').trim().toLowerCase()) })),
-    // lineups the event recorded (playoff teams only); empty placeholder slots are dropped
-    lineups: Object.fromEntries(Object.entries(e.playoffPlayers || {}).map(([team, list]) =>
-      [String(team).trim().toLowerCase(), (list || []).map(n => String(n || '').trim()).filter(Boolean)]).filter(x => x[1].length))
+      teams: (s.teams || []).map(t => String(t.name || '').trim().toLowerCase()) }))
   }));
 }
 
@@ -855,35 +852,33 @@ function eventDates() {
 }
 
 /* ── lineups ──
-   1) If the events backup recorded the lineup for that team at that event, use it.
-   2) Otherwise rebuild it: start from today's roster and undo every transfer that was
-      logged after the event started. Marked as "estimated" on the page. */
-function rosterAt(team, ms) {
-  const names = state.players.filter(p => sameTeam(p.team, team))
-    .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue).map(p => p.name);
-  if (ms == null) return names;
-  const has = n => names.findIndex(x => nameEq(x, n));
-  state.transactions.filter(x => x.id > ms).sort((a, b) => b.id - a.id).forEach(x => {
-    const into = sameTeam(x.to, team), outOf = sameTeam(x.from, team);
-    if (into && !outOf) { const i = has(x.player); if (i >= 0) names.splice(i, 1); }       // joined later → was not here yet
-    else if (outOf && !into && has(x.player) < 0) names.push(x.player);                      // left later → was still here
-  });
-  return names;
-}
+   Rule: a team's lineup at any event is its roster today, except for the moves listed
+   below. Each entry says: at this event, this team played WITH `in` and WITHOUT `out`.
+   To record another roster change, add a line here (event name as in the match history;
+   "Major" in the name and capital letters do not matter). */
+const LINEUP_OVERRIDES = [
+  { event: 'DreamHack Winter 2026', team: 'Iluminar',  in: ['kilzys', 'heroghoxxt'], out: ['Gizmy', 'fl0m'] },
+  { event: 'DreamHack Winter 2026', team: 'BC.Game',   in: ['Valiance'],             out: ['Perfecto'] },
+  { event: 'DreamHack Winter 2026', team: 'Kappa Bar', in: ['Gizmy'],                out: ['diskyb0b'] },
+  { event: 'DreamHack Winter 2026', team: 'Envy',      in: ['PTC'],                  out: ['kl1m'] },
+  { event: 'DreamHack Winter 2026', team: 'Mythic',    in: ['fl0m'],                 out: ['hades'] },
+];
 function lineupFor(team, key) {
-  const ev = (state.events || []).find(e => e.key === key);
-  const rec = ev && ev.lineups[team.toLowerCase()];
-  if (rec && rec.length) return { players: rec, source: 'recorded' };
-  if (!state.playersLoaded) return { players: [], source: 'none' };
-  const d = eventDates().get(key);
-  const ms = d ? new Date(d.first + 'T00:00:00').getTime() : null;
-  return { players: rosterAt(team, ms), source: 'estimated' };
+  if (!state.playersLoaded) return { players: [], source: 'none', joined: [] };
+  let names = state.players.filter(p => sameTeam(p.team, team))
+    .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue).map(p => p.name);
+  const ov = LINEUP_OVERRIDES.filter(o => evKey(o.event) === key && sameTeam(o.team, team));
+  ov.forEach(o => {
+    names = names.filter(n => !(o.out || []).some(x => nameEq(x, n)));
+    (o.in || []).forEach(x => { if (!names.some(n => nameEq(n, x))) names.push(x); });
+  });
+  return { players: names, source: ov.length ? 'override' : 'roster', joined: ov.flatMap(o => o.in || []) };
 }
 function lineupHtml(team, key) {
   const lu = lineupFor(team, key);
   if (!lu.players.length) return '';
   return `<div class="lu"><span class="lu-l">Lineup</span><span class="lu-p">${lu.players.map(n => playerLink(n, team)).join('')}</span>
-    <span class="lu-src ${lu.source}">${lu.source === 'recorded' ? 'recorded at the event' : 'estimated · today’s roster with later transfers undone'}</span></div>`;
+    <span class="lu-src ${lu.source === 'override' ? 'recorded' : ''}">${lu.source === 'override' ? 'lineup at this event · differs from today' : 'current roster'}</span></div>`;
 }
 
 /* ── former players of a team: logged departures + names seen in old lineups ── */
@@ -896,8 +891,8 @@ function formerPlayers(team) {
   });
   tournamentsOf(team).forEach(o => {
     const lu = lineupFor(team, o.key);
-    if (lu.source !== 'recorded') return;
-    lu.players.forEach(n => {
+    if (lu.source !== 'override') return;
+    lu.joined.forEach(n => {
       if (here(n)) return;
       const k = [...out.keys()].find(x => nameEq(x, n)) || n;
       if (!out.has(k)) out.set(k, { name: n, tx: null, events: [] });
@@ -936,12 +931,10 @@ function playerEvents(p) {
       if (lu.players.some(n => ownsRow(p, n, team))) found.set(key + '|' + team.toLowerCase(), { key, team, source: lu.source });
     });
   });
-  // results stored on the player always count, whatever the lineups say
+  // a result stored on the player adds an event only when the lineup rule has not already placed him in it
   state.playerHistory.filter(h => ownsRow(p, h.player, h.team) && h.kind === 'EVENT' && h.team && h.team.toLowerCase() !== 'none').forEach(h => {
-    const key = evKey(h.event), id = key + '|' + h.team.toLowerCase();
-    const sameEvent = [...found.keys()].filter(k => k.startsWith(key + '|'));
-    sameEvent.forEach(k => { if (k !== id && found.get(k).source === 'estimated') found.delete(k); });   // the recorded result wins over a guess
-    if (!found.has(id)) found.set(id, { key, team: h.team, source: 'recorded' });
+    const key = evKey(h.event);
+    if (![...found.keys()].some(k => k.startsWith(key + '|'))) found.set(key + '|' + h.team.toLowerCase(), { key, team: h.team, source: 'history' });
   });
   const list = [...found.values()].map(f => {
     const canon = state.ranking.find(t => sameTeam(t.team, f.team));
@@ -960,7 +953,7 @@ function tourRowHtml(o, team, opts) {
   const meta = [o.stars ? `<span class="ach-stars">${'★'.repeat(Math.min(5, o.stars))}</span>${o.stars >= 5 ? ' Major' : ''}` : '', esc(where), esc(dates),
     o.ev && o.ev.prizePool ? 'Prize pool ' + esc(o.ev.prizePool) : ''].filter(Boolean).join(' · ');
   const logo = o.ev && o.ev.logo ? `<img src="${o.ev.logo}" alt="">` : `<span>${esc(o.name.charAt(0))}</span>`;
-  const withTeam = opts.showTeam ? `<span class="tour-with">with ${logoImg(team)}<b>${esc(team)}</b>${opts.source === 'estimated' ? ' <i title="No lineup was recorded for this team at this event. Rebuilt from today’s roster and the logged transfers.">estimated</i>' : ''}</span>` : '';
+  const withTeam = opts.showTeam ? `<span class="tour-with">with ${logoImg(team)}<b>${esc(team)}</b></span>` : '';
   return `<details class="tour">
     <summary>
       <span class="tour-logo">${logo}</span>
@@ -1122,8 +1115,7 @@ function renderPlayerEvents() {
   $('#tabHistCount').textContent = list.length || '';
   $('#plEventsNote').textContent = list.length ? `${list.length} event${list.length > 1 ? 's' : ''}` : '';
   if (!list.length) { box.innerHTML = '<div class="tp-empty">No events on record for this player.</div>'; return; }
-  box.innerHTML = list.map(f => tourRowHtml(f.o, f.team, { showTeam: true, source: f.source })).join('')
-    + (list.some(f => f.source === 'estimated') ? '<div class="cab-foot">“Estimated” = no lineup was recorded for that team at that event, so it was rebuilt from today’s roster and the logged transfers.</div>' : '');
+  box.innerHTML = list.map(f => tourRowHtml(f.o, f.team, { showTeam: true, source: f.source })).join('');
 }
 function renderPlayerAll() { tips = []; tourCache = new Map(); state._evDates = null; renderPlayerEvents(); renderPlayerHero(); renderPlayerCabinet(); renderPlayerOverview(); }
 
