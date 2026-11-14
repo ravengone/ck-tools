@@ -21,7 +21,7 @@ const URLS = {
   old:     'file/old.xlsx',
   archiveDir: 'file/archives/',
   events:  'file/kz-events-backup.json',
-  lineups: 'file/lineup_overrides.json',
+  lineups: ['file/lineup_overrides.json', 'lineup_overrides.json'],   // tried in order
   players: 'file/players_updated.xlsx',
   history: 'file/history_updated.xlsx',
   matches: 'file/history.xlsx',
@@ -36,7 +36,7 @@ const PHOTO_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
 
 const state = {
   teamParam: new URLSearchParams(location.search).get('team') || '',
-  ranking: [], oldRanking: null, team: null, player: null, trajectory: [],
+  ranking: [], oldRanking: null, team: null, player: null, trajectory: [], lineupFileLoaded: null, lineupFileError: '',
   series: null, events: null, transactions: [],
   players: [], playersLoaded: false,
   teamHistory: [], playerHistory: [], historyLoaded: false,
@@ -886,12 +886,26 @@ let LINEUP_OVERRIDES = [
   { event: 'DreamHack Winter 2026', team: 'Mythic',    in: ['fl0m'],                 out: ['hades'] },
 ];
 async function loadLineupOverrides() {
-  const res = await fetch(URLS.lineups, { cache: 'no-store' });
-  if (!res.ok) throw new Error('lineup_overrides.json → HTTP ' + res.status);
-  const arr = await res.json();
-  if (Array.isArray(arr)) LINEUP_OVERRIDES = arr.filter(o => o && o.event && o.team)
-    .map(o => ({ event: String(o.event), team: String(o.team), in: (o.in || []).map(String), out: (o.out || []).map(String) }));
+  let last = '';
+  for (const url of URLS.lineups) {
+    let res;
+    try { res = await fetch(url, { cache: 'no-store' }); } catch (e) { last = url + ' → ' + e.message; continue; }
+    if (!res.ok) { last = url + ' → HTTP ' + res.status; continue; }
+    let arr;
+    try { arr = JSON.parse(await res.text()); }
+    catch (e) { state.lineupFileError = url + ' is not valid JSON (' + e.message + ')'; throw new Error(state.lineupFileError); }
+    if (!Array.isArray(arr)) { state.lineupFileError = url + ' must contain a list [ … ]'; throw new Error(state.lineupFileError); }
+    LINEUP_OVERRIDES = arr.filter(o => o && o.event && o.team)
+      .map(o => ({ event: String(o.event), team: String(o.team), in: (o.in || []).map(String), out: (o.out || []).map(String) }));
+    state.lineupFileLoaded = { url, count: LINEUP_OVERRIDES.length };
+    console.log(`Lineup corrections: ${LINEUP_OVERRIDES.length} loaded from ${url}`);
+    return;
+  }
+  state.lineupFileError = 'lineup_overrides.json not found (looked in file/ and next to this page) · ' + last;
+  throw new Error(state.lineupFileError);
 }
+/* appended to the status line so a missing or broken corrections file is visible */
+function lineupFileNote() { return state.lineupFileError ? ' · ⚠ ' + state.lineupFileError : ''; }
 function lineupFor(team, key) {
   // 1. the lineup the Events form saved with this event, otherwise today's roster
   const ev = (state.events || []).find(e => e.key === key);
@@ -1194,7 +1208,7 @@ async function bootTeam() {
   ]);
   extras.forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
   const off = [extras[1].status === 'rejected' && 'trophy icons (assets/awards.json)', extras[2].status === 'rejected' && 'event details (file/kz-events-backup.json)'].filter(Boolean);
-  if (!missing.length) setStatus(off.length ? 'Loaded · not available: ' + off.join(', ') : 'All data loaded', 'ok');
+  if (!missing.length) setStatus((off.length ? 'Loaded · not available: ' + off.join(', ') : 'All data loaded') + lineupFileNote(), state.lineupFileError ? 'err' : 'ok');
 }
 
 async function bootPlayer() {
@@ -1219,7 +1233,7 @@ async function bootPlayer() {
   ]);
   extras.forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
   const off = [extras[0].status === 'rejected' && 'trophy icons (assets/awards.json)', extras[1].status === 'rejected' && 'event details (file/kz-events-backup.json)'].filter(Boolean);
-  if (hi.status !== 'rejected') setStatus(off.length ? 'Loaded · not available: ' + off.join(', ') : 'All data loaded', 'ok');
+  if (hi.status !== 'rejected') setStatus((off.length ? 'Loaded · not available: ' + off.join(', ') : 'All data loaded') + lineupFileNote(), state.lineupFileError ? 'err' : 'ok');
 }
 
 document.addEventListener('click', e => {
