@@ -8,6 +8,7 @@
      file/old.xlsx               previous ranking, for movement (optional)
      file/archives/              older ranking snapshots, for the chart (optional)
      file/kz-events-backup.json  event logos, places and full standings (optional, large)
+     file/lineup_overrides.json  corrections to who played for a team at an old event (optional)
      assets/team_logo.json       team logos (optional)
      assets/awards.json          trophy / medal icons (optional, large)
      assets/players/<Name>.png   player photos (optional)
@@ -20,6 +21,7 @@ const URLS = {
   old:     'file/old.xlsx',
   archiveDir: 'file/archives/',
   events:  'file/kz-events-backup.json',
+  lineups: 'file/lineup_overrides.json',
   players: 'file/players_updated.xlsx',
   history: 'file/history_updated.xlsx',
   matches: 'file/history.xlsx',
@@ -869,17 +871,27 @@ function eventDates() {
 }
 
 /* ── lineups ──
-   Rule: a team's lineup at any event is its roster today, except for the moves listed
-   below. Each entry says: at this event, this team played WITH `in` and WITHOUT `out`.
-   To record another roster change, add a line here (event name as in the match history;
-   "Major" in the name and capital letters do not matter). */
-const LINEUP_OVERRIDES = [
+   A team's lineup at an event is its roster today, unless a correction says otherwise.
+   Corrections live in file/lineup_overrides.json so they can be edited without touching
+   this file; the list below is only the fallback used when that file is missing.
+   Each entry: { "event": "...", "team": "...", "in": ["…"], "out": ["…"] } — "in" played
+   at that event, "out" did not. The event name is matched loosely: capitals and the word
+   "Major" are ignored, so "DreamHack Winter 2026" also matches "DreamHack Winter Major 2026".
+   Events created with the Events form save their own lineup and ignore all of this. */
+let LINEUP_OVERRIDES = [
   { event: 'DreamHack Winter 2026', team: 'Iluminar',  in: ['kilzys', 'heroghoxxt'], out: ['Gizmy', 'fl0m'] },
   { event: 'DreamHack Winter 2026', team: 'BC.Game',   in: ['Valiance'],             out: ['Perfecto'] },
   { event: 'DreamHack Winter 2026', team: 'Kappa Bar', in: ['Gizmy'],                out: ['diskyb0b'] },
   { event: 'DreamHack Winter 2026', team: 'Envy',      in: ['PTC'],                  out: ['kl1m'] },
   { event: 'DreamHack Winter 2026', team: 'Mythic',    in: ['fl0m'],                 out: ['hades'] },
 ];
+async function loadLineupOverrides() {
+  const res = await fetch(URLS.lineups, { cache: 'no-store' });
+  if (!res.ok) throw new Error('lineup_overrides.json → HTTP ' + res.status);
+  const arr = await res.json();
+  if (Array.isArray(arr)) LINEUP_OVERRIDES = arr.filter(o => o && o.event && o.team)
+    .map(o => ({ event: String(o.event), team: String(o.team), in: (o.in || []).map(String), out: (o.out || []).map(String) }));
+}
 function lineupFor(team, key) {
   // an event created with the Events form carries its own lineups: use them as they were saved
   const ev = (state.events || []).find(e => e.key === key);
@@ -1163,8 +1175,8 @@ async function bootTeam() {
   setTab(location.hash === '#history' ? 'history' : 'overview', false);
   renderHero();
 
-  const [pl, hi, ma, ol] = await Promise.allSettled([loadPlayers(), loadHistory(), loadMatches(), loadOldRanking()]);
-  [pl, hi, ma, ol].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
+  const [pl, hi, ma, ol, lo] = await Promise.allSettled([loadPlayers(), loadHistory(), loadMatches(), loadOldRanking(), loadLineupOverrides()]);
+  [pl, hi, ma, ol, lo].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
   state.trajectory = [];
   renderAll();
   const missing = [pl.status === 'rejected' && 'players_updated.xlsx', hi.status === 'rejected' && 'history_updated.xlsx'].filter(Boolean);
@@ -1193,8 +1205,8 @@ async function bootPlayer() {
   state._plEvents = [];
   renderPlayerHero();
 
-  const [hi, ma] = await Promise.allSettled([loadHistory(), loadMatches()]);
-  [hi, ma].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
+  const [hi, ma, lo] = await Promise.allSettled([loadHistory(), loadMatches(), loadLineupOverrides()]);
+  [hi, ma, lo].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
   renderPlayerAll();
   setStatus(hi.status === 'rejected' ? 'Loaded with missing file: history_updated.xlsx' : 'Player data loaded · loading trophy icons and event details…', hi.status === 'rejected' ? 'err' : 'loading');
   const extras = await Promise.allSettled([
