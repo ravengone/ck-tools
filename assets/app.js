@@ -4327,6 +4327,67 @@ function evFinishSave(ev) {
 /* Export: a team logo that team_logo.json already provides is not stored again inside
    the events file (that copy is what made the file so large). Logos of teams that are
    not in team_logo.json are kept. */
+/* ── Freeze lineups ──
+   An event with no stored lineup is drawn from today's rosters, so every later transfer
+   changes the past. Freezing writes the lineup into the event once: today's roster for each
+   team, with the corrections below applied. After freezing and exporting, transfers can no
+   longer touch that event and no correction list is needed.
+   (Same list as the one in assets/profile.js; only used by this one-time action.) */
+const EV_LINEUP_FIXES = [
+  { event: 'FiReLEAGUE Buenos Aires 2026', team: 'Legacy', in: ['dumau'], out: ['bitou'] },
+  { event: 'DreamHack Winter 2026', team: 'Legacy', in: ['dumau'], out: ['bitou'] },
+  { event: 'DreamHack Winter 2026', team: 'Iluminar',          in: ['kilzys', 'heroghoxxt'], out: ['Gizmy', 'fl0m', 'xelex'] },
+  { event: 'DreamHack Winter 2026', team: 'BC.Game',           in: ['Valiance'],             out: ['Perfecto'] },
+  { event: 'DreamHack Winter 2026', team: 'Kappa Bar',         in: ['Gizmy'],                out: ['diskyb0b'] },
+  { event: 'DreamHack Winter 2026', team: 'Envy',              in: ['PTC'],                  out: ['kl1m'] },
+  { event: 'DreamHack Winter 2026', team: 'Mythic',            in: ['fl0m'],                 out: ['hades'] },
+  { event: 'DreamHack Winter 2026', team: 'The Huns',          in: ['arT'],                  out: ['gafolo'] },
+  { event: 'DreamHack Winter 2026', team: 'Titan',             in: [],                       out: ['arT', 'dumau'] },
+  { event: 'DreamHack Winter 2026', team: 'Copenhagen Flames', in: [],                       out: ['NIGHT666BLADE'] },
+  { event: 'CS Asia Champions 2026', team: 'kONO', in: ['NIGHT666BLADE'], out: ['senka'] },
+  { event: 'Fragadelphia 2026',      team: 'kONO', in: ['NIGHT666BLADE'], out: ['senka'] },
+  { event: 'Winamax Spanish Cirtuit 2026', team: 'Nordix', in: ['gafolo'], out: ['Zeus'] },
+];
+function evFrozenLineups(e) {
+  const out = {};
+  const names = new Map();
+  (e.playoffTeams || []).forEach(t => { if (t && t.name) names.set(t.name.toLowerCase(), t.name); });
+  (e.standings || []).forEach(s => (s.teams || []).forEach(t => { if (t && t.name) names.set(t.name.toLowerCase(), t.name); }));
+  evSeriesFor(e.name).forEach(s => [s.a, s.b].forEach(t => { if (!names.has(t.toLowerCase())) names.set(t.toLowerCase(), t); }));
+  const eq = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+  names.forEach(name => {
+    let list = evRosterOf(name);
+    EV_LINEUP_FIXES.filter(o => evKeyOf(o.event) === evKeyOf(e.name) && eq(o.team, name)).forEach(o => {
+      list = list.filter(n => !(o.out || []).some(x => eq(x, n)));
+      (o.in || []).forEach(x => { if (!list.some(n => eq(n, x))) list.push(x); });
+    });
+    if (list.length) out[name] = list;
+  });
+  return out;
+}
+function freezeAllLineups() {
+  if (!rosterByTeam) { alert('The players file has not loaded yet — wait a moment and try again.'); return; }
+  const todo = eventsData.filter(e => !(e.lineupsAuto && e.lineups && Object.keys(e.lineups).length));
+  if (!todo.length) { alert('Every event already has its lineups stored. Nothing to freeze.'); return; }
+  if (!confirm(`Store the lineups of ${todo.length} event(s)?\n\nEach team keeps the players it has today, with the known corrections applied, so later transfers will not change these events any more.\n\nRemember to use the Export JSON button afterwards.`)) return;
+  let teams = 0;
+  todo.forEach(e => { const l = evFrozenLineups(e); if (Object.keys(l).length) { e.lineups = l; e.lineupsAuto = true; teams += Object.keys(l).length; } });
+  refreshEventsUI();
+  setStatus(`Lineups stored for ${todo.length} event(s) · ${teams} team lineups — now use Export JSON and replace file/kz-events-backup.json`, 'ok');
+  alert(`Done: ${todo.length} event(s), ${teams} team lineups.\n\nNow click the Export JSON button and replace file/kz-events-backup.json with the downloaded file.`);
+}
+/* the button is added here so index.html does not have to change */
+(() => {
+  const exp = document.getElementById('btnDownloadEventsJson');
+  if (!exp || document.getElementById('btnFreezeLineups')) return;
+  const b = document.createElement('button');
+  b.className = 'btn btn-ghost'; b.id = 'btnFreezeLineups';
+  b.title = "Store each team's current lineup inside every event, so later transfers stop changing past events";
+  b.textContent = '❄ Freeze lineups';
+  b.addEventListener('click', freezeAllLineups);
+  exp.before(b);
+})();
+
 function evSlimmedEvents() {
   let removed = 0;
   const slim = t => { if (t && t.name && t.logo && getTeamLogoUrl(t.name)) { removed++; return { ...t, logo: '' }; } return t; };
