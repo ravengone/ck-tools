@@ -879,32 +879,45 @@ function eventDates() {
    "Major" are ignored, so "DreamHack Winter 2026" also matches "DreamHack Winter Major 2026".
    Events created with the Events form save their own lineup and ignore all of this. */
 let LINEUP_OVERRIDES = [
-  { event: 'DreamHack Winter 2026', team: 'Iluminar',  in: ['kilzys', 'heroghoxxt'], out: ['Gizmy', 'fl0m'] },
-  { event: 'DreamHack Winter 2026', team: 'BC.Game',   in: ['Valiance'],             out: ['Perfecto'] },
-  { event: 'DreamHack Winter 2026', team: 'Kappa Bar', in: ['Gizmy'],                out: ['diskyb0b'] },
-  { event: 'DreamHack Winter 2026', team: 'Envy',      in: ['PTC'],                  out: ['kl1m'] },
-  { event: 'DreamHack Winter 2026', team: 'Mythic',    in: ['fl0m'],                 out: ['hades'] },
+  // Legacy — dumau played both events, bitou only joined afterwards
+  { event: 'FiReLEAGUE Buenos Aires 2026', team: 'Legacy', in: ['dumau'], out: ['bitou'] },
+  { event: 'DreamHack Winter 2026', team: 'Legacy', in: ['dumau'], out: ['bitou'] },
+  // the major
+  { event: 'DreamHack Winter 2026', team: 'Iluminar',          in: ['kilzys', 'heroghoxxt'], out: ['Gizmy', 'fl0m', 'xelex'] },
+  { event: 'DreamHack Winter 2026', team: 'BC.Game',           in: ['Valiance'],             out: ['Perfecto'] },
+  { event: 'DreamHack Winter 2026', team: 'Kappa Bar',         in: ['Gizmy'],                out: ['diskyb0b'] },
+  { event: 'DreamHack Winter 2026', team: 'Envy',              in: ['PTC'],                  out: ['kl1m'] },
+  { event: 'DreamHack Winter 2026', team: 'Mythic',            in: ['fl0m'],                 out: ['hades'] },
+  { event: 'DreamHack Winter 2026', team: 'The Huns',          in: ['arT'],                  out: ['gafolo'] },
+  { event: 'DreamHack Winter 2026', team: 'Titan',             in: [],                       out: ['arT', 'dumau'] },
+  { event: 'DreamHack Winter 2026', team: 'Copenhagen Flames', in: [],                       out: ['NIGHT666BLADE'] },
+  // kONO — NIGHT666BLADE left for Copenhagen Flames, senka joined afterwards
+  { event: 'CS Asia Champions 2026', team: 'kONO', in: ['NIGHT666BLADE'], out: ['senka'] },
+  { event: 'Fragadelphia 2026',      team: 'kONO', in: ['NIGHT666BLADE'], out: ['senka'] },
+  // Nordix — gafolo left for The Huns, Zeus joined afterwards
+  { event: 'Winamax Spanish Cirtuit 2026', team: 'Nordix', in: ['gafolo'], out: ['Zeus'] },
 ];
+console.log(`NEXUS profile.js · ${LINEUP_OVERRIDES.length} lineup corrections built in`);
+/* Optional: file/lineup_overrides.json (or lineup_overrides.json next to this page) replaces
+   the list above when present, so corrections can be changed without editing this file.
+   If it is absent, the built-in list is used and nothing is lost. */
 async function loadLineupOverrides() {
-  let last = '';
   for (const url of URLS.lineups) {
     let res;
-    try { res = await fetch(url, { cache: 'no-store' }); } catch (e) { last = url + ' → ' + e.message; continue; }
-    if (!res.ok) { last = url + ' → HTTP ' + res.status; continue; }
+    try { res = await fetch(url, { cache: 'no-store' }); } catch (e) { continue; }
+    if (!res.ok) continue;
     let arr;
     try { arr = JSON.parse(await res.text()); }
-    catch (e) { state.lineupFileError = url + ' is not valid JSON (' + e.message + ')'; throw new Error(state.lineupFileError); }
-    if (!Array.isArray(arr)) { state.lineupFileError = url + ' must contain a list [ … ]'; throw new Error(state.lineupFileError); }
+    catch (e) { state.lineupFileError = url + ' is not valid JSON (' + e.message + ') — using the built-in corrections'; return; }
+    if (!Array.isArray(arr)) { state.lineupFileError = url + ' must contain a list [ … ] — using the built-in corrections'; return; }
     LINEUP_OVERRIDES = arr.filter(o => o && o.event && o.team)
       .map(o => ({ event: String(o.event), team: String(o.team), in: (o.in || []).map(String), out: (o.out || []).map(String) }));
-    state.lineupFileLoaded = { url, count: LINEUP_OVERRIDES.length };
-    console.log(`Lineup corrections: ${LINEUP_OVERRIDES.length} loaded from ${url}`);
+    console.log(`Lineup corrections: ${LINEUP_OVERRIDES.length} loaded from ${url} (replacing the built-in list)`);
     return;
   }
-  state.lineupFileError = 'lineup_overrides.json not found (looked in file/ and next to this page) · ' + last;
-  throw new Error(state.lineupFileError);
+  console.log('No lineup_overrides.json found — using the built-in corrections');
 }
-/* appended to the status line so a missing or broken corrections file is visible */
+/* appended to the status line only when a corrections file exists but could not be read */
 function lineupFileNote() { return state.lineupFileError ? ' · ⚠ ' + state.lineupFileError : ''; }
 function lineupFor(team, key) {
   // 1. the lineup the Events form saved with this event, otherwise today's roster
