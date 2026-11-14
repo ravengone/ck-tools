@@ -4348,45 +4348,92 @@ const EV_LINEUP_FIXES = [
   { event: 'Fragadelphia 2026',      team: 'kONO', in: ['NIGHT666BLADE'], out: ['senka'] },
   { event: 'Winamax Spanish Cirtuit 2026', team: 'Nordix', in: ['gafolo'], out: ['Zeus'] },
 ];
+/* { "Event name": { "Team": ["player", …] } } — read from file/event_lineups.json */
+let EV_SAVED_LINEUPS = {};
+const EV_LINEUP_FILES = ['file/event_lineups.json', 'event_lineups.json'];
+async function loadEventLineupsFile() {
+  for (const url of EV_LINEUP_FILES) {
+    let res;
+    try { res = await fetch(url, { cache: 'no-store' }); } catch (e) { continue; }
+    if (!res.ok) continue;
+    try {
+      const j = JSON.parse(await res.text());
+      if (j && typeof j === 'object' && !Array.isArray(j)) {
+        EV_SAVED_LINEUPS = j;
+        console.log(`Event lineups: ${Object.keys(j).length} event(s) read from ${url}`);
+        return true;
+      }
+    } catch (e) {
+      alert(url + ' could not be read:\n' + e.message + '\n\nFix the file first, otherwise the lineups already recorded in it would be lost.');
+      throw e;
+    }
+  }
+  console.log('No event_lineups.json yet — the button will create it');
+  return false;
+}
+const evSameName = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+/* What to record for each team of an event: the lineup the event already carries,
+   otherwise today's roster with the known corrections applied. */
 function evFrozenLineups(e) {
   const out = {};
   const names = new Map();
   (e.playoffTeams || []).forEach(t => { if (t && t.name) names.set(t.name.toLowerCase(), t.name); });
   (e.standings || []).forEach(s => (s.teams || []).forEach(t => { if (t && t.name) names.set(t.name.toLowerCase(), t.name); }));
   evSeriesFor(e.name).forEach(s => [s.a, s.b].forEach(t => { if (!names.has(t.toLowerCase())) names.set(t.toLowerCase(), t); }));
-  const eq = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+  const inEvent = e.lineups || {};
   names.forEach(name => {
+    const savedKey = Object.keys(inEvent).find(k => evSameName(k, name));
+    if (savedKey && inEvent[savedKey].length) { out[name] = inEvent[savedKey].slice(); return; }
     let list = evRosterOf(name);
-    EV_LINEUP_FIXES.filter(o => evKeyOf(o.event) === evKeyOf(e.name) && eq(o.team, name)).forEach(o => {
-      list = list.filter(n => !(o.out || []).some(x => eq(x, n)));
-      (o.in || []).forEach(x => { if (!list.some(n => eq(n, x))) list.push(x); });
+    EV_LINEUP_FIXES.filter(o => evKeyOf(o.event) === evKeyOf(e.name) && evSameName(o.team, name)).forEach(o => {
+      list = list.filter(n => !(o.out || []).some(x => evSameName(x, n)));
+      (o.in || []).forEach(x => { if (!list.some(n => evSameName(n, x))) list.push(x); });
     });
     if (list.length) out[name] = list;
   });
   return out;
 }
-function freezeAllLineups() {
+/* Writes file/event_lineups.json. A team already recorded in that file is never touched,
+   so the button is safe to press again later and keeps anything edited by hand. */
+async function saveEventLineups() {
   if (!rosterByTeam) { alert('The players file has not loaded yet — wait a moment and try again.'); return; }
-  const todo = eventsData.filter(e => !(e.lineupsAuto && e.lineups && Object.keys(e.lineups).length));
-  if (!todo.length) { alert('Every event already has its lineups stored. Nothing to freeze.'); return; }
-  if (!confirm(`Store the lineups of ${todo.length} event(s)?\n\nEach team keeps the players it has today, with the known corrections applied, so later transfers will not change these events any more.\n\nRemember to use the Export JSON button afterwards.`)) return;
-  let teams = 0;
-  todo.forEach(e => { const l = evFrozenLineups(e); if (Object.keys(l).length) { e.lineups = l; e.lineupsAuto = true; teams += Object.keys(l).length; } });
-  refreshEventsUI();
-  setStatus(`Lineups stored for ${todo.length} event(s) · ${teams} team lineups — now use Export JSON and replace file/kz-events-backup.json`, 'ok');
-  alert(`Done: ${todo.length} event(s), ${teams} team lineups.\n\nNow click the Export JSON button and replace file/kz-events-backup.json with the downloaded file.`);
+  if (!eventsData.length) { alert('No events are loaded yet.'); return; }
+  try { await loadEventLineupsFile(); } catch (e) { return; }
+  const out = {};
+  Object.keys(EV_SAVED_LINEUPS).forEach(k => { out[k] = { ...EV_SAVED_LINEUPS[k] }; });
+  let added = 0, kept = 0, evs = 0;
+  eventsData.forEach(e => {
+    const key = Object.keys(out).find(k => evKeyOf(k) === evKeyOf(e.name)) || e.name;
+    const bucket = out[key] = out[key] || {};
+    let newHere = 0;
+    Object.entries(evFrozenLineups(e)).forEach(([team, list]) => {
+      if (Object.keys(bucket).some(t => evSameName(t, team))) { kept++; return; }
+      bucket[team] = list; added++; newHere++;
+    });
+    if (newHere) evs++;
+  });
+  if (!added) { alert(`Nothing new to record — all ${kept} team lineups are already in event_lineups.json.`); return; }
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'event_lineups.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setStatus(`event_lineups.json downloaded · ${added} new team lineup(s) across ${evs} event(s), ${kept} already recorded — put it in your file/ folder`, 'ok');
+  alert(`event_lineups.json downloaded.\n\n${added} new team lineup(s) recorded across ${evs} event(s).\n${kept} were already in the file and were left untouched.\n\nPut it in your file/ folder, next to ranking.xlsx.`);
 }
 /* the button is added here so index.html does not have to change */
 (() => {
   const exp = document.getElementById('btnDownloadEventsJson');
-  if (!exp || document.getElementById('btnFreezeLineups')) return;
+  if (!exp || document.getElementById('btnSaveLineups')) return;
   const b = document.createElement('button');
-  b.className = 'btn btn-ghost'; b.id = 'btnFreezeLineups';
-  b.title = "Store each team's current lineup inside every event, so later transfers stop changing past events";
-  b.textContent = '❄ Freeze lineups';
-  b.addEventListener('click', freezeAllLineups);
+  b.className = 'btn btn-ghost'; b.id = 'btnSaveLineups';
+  b.title = "Write each team's lineup for every event into event_lineups.json, so later transfers stop changing past events";
+  b.textContent = '❄ Save event lineups';
+  b.addEventListener('click', saveEventLineups);
   exp.before(b);
 })();
+loadEventLineupsFile().catch(() => {});
 
 function evSlimmedEvents() {
   let removed = 0;

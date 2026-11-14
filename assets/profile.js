@@ -21,7 +21,8 @@ const URLS = {
   old:     'file/old.xlsx',
   archiveDir: 'file/archives/',
   events:  'file/kz-events-backup.json',
-  lineups: ['file/lineup_overrides.json', 'lineup_overrides.json'],   // tried in order
+  lineups: ['file/lineup_overrides.json', 'lineup_overrides.json'],   // optional corrections, tried in order
+  eventLineups: ['file/event_lineups.json', 'event_lineups.json'],     // who played for each team at each event
   players: 'file/players_updated.xlsx',
   history: 'file/history_updated.xlsx',
   matches: 'file/history.xlsx',
@@ -36,7 +37,7 @@ const PHOTO_EXTS = ['png', 'jpg', 'jpeg', 'webp'];
 
 const state = {
   teamParam: new URLSearchParams(location.search).get('team') || '',
-  ranking: [], oldRanking: null, team: null, player: null, trajectory: [], lineupFileLoaded: null, lineupFileError: '',
+  ranking: [], oldRanking: null, team: null, player: null, trajectory: [], eventLineups: null, lineupFileLoaded: null, lineupFileError: '',
   series: null, events: null, transactions: [],
   players: [], playersLoaded: false,
   teamHistory: [], playerHistory: [], historyLoaded: false,
@@ -901,6 +902,28 @@ console.log(`NEXUS profile.js · ${LINEUP_OVERRIDES.length} lineup corrections b
 /* Optional: file/lineup_overrides.json (or lineup_overrides.json next to this page) replaces
    the list above when present, so corrections can be changed without editing this file.
    If it is absent, the built-in list is used and nothing is lost. */
+/* file/event_lineups.json — { "Event": { "Team": ["player", …] } }.
+   This is the record of who actually played, so it is used before anything else. */
+async function loadEventLineups() {
+  for (const url of URLS.eventLineups) {
+    let res;
+    try { res = await fetch(url, { cache: 'no-store' }); } catch (e) { continue; }
+    if (!res.ok) continue;
+    let j;
+    try { j = JSON.parse(await res.text()); }
+    catch (e) { state.lineupFileError = url + ' is not valid JSON (' + e.message + ')'; return; }
+    if (!j || typeof j !== 'object' || Array.isArray(j)) { state.lineupFileError = url + ' must be an object { "Event": { "Team": [ … ] } }'; return; }
+    const map = new Map();
+    Object.entries(j).forEach(([ev, teams]) => Object.entries(teams || {}).forEach(([team, list]) => {
+      if (Array.isArray(list) && list.length) map.set(evKey(ev) + '|' + String(team).trim().toLowerCase(), list.map(String));
+    }));
+    state.eventLineups = map;
+    console.log(`Event lineups: ${map.size} team lineups read from ${url}`);
+    return;
+  }
+  console.log('No event_lineups.json found — lineups fall back to the rosters of today');
+}
+
 async function loadLineupOverrides() {
   for (const url of URLS.lineups) {
     let res;
@@ -920,9 +943,10 @@ async function loadLineupOverrides() {
 /* appended to the status line only when a corrections file exists but could not be read */
 function lineupFileNote() { return state.lineupFileError ? ' · ⚠ ' + state.lineupFileError : ''; }
 function lineupFor(team, key) {
-  // 1. the lineup the Events form saved with this event, otherwise today's roster
+  // 1. event_lineups.json, then the lineup stored inside the event, then today's roster
   const ev = (state.events || []).find(e => e.key === key);
-  const saved = ev && ev.lineups && ev.lineups[team.toLowerCase()];
+  const fromFile = state.eventLineups && state.eventLineups.get(key + '|' + team.trim().toLowerCase());
+  const saved = fromFile && fromFile.length ? fromFile : (ev && ev.lineups && ev.lineups[team.toLowerCase()]);
   let names, source;
   if (saved && saved.length) { names = saved.slice(); source = 'saved'; }
   else if (state.playersLoaded) {
@@ -1206,7 +1230,7 @@ async function bootTeam() {
   setTab(location.hash === '#history' ? 'history' : 'overview', false);
   renderHero();
 
-  const [pl, hi, ma, ol, lo] = await Promise.allSettled([loadPlayers(), loadHistory(), loadMatches(), loadOldRanking(), loadLineupOverrides()]);
+  const [pl, hi, ma, ol, lo, el] = await Promise.allSettled([loadPlayers(), loadHistory(), loadMatches(), loadOldRanking(), loadLineupOverrides(), loadEventLineups()]);
   [pl, hi, ma, ol, lo].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
   state.trajectory = [];
   renderAll();
@@ -1236,7 +1260,7 @@ async function bootPlayer() {
   state._plEvents = [];
   renderPlayerHero();
 
-  const [hi, ma, lo] = await Promise.allSettled([loadHistory(), loadMatches(), loadLineupOverrides()]);
+  const [hi, ma, lo] = await Promise.allSettled([loadHistory(), loadMatches(), loadLineupOverrides(), loadEventLineups()]);
   [hi, ma, lo].forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
   renderPlayerAll();
   setStatus(hi.status === 'rejected' ? 'Loaded with missing file: history_updated.xlsx' : 'Player data loaded · loading trophy icons and event details…', hi.status === 'rejected' ? 'err' : 'loading');
