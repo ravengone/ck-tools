@@ -593,7 +593,7 @@ function renderRoster() {
   $('#tpRosterNote').textContent = 'Squad value ' + fmtMoney(list.reduce((s, p) => s + p.marketValue, 0));
   box.innerHTML = '<div class="tp-roster">' + list.map(p => {
     const a = playerAwards(p);
-    const shown = a.trophies.slice(0, CARD_TROPHY_LIMIT), hidden = a.trophies.length - shown.length;
+    const shown = a.placements.slice(0, CARD_TROPHY_LIMIT), hidden = a.placements.length - shown.length;
     const groups = groupMedals(a.medals);
     const medals = groups.length ? `<div class="shelf xs tp-cardmedals">${groups.map(g => medalIconHtml(g)).join('')}</div>` : '';
     const trophies = shown.length
