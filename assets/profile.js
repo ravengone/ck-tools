@@ -250,14 +250,22 @@ function flagImg(country) {
   return code ? `<img class="tp-flag" src="https://flagcdn.com/w40/${code}.png" alt="${esc(country)}" title="${esc(country)}" onerror="this.style.display='none'">` : '';
 }
 /* Looks for assets/players/<Name>.png|jpg|jpeg|webp; falls back to the initial letter */
-function photoHtml(name) {
+/* Looks for assets/players/<Name>.<ext>, spelled exactly as the player is named in
+   players_updated.xlsx; the extension is the only thing tried in turn. */
+function photoCandidates(name) {
   const base = 'assets/players/' + encodeURIComponent(String(name).trim());
+  return PHOTO_EXTS.map(ext => base + '.' + ext);
+}
+function photoHtml(name) {
+  const list = photoCandidates(name);
   const initial = esc(String(name).trim().charAt(0).toUpperCase() || '?');
-  return `<img src="${base}.${PHOTO_EXTS[0]}" data-base="${esc(base)}" data-idx="0" data-initial="${initial}" alt="" onerror="photoFallback(this)">`;
+  return `<img src="${list[0]}" data-list="${esc(JSON.stringify(list))}" data-idx="0" data-initial="${initial}" alt="" onerror="photoFallback(this)">`;
 }
 function photoFallback(img) {
+  let list = [];
+  try { list = JSON.parse(img.dataset.list || '[]'); } catch (e) {}
   const next = (parseInt(img.dataset.idx, 10) || 0) + 1;
-  if (next < PHOTO_EXTS.length) { img.dataset.idx = next; img.src = img.dataset.base + '.' + PHOTO_EXTS[next]; }
+  if (next < list.length) { img.dataset.idx = next; img.src = list[next]; }
   else img.outerHTML = `<span class="tp-initial">${img.dataset.initial}</span>`;
 }
 const roleChips = roles => roles.map(r => `<span class="tp-role">${esc(ROLE_LABELS[r] || r)}</span>`).join('');
