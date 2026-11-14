@@ -2396,6 +2396,7 @@ $('#seedTeamSearch').addEventListener('input', () => {
    EVENTS TOOL — kz-events-backup.json
 ════════════════════════════════════════ */
 let eventsData = [];
+let eventsFileOk = false;   // false until kz-events-backup.json has actually been read
 let evEditIndex = -1; // -1 = add mode, >=0 = edit mode
 
 const EVENTS_JSON_URL = 'file/kz-events-backup.json';
@@ -2406,6 +2407,7 @@ async function loadEventsJson() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     eventsData = await res.json();
     if (!Array.isArray(eventsData)) eventsData = [];
+    eventsFileOk = true;
   } catch (e) {
     console.warn('Events JSON not found or invalid, starting empty.', e);
     eventsData = [];
@@ -3684,6 +3686,8 @@ function deleteEvent(idx) {
 
 /* ─── Download JSON ─── */
 function downloadEventsJson() {
+  // guard: exporting before the file has loaded would replace every saved event with the few in memory
+  if (!eventsFileOk && !confirm('The events file has not been read yet (file/kz-events-backup.json missing or still loading).\n\nExporting now writes only the ' + eventsData.length + ' event(s) currently listed and would replace everything else. Export anyway?')) return;
   const slim = evSlimmedEvents();
   if (slim.removed) setStatus(`Events exported · ${slim.removed} copied team logo(s) left out, they come from team_logo.json`, 'ok');
   const blob = new Blob([JSON.stringify(slim.data, null, 2)], { type: 'application/json' });

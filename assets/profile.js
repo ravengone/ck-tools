@@ -893,19 +893,23 @@ async function loadLineupOverrides() {
     .map(o => ({ event: String(o.event), team: String(o.team), in: (o.in || []).map(String), out: (o.out || []).map(String) }));
 }
 function lineupFor(team, key) {
-  // an event created with the Events form carries its own lineups: use them as they were saved
+  // 1. the lineup the Events form saved with this event, otherwise today's roster
   const ev = (state.events || []).find(e => e.key === key);
   const saved = ev && ev.lineups && ev.lineups[team.toLowerCase()];
-  if (saved && saved.length) return { players: saved, source: 'saved', joined: saved };
-  if (!state.playersLoaded) return { players: [], source: 'none', joined: [] };
-  let names = state.players.filter(p => sameTeam(p.team, team))
-    .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue).map(p => p.name);
+  let names, source;
+  if (saved && saved.length) { names = saved.slice(); source = 'saved'; }
+  else if (state.playersLoaded) {
+    names = state.players.filter(p => sameTeam(p.team, team))
+      .sort((a, b) => (a.roster === 'Starter' ? 0 : 1) - (b.roster === 'Starter' ? 0 : 1) || b.marketValue - a.marketValue).map(p => p.name);
+    source = 'roster';
+  } else return { players: [], source: 'none', joined: [] };
+  // 2. corrections always win, whichever of the two the lineup came from
   const ov = LINEUP_OVERRIDES.filter(o => evKey(o.event) === key && sameTeam(o.team, team));
   ov.forEach(o => {
     names = names.filter(n => !(o.out || []).some(x => nameEq(x, n)));
     (o.in || []).forEach(x => { if (!names.some(n => nameEq(n, x))) names.push(x); });
   });
-  return { players: names, source: ov.length ? 'override' : 'roster', joined: ov.flatMap(o => o.in || []) };
+  return { players: names, source: ov.length ? 'override' : source, joined: (source === 'saved' ? names.slice() : []).concat(ov.flatMap(o => o.in || [])) };
 }
 function lineupHtml(team, key) {
   const lu = lineupFor(team, key);
