@@ -1773,24 +1773,24 @@
     "major": "no",
     "region": "europe",
     "status": "Finished",
-    "winner": "",
-    "second": "",
-    "third": "",
-    "fourth": "",
-    "mvp": "",
-    "evp": "",
-    "vp": "",
+    "winner": "Vitality",
+    "second": "Natus Vincere",
+    "third": "FaZe",
+    "fourth": "Fnatic",
+    "mvp": "ZywOo",
+    "evp": "w0nderful",
+    "vp": "ropz - frozen - Aleksib",
     "stage": "",
     "nextMatch1": "",
     "nextMatch2": "",
     "nextMatch3": "",
     "prizeDistribution": {
-      "1st": "",
-      "2nd": "",
-      "3rd-4th": "",
-      "5th-8th": "",
-      "9th-11th": "",
-      "12th-16th": "",
+      "1st": "$45,000",
+      "2nd": "$20,000",
+      "3rd-4th": "$11,000",
+      "5th-8th": "$2,800",
+      "9th-11th": "$1,250",
+      "12th-16th": "$1,250",
       "17th-24th": ""
     },
     "playerPrizes": {
@@ -1800,7 +1800,19 @@
     },
     "playoffTeams": [
       {
-        "name": "",
+        "name": "Vox Eminor",
+        "logo": ""
+      },
+      {
+        "name": "Astralis",
+        "logo": ""
+      },
+      {
+        "name": "Fnatic",
+        "logo": ""
+      },
+      {
+        "name": "FaZe",
         "logo": ""
       },
       {
@@ -1812,23 +1824,11 @@
         "logo": ""
       },
       {
-        "name": "",
+        "name": "Vitality",
         "logo": ""
       },
       {
-        "name": "",
-        "logo": ""
-      },
-      {
-        "name": "",
-        "logo": ""
-      },
-      {
-        "name": "",
-        "logo": ""
-      },
-      {
-        "name": "",
+        "name": "Natus Vincere",
         "logo": ""
       }
     ],
@@ -1873,33 +1873,33 @@
       }
     },
     "playoffPlayers": {
-      "Team 1": [
-        "",
-        "",
-        "",
-        "",
-        ""
+      "Vox Eminor": [
+        "kL1o",
+        "kr1vda",
+        "Malkiss",
+        "marat2k",
+        "OneUn1que"
       ],
-      "Team 2": [
-        "",
-        "",
-        "",
-        "",
-        ""
+      "Astralis": [
+        "device",
+        "HooXi",
+        "jabbi",
+        "Staehr",
+        "stavn"
       ],
-      "Team 3": [
-        "",
-        "",
-        "",
-        "",
-        ""
+      "Fnatic": [
+        "blameF",
+        "fear",
+        "jambo",
+        "KRIMZ",
+        "matyss"
       ],
-      "Team 4": [
-        "",
-        "",
-        "",
-        "",
-        ""
+      "FaZe": [
+        "broky",
+        "frozen",
+        "jcobbb",
+        "karrigan",
+        "Twistzz"
       ],
       "Team 5": [
         "",
@@ -1915,24 +1915,240 @@
         "",
         ""
       ],
-      "Team 7": [
-        "",
-        "",
-        "",
-        "",
-        ""
+      "Vitality": [
+        "apEX",
+        "flameZ",
+        "mezii",
+        "ropz",
+        "ZywOo"
       ],
-      "Team 8": [
-        "",
-        "",
-        "",
-        "",
-        ""
+      "Natus Vincere": [
+        "Aleksib",
+        "b1t",
+        "iM",
+        "makazze",
+        "w0nderful"
       ]
     },
-    "standings": [],
+    "standings": [
+      {
+        "label": "1st",
+        "prize": "",
+        "teams": [
+          {
+            "name": "Vitality",
+            "logo": ""
+          }
+        ]
+      },
+      {
+        "label": "2nd",
+        "prize": "",
+        "teams": [
+          {
+            "name": "Natus Vincere",
+            "logo": ""
+          }
+        ]
+      },
+      {
+        "label": "3rd",
+        "prize": "",
+        "teams": [
+          {
+            "name": "FaZe",
+            "logo": ""
+          }
+        ]
+      },
+      {
+        "label": "4th",
+        "prize": "",
+        "teams": [
+          {
+            "name": "Fnatic",
+            "logo": ""
+          }
+        ]
+      },
+      {
+        "label": "5th-6th",
+        "prize": "",
+        "teams": [
+          {
+            "name": "Vox Eminor",
+            "logo": ""
+          },
+          {
+            "name": "Astralis",
+            "logo": ""
+          }
+        ]
+      },
+      {
+        "label": "7th-16th",
+        "prize": "",
+        "teams": [
+          {
+            "name": "Astana Dragons",
+            "logo": ""
+          },
+          {
+            "name": "Iluminar",
+            "logo": ""
+          },
+          {
+            "name": "ENCE Academy",
+            "logo": ""
+          },
+          {
+            "name": "Wildcard Academy",
+            "logo": ""
+          },
+          {
+            "name": "Heroic",
+            "logo": ""
+          },
+          {
+            "name": "True Rippers",
+            "logo": ""
+          },
+          {
+            "name": "BIG Academy",
+            "logo": ""
+          },
+          {
+            "name": "Eternal Fire",
+            "logo": ""
+          },
+          {
+            "name": "SKYFURY",
+            "logo": ""
+          },
+          {
+            "name": "Copenhagen Flames",
+            "logo": ""
+          }
+        ]
+      }
+    ],
     "format": "gsl4-se8",
     "lineupsAuto": true,
-    "lineups": {}
+    "lineups": {
+      "Vox Eminor": [
+        "kL1o",
+        "kr1vda",
+        "Malkiss",
+        "marat2k",
+        "OneUn1que"
+      ],
+      "Astralis": [
+        "device",
+        "HooXi",
+        "jabbi",
+        "Staehr",
+        "stavn"
+      ],
+      "Fnatic": [
+        "blameF",
+        "fear",
+        "jambo",
+        "KRIMZ",
+        "matyss"
+      ],
+      "FaZe": [
+        "broky",
+        "frozen",
+        "jcobbb",
+        "karrigan",
+        "Twistzz"
+      ],
+      "Vitality": [
+        "apEX",
+        "flameZ",
+        "mezii",
+        "ropz",
+        "ZywOo"
+      ],
+      "Natus Vincere": [
+        "Aleksib",
+        "b1t",
+        "iM",
+        "makazze",
+        "w0nderful"
+      ],
+      "Astana Dragons": [
+        "oskar",
+        "PR",
+        "REZ",
+        "Tauson",
+        "ztr"
+      ],
+      "Iluminar": [
+        "fl0m",
+        "Gizmy",
+        "history",
+        "Pelle",
+        "SpavaQu",
+        "xelex"
+      ],
+      "ENCE Academy": [
+        "arvid",
+        "japE",
+        "oopee",
+        "Welho",
+        "ykis"
+      ],
+      "Wildcard Academy": [
+        "AclioN",
+        "eskyy",
+        "Griller",
+        "qx",
+        "SinK"
+      ],
+      "Heroic": [
+        "gr1ks",
+        "LNZ",
+        "nilo",
+        "xfl0ud",
+        "yxngstxr"
+      ],
+      "True Rippers": [
+        "Banjo",
+        "duggy",
+        "jottAAA",
+        "paz",
+        "sSen"
+      ],
+      "BIG Academy": [
+        "buster",
+        "def1zer",
+        "forkyz",
+        "neaLaN",
+        "Pumpkin66"
+      ],
+      "Eternal Fire": [
+        "bnox",
+        "Calyx",
+        "imoRR",
+        "maaryy",
+        "mASKED"
+      ],
+      "SKYFURY": [
+        "2high",
+        "aliStair",
+        "discoStar",
+        "gla1ve",
+        "jL"
+      ],
+      "Copenhagen Flames": [
+        "DANK1NG",
+        "Dytor",
+        "forsyy",
+        "nbqq",
+        "ROGA",
+        "NIGHT666BLADE"
+      ]
+    }
   }
 ]

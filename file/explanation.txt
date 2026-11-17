@@ -1,8 +1,8 @@
 OLD.xlsx
-BLAST Premier 2026 Seoul Playoffs
+CS Asia Champions 2026
 
 ranking.xlsx
-CS Asia Champions 2026
+European Pro League Malta Season 0
 
 
 RANKINGS:
@@ -31,6 +31,12 @@ ranking 21 [Season 0] : Winamax Spanish Circuit 2026 Playoffs
 ranking 22 [Season 0] : BLAST Premier 2026 Seoul Stage 1
 ranking 23 [Season 0] : no-data
 ranking 24 [Season 0] : BLAST Premier 2026 Seoul Stage 2
+ranking 25 [Season 0] : BLAST Premier 2026 Seoul Playoffs
+ranking n [Season 0] : 
+ranking n [Season 0] : 
+ranking n [Season 0] : 
+ranking n [Season 0] : 
+ranking n [Season 0] : 
 ranking n [Season 0] : 
 ranking n [Season 0] : 
 ranking n [Season 0] : 
