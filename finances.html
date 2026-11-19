@@ -1523,9 +1523,9 @@ html[data-theme] .mk-row .badge.badge-orange,html[data-theme] .mk-row .badge.bad
                 <div class="form-group">
                   <label class="form-label" for="travel-type">Trip</label>
                   <select class="nx-select" id="travel-type" onchange="renderTravelList()">
-                    <option value="regional">Regional ($5,000)</option>
-                    <option value="national">National ($15,000)</option>
-                    <option value="international">International ($35,000)</option>
+                    <option value="regional">Regional ($10,000)</option>
+                    <option value="national">Global ($25,000)</option>
+                    <option value="international">Major ($50,000)</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -5091,9 +5091,12 @@ function updateContractAlerts() {
 
 
 /* ═══ TRAVEL ═══ */
+/* Option values are kept from the old names so nothing else breaks: national = Global trip, international = Major trip. */
+const TRAVEL_COST={regional:10000,national:25000,international:50000};
+const TRAVEL_LABEL={regional:'Regional',national:'Global',international:'Major'};
 function renderTravelList() {
   const type=$('travel-type').value, search=($('travel-search').value||'').toLowerCase();
-  const cost={regional:5000,national:15000,international:35000}[type];
+  const cost=TRAVEL_COST[type];
   const checked=new Set(Array.from(document.querySelectorAll('.travel-cb:checked')).map(c=>c.value));
   $('travel-list').innerHTML=finances.filter(t=>t.TeamName.toLowerCase().includes(search)).map(t=>{
     const t3=String(t.Tier||'').toLowerCase().trim()==='tier 3';
@@ -5114,12 +5117,12 @@ function renderTravelList() {
 function applyTravelExpenses() {
   const type=$('travel-type').value, cbs=document.querySelectorAll('.travel-cb:checked');
   if (!cbs.length) return alert('Select at least one team.');
-  const cost={regional:5000,national:15000,international:35000}[type];
-  if (!confirm(`Charge ${cbs.length} teams for ${type} travel?`)) return;
+  const cost=TRAVEL_COST[type];
+  if (!confirm(`Charge ${cbs.length} teams for ${TRAVEL_LABEL[type]} travel (${fmtK(cost)} each, Tier 3 pays half)?`)) return;
   saveState();
   let teams=[];
   cbs.forEach(cb=>{ const t=finances.find(x=>x.TeamName===cb.value); if (t){ const t3=String(t.Tier||'').toLowerCase().trim()==='tier 3'; t.CurrentBank-=t3?cost*0.5:cost; teams.push(t.TeamName); }});
-  addLog(`✈ Travel (${type}): charged ${teams.join(', ')}.`,'warn'); $('travel-search').value=''; updateAll();
+  addLog(`✈ Travel (${TRAVEL_LABEL[type]}): charged ${teams.join(', ')}.`,'warn'); $('travel-search').value=''; updateAll();
 }
 
 /* ── SCOPE — legacy "State" rows migrate to "Regional" on import ── */

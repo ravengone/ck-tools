@@ -1501,7 +1501,7 @@
     "country": "Malta",
     "flag": "https://flagcdn.com/h20/mt.png",
     "teamCount": 16,
-    "stars": 3,
+    "stars": 4,
     "major": "no",
     "region": "global",
     "status": "Finished",
@@ -1757,7 +1757,9 @@
           }
         ]
       }
-    ]
+    ],
+    "format": "",
+    "lineupsAuto": false
   },
   {
     "name": "European Pro League Malta Season 0",
@@ -1769,7 +1771,7 @@
     "country": "Singapore",
     "flag": "https://flagcdn.com/h20/mt.png",
     "teamCount": 16,
-    "stars": 3,
+    "stars": 4,
     "major": "no",
     "region": "europe",
     "status": "Finished",
