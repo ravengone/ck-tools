@@ -217,7 +217,7 @@ async function loadEvents() {
   if (!res.ok) throw new Error('kz-events-backup.json → HTTP ' + res.status);
   const arr = await res.json();
   state.events = (Array.isArray(arr) ? arr : []).filter(e => e && e.name).map(e => ({
-    key: evKey(e.name), name: String(e.name).replace(/\s+/g, ' ').trim(), logo: e.logo || '', stars: Number(e.stars) || 0,
+    key: evKey(e.name), name: String(e.name).replace(/\s+/g, ' ').trim(), logo: e.logo || '', trophy: e.trophy || '', stars: Number(e.stars) || 0,
     major: String(e.major || '').toLowerCase() === 'yes', city: e.city || '', country: e.country || '', prizePool: e.prizePool || '',
     standings: (e.standings || []).map(s => ({ label: String(s.label || '').trim(),
       names: (s.teams || []).map(t => String(t.name || '').trim()).filter(Boolean),
@@ -226,6 +226,20 @@ async function loadEvents() {
     lineups: e.lineupsAuto && e.lineups ? Object.fromEntries(Object.entries(e.lineups).map(([team, list]) =>
       [String(team).trim().toLowerCase(), (list || []).map(n => String(n || '').trim()).filter(Boolean)]).filter(x => x[1].length)) : {}
   }));
+}
+
+/* event name -> that event's own trophy image, from the Organizer (kz-events-backup.json).
+   Rebuilt by loadEvents(); empty until that optional file lands. */
+let eventTrophyByKey = new Map();
+function rebuildEventTrophies() {
+  eventTrophyByKey = new Map();
+  (state.events || []).forEach(e => { if (e.trophy) eventTrophyByKey.set(e.key, e.trophy); });
+}
+/* A placement (1st -> 4th-8th) shows the trophy that was actually lifted at that event.
+   Personal medals (MVP/EVP/VP) and badges keep their own registry artwork. */
+function eventTrophyFor(entry) {
+  if (!entry || entry.kind !== 'EVENT') return '';
+  return eventTrophyByKey.get(evKey(entry.event)) || '';
 }
 
 async function loadLogos() {
@@ -309,7 +323,7 @@ function describeEntry(e, isPlayerRow) {
   const custom = isPlayerRow
     ? (e.refId != null ? state.historyIcons[e.refId] : state.historyIcons[e.id])
     : state.historyIcons[e.id];
-  const icon = custom || (award && award.icon) || '';
+  const icon = custom || eventTrophyFor(e) || (award && award.icon) || '';
   const label = isBadge ? (award ? String(award.label).split('—').pop().trim() : 'Badge')
     : (isMedal ? e.kind : positionLabel(e.position));
   const glyph = isBadge ? '★' : isMedal ? e.kind : ({ Winner: '1st', Second: '2nd', Third: '3rd', Fourth: 'Top 8' }[e.position] || '•');
@@ -1241,7 +1255,7 @@ async function bootTeam() {
   const extras = await Promise.allSettled([
     loadTrajectory().then(renderTrend),
     loadAwards().then(() => { tips = []; renderAchievements(); renderRoster(); if (state.openPlayer) renderPlayerPanel(false); }),
-    loadEvents().then(() => { tourCache = new Map(); renderTournaments(); renderFormer(); })
+    loadEvents().then(() => { rebuildEventTrophies(); tourCache = new Map(); tips = []; renderTournaments(); renderFormer(); renderAchievements(); renderRoster(); if (state.openPlayer) renderPlayerPanel(false); })
   ]);
   extras.forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
   const off = [extras[1].status === 'rejected' && 'trophy icons (assets/awards.json)', extras[2].status === 'rejected' && 'event details (file/kz-events-backup.json)'].filter(Boolean);
@@ -1266,7 +1280,7 @@ async function bootPlayer() {
   setStatus(hi.status === 'rejected' ? 'Loaded with missing file: history_updated.xlsx' : 'Player data loaded · loading trophy icons and event details…', hi.status === 'rejected' ? 'err' : 'loading');
   const extras = await Promise.allSettled([
     loadAwards().then(() => { tips = []; renderPlayerHero(); renderPlayerCabinet(); }),
-    loadEvents().then(renderPlayerAll)
+    loadEvents().then(() => { rebuildEventTrophies(); renderPlayerAll(); })
   ]);
   extras.forEach(r => { if (r.status === 'rejected') console.warn(r.reason); });
   const off = [extras[0].status === 'rejected' && 'trophy icons (assets/awards.json)', extras[1].status === 'rejected' && 'event details (file/kz-events-backup.json)'].filter(Boolean);

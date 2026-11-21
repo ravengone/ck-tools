@@ -985,6 +985,14 @@ html[data-theme] .mk-row .badge.badge-orange,html[data-theme] .mk-row .badge.bad
       <div class="upload-label">TEAM_LOGO.JSON</div>
       <div class="upload-status" id="logo-status">AWAITING DATA</div>
     </div>
+    <div class="upload-box" id="events-box">
+      <input type="file" id="upload-events" accept=".json">
+      <div class="corner-tl"></div><div class="corner-tr"></div>
+      <div class="corner-bl"></div><div class="corner-br"></div>
+      <div class="upload-icon">🏆</div>
+      <div class="upload-label">KZ-EVENTS-BACKUP.JSON (OPTIONAL)</div>
+      <div class="upload-status" id="events-status">AWAITING DATA</div>
+    </div>
     <div class="upload-box" id="awards-box">
       <input type="file" id="upload-awards" accept=".json">
       <div class="corner-tl"></div><div class="corner-tr"></div>
@@ -1377,7 +1385,7 @@ html[data-theme] .mk-row .badge.badge-orange,html[data-theme] .mk-row .badge.bad
         </div>
         <div class="form-group">
           <label class="form-label" for="ops-event-name">Event or tournament name</label>
-          <input type="text" class="nx-input" id="ops-event-name" placeholder="e.g. IEM Cologne 2026">
+          <input type="text" class="nx-input" id="ops-event-name" list="hist-event-list" placeholder="e.g. IEM Cologne 2026">
         </div>
         <div class="form-group">
           <label class="form-label" for="ops-event-scope">Scope</label>
@@ -1438,7 +1446,7 @@ html[data-theme] .mk-row .badge.badge-orange,html[data-theme] .mk-row .badge.bad
             </ul>
             <details class="ops-more">
               <summary>Trophy image for this placement (optional)</summary>
-              <p class="fo-note" style="margin-top:10px;">Shared with Badges, Record a result. Upload once and it stays loaded for every placement until you clear or replace it. An empty square keeps the normal Award Registry icon. It is applied to the placement selected above when you pay out.</p>
+              <p class="fo-note" style="margin-top:10px;">Optional — leave it empty and the placement shows the trophy of its own event, taken from the Events Organizer. Shared with Badges, Record a result: upload once and it stays loaded for every placement until you clear or replace it, applied to the placement selected above when you pay out.</p>
               <div class="ach-icon-row" id="ops-icon-squares"></div>
             </details>
             <button class="btn btn-cyan btn-full" onclick="distributeTourneyPrize()">Pay out prize</button>
@@ -1653,7 +1661,7 @@ html[data-theme] .mk-row .badge.badge-orange,html[data-theme] .mk-row .badge.bad
         <div class="pm-section-title">Team Achievement</div>
         <div class="g2" style="gap:10px; margin-bottom:10px;">
           <div class="form-group"><div class="form-label">Team</div><select class="nx-select" id="hist-ev-team" onchange="achTeamChanged()"></select></div>
-          <div class="form-group"><div class="form-label">Event Name</div><input type="text" class="nx-input" id="hist-ev-name" placeholder="e.g. Blast Premier Fall"></div>
+          <div class="form-group"><div class="form-label">Event Name</div><input type="text" class="nx-input" id="hist-ev-name" list="hist-event-list" placeholder="e.g. Blast Premier Fall"><datalist id="hist-event-list"></datalist></div>
         </div>
         <div class="g3" style="gap:10px; margin-bottom:10px;">
           <div class="form-group"><div class="form-label">Tier</div>
@@ -1719,7 +1727,7 @@ html[data-theme] .mk-row .badge.badge-orange,html[data-theme] .mk-row .badge.bad
         </div>
         <div class="form-label" style="margin-bottom:6px;">TROPHY IMAGE OVERRIDE (OPTIONAL)</div>
         <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); margin:-2px 0 10px; line-height:1.5;">
-          Not tied to this event name — upload once, it stays loaded for every placement you record until you clear or replace it. Empty square = keep the normal Award Registry icon. Applied to the Position selected above at the moment you submit.
+          Optional — only needed for one-off artwork. Leave every square empty and each placement automatically shows the trophy of its own event, taken from the Events Organizer. Not tied to the event name: upload once and it stays loaded until you clear or replace it, and it is applied to the Position selected above at the moment you submit.
         </div>
         <div class="ach-icon-row" id="ach-icon-squares" style="margin-bottom:16px;"></div>
         <button class="btn btn-yellow btn-full" id="ach-ev-submit" onclick="submitTeamAchievement()">Add to History — Team + Selected Players</button>
@@ -1774,7 +1782,7 @@ html[data-theme] .mk-row .badge.badge-orange,html[data-theme] .mk-row .badge.bad
           </div>
         </div>
         <div class="g2" style="gap:10px; margin-bottom:8px;">
-          <div class="form-group"><div class="form-label">Event Name</div><input type="text" class="nx-input" id="hist-aw-event" placeholder="e.g. IEM Cologne"></div>
+          <div class="form-group"><div class="form-label">Event Name</div><input type="text" class="nx-input" id="hist-aw-event" list="hist-event-list" placeholder="e.g. IEM Cologne"></div>
           <div class="form-group"><div class="form-label">Team Won With</div><input type="text" class="nx-input" id="hist-aw-team" list="hist-team-list" placeholder="e.g. Natus Vincere"><datalist id="hist-team-list"></datalist></div>
         </div>
         <div style="font-family:var(--font-data); font-size:9.5px; color:var(--text-faint); margin:0 0 14px; line-height:1.5;">
@@ -1995,7 +2003,11 @@ function loadAwardsConfig(data){
     if (merged[k].appliesTo === 'team') { merged[k].affectsScore = false; merged[k].scoreValue = 0; }
   });
   awardsConfig = merged;
-  achIconStaging = { winner:'', second:'', third:'', fourth:'', ...((data && data.__achIconStaging) || {}) };
+  /* Deliberately NOT restored from the file. A square left loaded from a previous
+     session used to bake the last event's trophy onto the next event recorded —
+     exactly the wrong image, silently. Empty is the correct default now that a
+     placement resolves to its own event's trophy. */
+  achIconStaging = { winner:'', second:'', third:'', fourth:'' };
   historyIconsMap = (data && data.__historyIcons) || {};
   applyHistoryIconsMap(historyIconsMap);
   renderAchIconSquares();
@@ -2059,8 +2071,45 @@ function positionLabel(position){
    you clear or replace it. Whatever is loaded gets "baked into" the
    specific history entry (and its mirrored player rows) at the moment
    you hit submit, so later clearing/replacing a square never changes
-   past entries. Empty square = keep the normal Award Registry icon.
+   past entries. An empty square is the normal case: the row then resolves to
+   its own event's trophy (see eventTrophyFor), and only falls back to the
+   Award Registry icon when the Events Organizer has no trophy for it.
 ═══════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   🏆 EVENT TROPHIES — from the Organizer (file/kz-events-backup.json)
+   Each event there already carries the trophy that was actually lifted at it.
+   Loaded read-only so a placement never has to have its image re-uploaded by
+   hand: every finish from Winner to 4th–8th resolves to its own event's
+   trophy, and the Award Registry icon is only the last resort.
+   Matched on the event NAME, loosely (case/spacing/punctuation ignored), so
+   it keeps working for rows typed before this file existed.
+═══════════════════════════════════════════════════════════════════ */
+let eventTrophies = new Map();     // normalized event name -> trophy data-URI
+let eventNamesList = [];           // exact names, for the “Event Name” suggestions
+const evKey = name => String(name||'').toLowerCase().replace(/\bmajor\b/g,' ').replace(/[^a-z0-9]+/g,' ').trim();
+function loadEventsCatalog(arr){
+  eventTrophies = new Map();
+  eventNamesList = [];
+  (Array.isArray(arr)?arr:[]).forEach(e=>{
+    if (!e || !e.name) return;
+    const name = String(e.name).replace(/\s+/g,' ').trim();
+    eventNamesList.push(name);
+    if (e.trophy) eventTrophies.set(evKey(name), e.trophy);
+  });
+  eventNamesList.sort((a,b)=>a.localeCompare(b));
+  populateEventNameLists();
+}
+/* The trophy for a placement row. Personal medals (MVP/EVP/VP) and badges keep
+   their own Award Registry artwork — only a team finish lifts the trophy. */
+function eventTrophyFor(entry){
+  if (!entry || (entry.kind && entry.kind !== 'EVENT')) return '';
+  return eventTrophies.get(evKey(entry.event)) || '';
+}
+function populateEventNameLists(){
+  const dl = $('hist-event-list');
+  if (dl) dl.innerHTML = eventNamesList.map(n=>`<option value="${String(n).replace(/"/g,'&quot;')}">`).join('');
+}
+
 const POSITION_ICON_FIELD = { Winner:'winner', Second:'second', Third:'third', Fourth:'fourth' };
 const ACH_ICON_SLOTS = [
   { field:'winner', label:'\ud83e\udd47 Top 1' },
@@ -2198,8 +2247,10 @@ function teamHistoryLines(e){
   const award = awardKey ? getAward(awardKey) : null;
   const fallbackTier = e.position==='Winner'?'gold':e.position==='Second'?'silver':e.position==='Third'?'bronze':'none';
   const tier = award ? award.tierColor : fallbackTier;
-  const medal = e.customIcon
-    ? `<div class="pm-hist-medal ${awardTierClass(tier)}"><img src="${e.customIcon}" alt="" style="width:100%;height:100%;object-fit:contain;"></div>`
+  /* uploaded override for this exact row → this event's own trophy → registry → glyph */
+  const rowIcon = e.customIcon || eventTrophyFor(e);
+  const medal = rowIcon
+    ? `<div class="pm-hist-medal ${awardTierClass(tier)}"><img src="${rowIcon}" alt="" style="width:100%;height:100%;object-fit:contain;"></div>`
     : (awardKey ? awardMedalHTML(awardKey, 22) : `<div class="pm-hist-medal ${awardTierClass(tier)}">${AWARD_TIER_FALLBACK_GLYPH[tier]}</div>`);
   const posTxt = isBadge ? (award ? award.label.split('\u2014').pop().trim() : '') : positionLabel(e.position);
   const posClass = AWARD_TIER_POS_CLASS[tier];
@@ -2217,8 +2268,9 @@ function playerHistoryLines(h){
   const award = awardKey ? getAward(awardKey) : null;
   const legacyTier = h.kind==='EVENT' ? (h.position==='Winner'?'gold':h.position==='Second'?'silver':h.position==='Third'?'bronze':'none') : (h.kind==='MVP'?'gold':h.kind==='EVP'?'silver':'bronze');
   const tier = award ? award.tierColor : legacyTier;
-  const medal = h.customIcon
-    ? `<div class="pm-hist-medal ${awardTierClass(tier)}"><img src="${h.customIcon}" alt="" style="width:100%;height:100%;object-fit:contain;"></div>`
+  const rowIcon = h.customIcon || eventTrophyFor(h);
+  const medal = rowIcon
+    ? `<div class="pm-hist-medal ${awardTierClass(tier)}"><img src="${rowIcon}" alt="" style="width:100%;height:100%;object-fit:contain;"></div>`
     : (awardKey ? awardMedalHTML(awardKey, 22) : `<div class="pm-hist-medal ${awardTierClass(tier)}">${AWARD_TIER_FALLBACK_GLYPH[tier]}</div>`);
   const kindTxt = isBadge ? (award ? award.label.split('\u2014').pop().trim() : '') : (h.kind!=='EVENT' ? h.kind : positionLabel(h.position));
   const posClass = AWARD_TIER_POS_CLASS[tier];
@@ -2437,6 +2489,23 @@ $('upload-awards').addEventListener('change', e => {
   r.readAsText(e.target.files[0]);
 });
 
+$('upload-events').addEventListener('change', e => {
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      loadEventsCatalog(data);
+      $('events-box').classList.add('loaded');
+      $('events-status').textContent = `✓ ${eventTrophies.size}/${eventNamesList.length} EVENT TROPHIES LOADED`;
+      if (typeof updateAll === 'function' && finances.length) updateAll();
+    } catch(err) {
+      $('events-status').textContent = `✗ INVALID JSON`;
+      $('events-status').style.color = 'var(--red)';
+    }
+  };
+  r.readAsText(e.target.files[0]);
+});
+
 function handleXL(e, cb) {
   const r = new FileReader();
   r.onload = ev => {
@@ -2632,6 +2701,19 @@ async function scanFiles() {
   } catch(e) {
     $('awards-status').textContent = '— optional, not found (using default registry, no icons)';
     $('awards-status').style.color = 'var(--orange)';
+  }
+
+  // --- kz-events-backup.json (auto from file/) — optional ---
+  // Gives every placement the trophy that was actually lifted at its event, so
+  // the Award Registry icon is only ever a fallback.
+  try {
+    const evData = await fetchJSON('file/kz-events-backup.json');
+    loadEventsCatalog(evData);
+    $('events-box').classList.add('loaded');
+    $('events-status').textContent = `✓ ${eventTrophies.size}/${eventNamesList.length} EVENT TROPHIES LOADED`;
+  } catch(e) {
+    $('events-status').textContent = '— optional, not found (placements fall back to registry icons)';
+    $('events-status').style.color = 'var(--orange)';
   }
 
   // --- result ---
@@ -5357,7 +5439,8 @@ function exportAwardsJSON(){
   teamHistory.forEach(e=>{ if (e.customIcon) historyIcons[e.id] = e.customIcon; });
   /* standalone player awards carry their own image, keyed by their own id */
   playerHistory.forEach(h=>{ if (h.refId==null && h.customIcon) historyIcons[h.id] = h.customIcon; });
-  const out = { ...awardsConfig, __achIconStaging: achIconStaging, __historyIcons: historyIcons };
+  /* __achIconStaging is intentionally not written: see loadAwardsConfig. */
+  const out = { ...awardsConfig, __historyIcons: historyIcons };
   const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
