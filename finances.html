@@ -2084,7 +2084,7 @@ function positionLabel(position){
    Matched on the event NAME, loosely (case/spacing/punctuation ignored), so
    it keeps working for rows typed before this file existed.
 ═══════════════════════════════════════════════════════════════════ */
-let eventTrophies = new Map();     // normalized event name -> trophy data-URI
+let eventTrophies = new Map();     // normalized event name -> {winner,second,third,fourth}
 let eventNamesList = [];           // exact names, for the “Event Name” suggestions
 const evKey = name => String(name||'').toLowerCase().replace(/\bmajor\b/g,' ').replace(/[^a-z0-9]+/g,' ').trim();
 function loadEventsCatalog(arr){
@@ -2094,16 +2094,29 @@ function loadEventsCatalog(arr){
     if (!e || !e.name) return;
     const name = String(e.name).replace(/\s+/g,' ').trim();
     eventNamesList.push(name);
-    if (e.trophy) eventTrophies.set(evKey(name), e.trophy);
+    const set = { winner:e.trophy||'', second:e.trophySecond||'', third:e.trophyThird||'', fourth:e.trophyFourth||'' };
+    if (set.winner || set.second || set.third || set.fourth) eventTrophies.set(evKey(name), set);
   });
   eventNamesList.sort((a,b)=>a.localeCompare(b));
   populateEventNameLists();
 }
-/* The trophy for a placement row. Personal medals (MVP/EVP/VP) and badges keep
-   their own Award Registry artwork — only a team finish lifts the trophy. */
+/* The trophy for a placement row — per PLACEMENT, never one image for the whole
+   event: 1st, 2nd, 3rd and 4th–8th are different pieces of silverware, so a 4th–8th
+   finish must never be handed the winner's trophy. Third falls back to second only
+   (a single “Top 2–3” image is common); every other band stands alone and drops
+   through to the Award Registry when the Organizer has nothing for it.
+   Personal medals (MVP/EVP/VP) and badges always keep their registry artwork. */
 function eventTrophyFor(entry){
   if (!entry || (entry.kind && entry.kind !== 'EVENT')) return '';
-  return eventTrophies.get(evKey(entry.event)) || '';
+  const set = eventTrophies.get(evKey(entry.event));
+  if (!set) return '';
+  switch (entry.position) {
+    case 'Winner': return set.winner || '';
+    case 'Second': return set.second || '';
+    case 'Third':  return set.third || set.second || '';
+    case 'Fourth': return set.fourth || '';
+    default:       return '';
+  }
 }
 function populateEventNameLists(){
   const dl = $('hist-event-list');
@@ -2496,7 +2509,7 @@ $('upload-events').addEventListener('change', e => {
       const data = JSON.parse(ev.target.result);
       loadEventsCatalog(data);
       $('events-box').classList.add('loaded');
-      $('events-status').textContent = `✓ ${eventTrophies.size}/${eventNamesList.length} EVENT TROPHIES LOADED`;
+      $('events-status').textContent = `✓ ${eventTrophies.size}/${eventNamesList.length} EVENTS WITH TROPHIES`;
       if (typeof updateAll === 'function' && finances.length) updateAll();
     } catch(err) {
       $('events-status').textContent = `✗ INVALID JSON`;
@@ -2710,7 +2723,7 @@ async function scanFiles() {
     const evData = await fetchJSON('file/kz-events-backup.json');
     loadEventsCatalog(evData);
     $('events-box').classList.add('loaded');
-    $('events-status').textContent = `✓ ${eventTrophies.size}/${eventNamesList.length} EVENT TROPHIES LOADED`;
+    $('events-status').textContent = `✓ ${eventTrophies.size}/${eventNamesList.length} EVENTS WITH TROPHIES`;
   } catch(e) {
     $('events-status').textContent = '— optional, not found (placements fall back to registry icons)';
     $('events-status').style.color = 'var(--orange)';

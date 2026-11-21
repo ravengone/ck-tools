@@ -2902,6 +2902,7 @@ function refreshEventsUI() {
 
 /* ─── Modal open/close ─── */
 function openEventModal(editIdx = -1) {
+  ensureTrophyUpload();          // idempotent; guarantees all four slots exist before we fill them
   evEditIndex = editIdx;
   const overlay = document.getElementById('evModalOverlay');
   document.getElementById('evModalTitle').textContent = editIdx >= 0 ? 'Edit Event' : 'Add Event';
@@ -2913,7 +2914,7 @@ function openEventModal(editIdx = -1) {
     document.getElementById('evmDriveLink').value = e.driveLink || '';
     document.getElementById('evmPrizePool').value = e.prizePool || '';
     document.getElementById('evmLogo').value = e.logo || '';
-    document.getElementById('evmTrophy').value = e.trophy || '';
+    EV_TROPHY_SLOTS.forEach(sl => { const el = document.getElementById(sl.input); if (el) el.value = e[sl.field] || ''; });
     document.getElementById('evmCity').value = e.city || '';
     document.getElementById('evmCountry').value = e.country || '';
     document.getElementById('evmFlag').value = e.flag || '';
@@ -2983,7 +2984,8 @@ function closeEventModal() {
 }
 
 function clearEventModal() {
-  ['evmName','evmDriveLink','evmPrizePool','evmLogo','evmTrophy','evmCity','evmCountry',
+  [...EV_TROPHY_SLOTS.map(sl => sl.input),
+   'evmName','evmDriveLink','evmPrizePool','evmLogo','evmCity','evmCountry',
    'evmFlag','evmTeamCount','evmStage','evmNext1','evmNext2','evmNext3',
    'evmWinner','evmSecond','evmThird','evmFourth','evmMVP','evmEVP','evmVP',
    'evmPrize1st','evmPrize2nd','evmPrize34','evmPrize58','evmPrize911','evmPrize1216','evmPrize1724',
@@ -3018,11 +3020,57 @@ function updateEventLogoPreview() {
 
 /* ─── Trophy upload / preview helpers ───
    Mirrors the logo upload UI. The modal markup lives in index.html, so the
-   upload block is injected at runtime under the Trophy URL field (cloned from
-   the logo upload block so it looks identical). Safe to call multiple times. */
+   upload blocks are injected at runtime under the Trophy URL field (cloned from
+   the logo upload block so they look identical). Safe to call multiple times.
+
+   FOUR slots, not one. A tournament hands out different silverware per finishing
+   band, so one image per event is wrong: it is what put the champion's trophy in
+   a 4th–8th team's cabinet. 'trophy' stays the Top 1 field (every saved event
+   already uses that name); the other three are new and optional. Leave a band
+   empty and it falls back to the Award Registry icon rather than borrowing
+   another band's trophy. */
+const EV_TROPHY_SLOTS = [
+  { input:'evmTrophy',        field:'trophy',        label:'Trophy Image — Top 1 (winner)' },
+  { input:'evmTrophySecond',  field:'trophySecond',  label:'Trophy Image — Top 2' },
+  { input:'evmTrophyThird',   field:'trophyThird',   label:'Trophy Image — Top 3 (blank = same as Top 2)' },
+  { input:'evmTrophyFourth',  field:'trophyFourth',  label:'Trophy Image — Top 4–8' }
+];
+
+/* The three extra URL fields do not exist in index.html; clone the Top 1 field's
+   .form-group so they pick up the same styling, same as ensurePlacementFields(). */
+function ensureExtraTrophyFields() {
+  const first = document.getElementById('evmTrophy');
+  if (!first) return;
+  const group = first.closest('.form-group');
+  if (!group) return;
+  const label0 = group.querySelector('.form-label');
+  if (label0) label0.textContent = EV_TROPHY_SLOTS[0].label;
+  let after = group;
+  EV_TROPHY_SLOTS.slice(1).forEach(slot => {
+    if (document.getElementById(slot.input)) { after = document.getElementById(slot.input).closest('.form-group') || after; return; }
+    const g = group.cloneNode(true);
+    g.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+    const lab = g.querySelector('.form-label');
+    if (lab) lab.textContent = slot.label;
+    const inp = g.querySelector('input');
+    if (!inp) return;
+    inp.id = slot.input;
+    inp.value = '';
+    inp.placeholder = 'https://...';
+    after.insertAdjacentElement('afterend', g);
+    after = g;
+  });
+}
+
 function ensureTrophyUpload() {
-  if (document.getElementById('evmTrophyFile')) return;
-  const trophyInput = document.getElementById('evmTrophy');
+  ensureExtraTrophyFields();
+  EV_TROPHY_SLOTS.forEach(slot => ensureOneTrophyUpload(slot.input));
+}
+
+function ensureOneTrophyUpload(inputId) {
+  const fileId = inputId + 'File', clearId = inputId + 'Clear', prevId = inputId + 'Preview';
+  if (document.getElementById(fileId)) return;
+  const trophyInput = document.getElementById(inputId);
   if (!trophyInput) return;
 
   let block = null;
@@ -3031,11 +3079,7 @@ function ensureTrophyUpload() {
 
   if (logoBlock) {
     block = logoBlock.cloneNode(true);
-    const idMap = {
-      evmLogoFile: 'evmTrophyFile',
-      evmLogoClear: 'evmTrophyClear',
-      evmLogoPreview: 'evmTrophyPreview'
-    };
+    const idMap = { evmLogoFile: fileId, evmLogoClear: clearId, evmLogoPreview: prevId };
     block.querySelectorAll('[id]').forEach(el => {
       if (idMap[el.id]) el.id = idMap[el.id];
       else el.removeAttribute('id');
@@ -3047,40 +3091,40 @@ function ensureTrophyUpload() {
     block.querySelectorAll('.ev-logo-hint').forEach(h => {
       h.textContent = h.textContent.replace(/logo/g, 'trophy').replace(/Logo/g, 'Trophy');
     });
-    const fileEl = block.querySelector('#evmTrophyFile');
+    const fileEl = block.querySelector('#' + fileId);
     if (fileEl) fileEl.value = '';
   }
 
   // Fallback: build the block from the same CSS classes
-  if (!block || !block.querySelector('#evmTrophyFile')) {
+  if (!block || !block.querySelector('#' + fileId)) {
     block = document.createElement('div');
     block.className = 'ev-logo-upload';
     block.innerHTML = `
       <div class="ev-logo-upload-row">
-        <input type="file" id="evmTrophyFile" accept="image/*" class="form-control">
-        <button type="button" class="btn btn-ghost" id="evmTrophyClear">Clear</button>
+        <input type="file" id="${fileId}" accept="image/*" class="form-control">
+        <button type="button" class="btn btn-ghost" id="${clearId}">Clear</button>
       </div>
       <div class="ev-logo-hint">Upload an image from your device or paste a URL above.</div>`;
   }
 
   // Make sure there is a preview image
-  if (!block.querySelector('#evmTrophyPreview')) {
+  if (!block.querySelector('#' + prevId)) {
     const img = document.createElement('img');
-    img.id = 'evmTrophyPreview';
+    img.id = prevId;
     img.className = 'ev-logo-preview';
     img.alt = 'Trophy preview';
     block.appendChild(img);
   }
-  const prev = block.querySelector('#evmTrophyPreview');
+  const prev = block.querySelector('#' + prevId);
   prev.style.display = 'none';
   prev.removeAttribute('src');
 
   trophyInput.insertAdjacentElement('afterend', block);
 
   // Wire up events
-  trophyInput.addEventListener('input', updateEventTrophyPreview);
+  trophyInput.addEventListener('input', () => updateEventTrophyPreview(inputId));
 
-  const fileInp = document.getElementById('evmTrophyFile');
+  const fileInp = document.getElementById(fileId);
   fileInp.addEventListener('change', () => {
     const file = fileInp.files && fileInp.files[0];
     if (!file) return;
@@ -3091,26 +3135,28 @@ function ensureTrophyUpload() {
     }
     const reader = new FileReader();
     reader.onload = () => {
-      document.getElementById('evmTrophy').value = String(reader.result || '');
-      updateEventTrophyPreview();
+      document.getElementById(inputId).value = String(reader.result || '');
+      updateEventTrophyPreview(inputId);
     };
     reader.readAsDataURL(file);
   });
 
-  const clearBtn = document.getElementById('evmTrophyClear');
+  const clearBtn = document.getElementById(clearId);
   if (clearBtn) {
     clearBtn.addEventListener('click', (ev) => {
       ev.preventDefault();
-      document.getElementById('evmTrophy').value = '';
+      document.getElementById(inputId).value = '';
       fileInp.value = '';
-      updateEventTrophyPreview();
+      updateEventTrophyPreview(inputId);
     });
   }
 }
 
-function updateEventTrophyPreview() {
-  const url = (document.getElementById('evmTrophy')?.value || '').trim();
-  const img = document.getElementById('evmTrophyPreview');
+/* No argument = refresh all four previews (callers that predate the extra slots). */
+function updateEventTrophyPreview(inputId) {
+  if (!inputId) { EV_TROPHY_SLOTS.forEach(sl => updateEventTrophyPreview(sl.input)); return; }
+  const url = (document.getElementById(inputId)?.value || '').trim();
+  const img = document.getElementById(inputId + 'Preview');
   if (!img) return;
   if (!url) {
     img.style.display = 'none';
@@ -3122,8 +3168,10 @@ function updateEventTrophyPreview() {
 }
 
 function resetEventTrophyUpload() {
-  const f = document.getElementById('evmTrophyFile');
-  if (f) f.value = '';
+  EV_TROPHY_SLOTS.forEach(sl => {
+    const f = document.getElementById(sl.input + 'File');
+    if (f) f.value = '';
+  });
   updateEventTrophyPreview();
 }
 
@@ -3356,6 +3404,9 @@ function saveEvent() {
     prizePool: document.getElementById('evmPrizePool').value.trim(),
     logo: document.getElementById('evmLogo').value.trim(),
     trophy: document.getElementById('evmTrophy').value.trim(),
+    trophySecond: (document.getElementById('evmTrophySecond')?.value || '').trim(),
+    trophyThird:  (document.getElementById('evmTrophyThird')?.value  || '').trim(),
+    trophyFourth: (document.getElementById('evmTrophyFourth')?.value || '').trim(),
     city: document.getElementById('evmCity').value.trim(),
     country: document.getElementById('evmCountry').value.trim(),
     flag: document.getElementById('evmFlag').value.trim(),

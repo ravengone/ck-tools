@@ -217,7 +217,8 @@ async function loadEvents() {
   if (!res.ok) throw new Error('kz-events-backup.json → HTTP ' + res.status);
   const arr = await res.json();
   state.events = (Array.isArray(arr) ? arr : []).filter(e => e && e.name).map(e => ({
-    key: evKey(e.name), name: String(e.name).replace(/\s+/g, ' ').trim(), logo: e.logo || '', trophy: e.trophy || '', stars: Number(e.stars) || 0,
+    key: evKey(e.name), name: String(e.name).replace(/\s+/g, ' ').trim(), logo: e.logo || '', stars: Number(e.stars) || 0,
+    trophies: { winner: e.trophy || '', second: e.trophySecond || '', third: e.trophyThird || '', fourth: e.trophyFourth || '' },
     major: String(e.major || '').toLowerCase() === 'yes', city: e.city || '', country: e.country || '', prizePool: e.prizePool || '',
     standings: (e.standings || []).map(s => ({ label: String(s.label || '').trim(),
       names: (s.teams || []).map(t => String(t.name || '').trim()).filter(Boolean),
@@ -233,13 +234,27 @@ async function loadEvents() {
 let eventTrophyByKey = new Map();
 function rebuildEventTrophies() {
   eventTrophyByKey = new Map();
-  (state.events || []).forEach(e => { if (e.trophy) eventTrophyByKey.set(e.key, e.trophy); });
+  (state.events || []).forEach(e => {
+    const t = e.trophies || {};
+    if (t.winner || t.second || t.third || t.fourth) eventTrophyByKey.set(e.key, t);
+  });
 }
-/* A placement (1st -> 4th-8th) shows the trophy that was actually lifted at that event.
-   Personal medals (MVP/EVP/VP) and badges keep their own registry artwork. */
+/* Per PLACEMENT, never one image for the whole event: 1st, 2nd, 3rd and 4th-8th are
+   different pieces of silverware, so a 4th-8th finish must never be handed the
+   winner's trophy. Third falls back to second only (a single "Top 2-3" image is
+   common); every other band drops through to the Award Registry when the Organizer
+   has nothing for it. Medals (MVP/EVP/VP) and badges keep their registry artwork. */
 function eventTrophyFor(entry) {
   if (!entry || entry.kind !== 'EVENT') return '';
-  return eventTrophyByKey.get(evKey(entry.event)) || '';
+  const set = eventTrophyByKey.get(evKey(entry.event));
+  if (!set) return '';
+  switch (entry.position) {
+    case 'Winner': return set.winner || '';
+    case 'Second': return set.second || '';
+    case 'Third':  return set.third || set.second || '';
+    case 'Fourth': return set.fourth || '';
+    default:       return '';
+  }
 }
 
 async function loadLogos() {
