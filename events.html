@@ -1280,8 +1280,8 @@ const SUGGESTED_TEAM_COUNTS = { 1: 8, 2: 10, 3: 14, 4: 16, 5: INVITE_RULES.MAJOR
 async function loadData() {
     try {
         const [rankRes, evtRes] = await Promise.all([
-            fetch('file/ranking.xlsx'),
-            fetch('file/events.xlsx')
+            fetch('file/ranking.xlsx', { cache: 'no-cache' }),
+            fetch('file/events.xlsx', { cache: 'no-cache' })
         ]);
 
         if (!rankRes.ok || !evtRes.ok) throw new Error('Failed to fetch files');

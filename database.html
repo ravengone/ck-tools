@@ -196,6 +196,11 @@ body::after {
 
 /* ─── ALERTS ─── */
 #alerts { min-height: 42px; margin: 8px 0 12px; }
+/* .alert-msg is display:flex for the single-line banner at the top; nested
+   <code>/<strong>/<br> become flex items there and stack into narrow columns,
+   so panel notes that run to several lines use this instead. */
+.hist-warn{padding:9px 12px;border-left:3px solid var(--gold);background:rgba(255,184,0,.07);font-family:var(--mono);font-size:11px;line-height:1.55;color:var(--text);display:block;}
+.hist-warn code,.hist-warn strong{white-space:nowrap;}
 .alert-msg {
   padding: 10px 16px;
   border-left: 3px solid var(--cyan);
@@ -1073,6 +1078,35 @@ input[type="file"] { cursor: pointer; }
         </div>
       </div>
 
+      <!-- MATCH HISTORY -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><div class="icon">↺</div> Match History</div>
+          <span class="chip">W/L + Points</span>
+        </div>
+        <div class="panel-body">
+          <div class="note" style="margin-bottom:10px;">
+            Reads <code>file/history.xlsx</code>, groups the map rows into matches and applies only the ones
+            not counted yet. Placement points (1st–4th) are <strong>not</strong> touched — keep using
+            Tournament Result for those.
+          </div>
+          <button class="btn btn-full" id="btnLoadHistory">↺ Load History</button>
+          <input type="file" id="histFileInput" accept=".xlsx" style="display:none;">
+          <div class="note" id="histStatus" style="margin-top:8px;">Not loaded.</div>
+          <div id="histPreview" style="display:none;">
+            <div class="divider"></div>
+            <div id="histSummary" class="note" style="margin-bottom:10px;"></div>
+            <div id="histList" style="max-height:190px; overflow:auto; margin-bottom:10px;"></div>
+            <button class="btn btn-green btn-full" id="btnApplyHistory">▸ Apply <span id="histApplyN">0</span> match(es)</button>
+            <button class="btn btn-full" style="margin-top:8px;" id="btnMarkCounted">✓ Mark all as counted — no points</button>
+            <div class="note" style="margin-top:8px;">
+              After either action, export the history file so the flags stick.
+            </div>
+            <button class="btn btn-cyan btn-full" style="margin-top:8px;" id="btnExportHistory" disabled>↓ Export history_updated.xlsx</button>
+          </div>
+        </div>
+      </div>
+
       <!-- TOURNAMENT RESULT -->
       <div class="panel">
         <div class="panel-head">
@@ -1422,12 +1456,11 @@ document.getElementById("btnCalc").addEventListener("click",()=>{
   document.getElementById("versusBox").style.display="block";
 });
 
-document.getElementById("btnApplyMatch").addEventListener("click",()=>{
-  const res=document.getElementById("matchResult").value;
-  const aName=document.getElementById("teamA").value, bName=document.getElementById("teamB").value;
-  if (!aName||!bName||aName===bName){ showAlert("Choose two different teams.","warn"); return; }
-  const A=teams.find(t=>t[COL.TEAM]===aName), B=teams.find(t=>t[COL.TEAM]===bName);
-  if (!A||!B){ showAlert("Team not found.","bad"); return; }
+/* The whole effect of one match on two teams: points, W/L, streak, bonus game,
+   tier and timestamp. Shared by the manual "Apply Match" button and by the
+   Match History loader, so both can never drift apart. Returns the undo record. */
+function applyMatchOutcome(A, B, res){
+  const aName=A[COL.TEAM], bName=B[COL.TEAM];
   const beforeA=deepClone(A), beforeB=deepClone(B);
   const d=computeDeltas(A,B);
   let dA=0,dB=0;
@@ -1452,10 +1485,210 @@ document.getElementById("btnApplyMatch").addEventListener("click",()=>{
   const ts=new Date().toISOString();
   A[COL.UPDATED]=ts; B[COL.UPDATED]=ts;
   const id=`${ts}::${aName}::${bName}::${Math.random().toString(16).slice(2)}`;
-  recentMatches.unshift({ id,ts,aName,bName,result:res,deltaA:dA,deltaB:dB,beforeA,beforeB });
+  const rec={ id,ts,aName,bName,result:res,deltaA:dA,deltaB:dB,beforeA,beforeB };
+  recentMatches.unshift(rec);
   if(recentMatches.length>RECENT_MAX) recentMatches.pop();
+  return rec;
+}
+
+document.getElementById("btnApplyMatch").addEventListener("click",()=>{
+  const res=document.getElementById("matchResult").value;
+  const aName=document.getElementById("teamA").value, bName=document.getElementById("teamB").value;
+  if (!aName||!bName||aName===bName){ showAlert("Choose two different teams.","warn"); return; }
+  const A=teams.find(t=>t[COL.TEAM]===aName), B=teams.find(t=>t[COL.TEAM]===bName);
+  if (!A||!B){ showAlert("Team not found.","bad"); return; }
+  applyMatchOutcome(A,B,res);
   renderTable(); renderRecent();
   showAlert(`Match applied: <strong>${htmlEsc(res==="A"?aName:res==="B"?bName:"Draw")}</strong> wins. Download Excel to persist.`,"good");
+});
+
+/* ═══════════════════════════════════════════════════════════
+   MATCH HISTORY LOADER
+   file/history.xlsx holds one row per MAP. A match is the set of maps the same
+   two teams played on the same day, at the same event and stage — the exact
+   grouping the team/player pages already use — and the winner is simply whoever
+   took more maps, so BO1/BO3/BO5 all come out right.
+
+   A "Contabilized?" column on each map row records whether its match has already
+   been turned into points. Only unmarked matches are applied, oldest first
+   (Elo is path dependent, so order matters), and the rows are then marked.
+   Placement points stay manual: this never touches Majors, Trophies, the star
+   columns or the tourney bonus.
+   ═══════════════════════════════════════════════════════════ */
+const HIST_PATH = "file/history.xlsx";
+const HIST_FLAG = "Contabilized?";
+const HIST_YES  = "YES";
+let histRows = null, histHeaders = [], histSheet = "main", histSeries = [], histDirty = false;
+
+const histTruthy = v => {
+  const t = String(v ?? "").trim().toLowerCase();
+  return t !== "" && t !== "no" && t !== "false" && t !== "0" && t !== "n";
+};
+const histEvKey = n => String(n ?? "").toLowerCase().replace(/\bmajor\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+
+function histParse(ab){
+  const wb = XLSX.read(ab, { type:"array", cellDates:true });
+  histSheet = wb.SheetNames.includes("main") ? "main" : wb.SheetNames[0];
+  const ws = wb.Sheets[histSheet];
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  const headers = [];
+  for (let C = range.s.c; C <= range.e.c; C++){
+    const cell = ws[XLSX.utils.encode_cell({ r:range.s.r, c:C })];
+    const h = cell ? String(cell.v).trim() : "";
+    if (h) headers.push(h);
+  }
+  if (!headers.includes("Team 1") || !headers.includes("Result"))
+    throw new Error('expected columns "Team 1", "Team 2", "Result"');
+  if (!headers.includes(HIST_FLAG)) headers.push(HIST_FLAG);
+  histHeaders = headers;
+  histRows = XLSX.utils.sheet_to_json(ws, { defval:"" })
+    .filter(r => String(r["Team 1"] ?? "").trim() && String(r["Team 2"] ?? "").trim() && String(r["Result"] ?? "").trim());
+  histRows.forEach((r,i) => { r.__idx = i; if (!(HIST_FLAG in r)) r[HIST_FLAG] = ""; });
+  histSeries = histGroup(histRows);
+  histDirty = false;
+}
+
+/* maps -> matches, same key the profile pages use */
+function histGroup(rows){
+  const bag = new Map();
+  rows.forEach(r => {
+    const t1 = String(r["Team 1"]).trim(), t2 = String(r["Team 2"]).trim();
+    const raw = r["Date"];
+    let d = null;
+    if (raw !== "" && raw != null) {
+      d = (raw instanceof Date) ? raw : (typeof raw === "number" ? new Date((raw - 25569) * 86400000) : new Date(raw));
+      if (isNaN(d.getTime())) d = null;
+    }
+    const dateStr = d ? d.toISOString().split("T")[0] : String(raw ?? "").trim();
+    const ev = String(r["Event"] ?? "").trim(), det = String(r["Details"] ?? "").trim();
+    const key = [dateStr, [t1.toLowerCase(), t2.toLowerCase()].sort().join("|"), histEvKey(ev), det.toLowerCase()].join("~");
+    let m = bag.get(key);
+    if (!m) { m = { key, dateStr, event:ev, details:det, teamA:t1, teamB:t2, winsA:0, winsB:0, rows:[], idx:r.__idx }; bag.set(key, m); }
+    const parts = String(r["Result"]).toLowerCase().split("x").map(x => parseInt(x.trim(), 10));
+    const s1 = parts[0] || 0, s2 = parts[1] || 0;
+    const aIsT1 = t1.toLowerCase() === m.teamA.toLowerCase();
+    const a = aIsT1 ? s1 : s2, b = aIsT1 ? s2 : s1;
+    if (a > b) m.winsA++; else if (b > a) m.winsB++;
+    m.rows.push(r);
+    m.idx = Math.min(m.idx, r.__idx);
+  });
+  const list = [...bag.values()];
+  // oldest first: Elo depends on the order the games are played
+  list.sort((x,y) => (x.dateStr || "").localeCompare(y.dateStr || "") || x.idx - y.idx);
+  list.forEach(m => {
+    m.counted = m.rows.every(r => histTruthy(r[HIST_FLAG]));
+    m.result  = m.winsA > m.winsB ? "A" : m.winsB > m.winsA ? "B" : "D";
+  });
+  return list;
+}
+
+function histKnown(name){
+  const n = String(name).trim().toLowerCase();
+  return teams.find(t => String(t[COL.TEAM]).trim().toLowerCase() === n) || null;
+}
+
+function histRender(){
+  const pending = histSeries.filter(m => !m.counted);
+  const unknown = pending.filter(m => !histKnown(m.teamA) || !histKnown(m.teamB));
+  const ready   = pending.filter(m => histKnown(m.teamA) && histKnown(m.teamB));
+  const neverFlagged = histSeries.length > 0 && histSeries.every(m => !m.counted);
+
+  document.getElementById("histPreview").style.display = "";
+  document.getElementById("histApplyN").textContent = ready.length;
+  document.getElementById("btnApplyHistory").disabled = !ready.length;
+  document.getElementById("btnExportHistory").disabled = !histDirty;
+
+  let warn = "";
+  if (neverFlagged)
+    warn = '<div class="hist-warn" style="margin-bottom:8px;">No row carries a <code>' + HIST_FLAG + '</code> value yet, so every match looks new. If the ranking already includes these results, use <strong>Mark all as counted</strong> first — applying them would double every record.</div>';
+  if (unknown.length) {
+    const names = [...new Set(unknown.flatMap(m => [m.teamA, m.teamB].filter(t => !histKnown(t))))];
+    warn += '<div class="hist-warn" style="margin-bottom:8px;">' + unknown.length + ' match(es) skipped — team not in the ranking: ' + htmlEsc(names.join(", ")) + '</div>';
+  }
+
+  document.getElementById("histSummary").innerHTML = warn +
+    "<strong>" + histSeries.length + "</strong> match(es) in " + histRows.length + " map rows · " +
+    "<strong>" + (histSeries.length - pending.length) + "</strong> already counted · " +
+    "<strong>" + ready.length + "</strong> ready to apply" + (unknown.length ? " · " + unknown.length + " skipped" : "");
+
+  document.getElementById("histList").innerHTML = ready.length
+    ? '<table class="tbl" style="width:100%;font-size:11px;"><tbody>' + ready.slice(0, 60).map(m => {
+        const w = m.result === "A" ? m.teamA : m.result === "B" ? m.teamB : "draw";
+        return "<tr><td>" + htmlEsc(m.dateStr) + "</td><td>" + htmlEsc(m.teamA) + " vs " + htmlEsc(m.teamB) +
+               '</td><td class="num">' + m.winsA + "–" + m.winsB + "</td><td><strong>" + htmlEsc(w) + "</strong></td></tr>";
+      }).join("") + "</tbody></table>" + (ready.length > 60 ? '<div class="note">…and ' + (ready.length - 60) + " more.</div>" : "")
+    : '<div class="note">Nothing new to apply.</div>';
+}
+
+async function histLoad(){
+  const st = document.getElementById("histStatus");
+  try {
+    const url = new URL(HIST_PATH, new URL(".", window.location.href)).toString();
+    const r = await fetch(url, { cache:"no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    histParse(await r.arrayBuffer());
+    st.innerHTML = "Loaded <code>" + HIST_PATH + "</code> — " + histRows.length + " map rows.";
+    histRender();
+  } catch (e) {
+    st.innerHTML = "Could not read <code>" + HIST_PATH + "</code> (" + htmlEsc(e.message) + "). Pick the file manually…";
+    document.getElementById("histFileInput").click();
+  }
+}
+
+document.getElementById("btnLoadHistory").addEventListener("click", () => {
+  if (!teams.length) { showAlert("Load the ranking Excel first.","warn"); return; }
+  histLoad();
+});
+document.getElementById("histFileInput").addEventListener("change", async ev => {
+  const f = ev.target && ev.target.files && ev.target.files[0]; if (!f) return;
+  try {
+    histParse(await f.arrayBuffer());
+    document.getElementById("histStatus").innerHTML = "Loaded <strong>" + htmlEsc(f.name) + "</strong> — " + histRows.length + " map rows.";
+    histRender();
+  } catch (e) { showAlert("History file: " + htmlEsc(e.message), "bad"); }
+});
+
+document.getElementById("btnApplyHistory").addEventListener("click", () => {
+  if (!histSeries.length) return;
+  const ready = histSeries.filter(m => !m.counted && histKnown(m.teamA) && histKnown(m.teamB));
+  if (!ready.length) { showAlert("Nothing new to apply.","warn"); return; }
+  if (!confirm("Apply " + ready.length + " match(es) to the ranking?\n\nThis adds points, wins, losses and streaks, oldest first.\nPlacement points are not touched.")) return;
+  let done = 0;
+  for (const m of ready) {
+    const A = histKnown(m.teamA), B = histKnown(m.teamB);
+    if (!A || !B) continue;
+    applyMatchOutcome(A, B, m.result);
+    m.rows.forEach(r => { r[HIST_FLAG] = HIST_YES; });
+    m.counted = true; done++;
+  }
+  histDirty = true;
+  renderTable(); renderRecent(); histRender();
+  showAlert("Applied <strong>" + done + "</strong> match(es) from history. Export <strong>ranking_updated.xlsx</strong> and <strong>history_updated.xlsx</strong> to keep both.", "good");
+});
+
+document.getElementById("btnMarkCounted").addEventListener("click", () => {
+  if (!histSeries.length) return;
+  const n = histSeries.filter(m => !m.counted).length;
+  if (!n) { showAlert("Every match is already marked.","warn"); return; }
+  if (!confirm("Mark " + n + " match(es) as already counted?\n\nNo points, wins or losses change — this only writes \"" + HIST_YES + "\" into the " + HIST_FLAG + " column so they are skipped from now on.")) return;
+  histSeries.forEach(m => { if (!m.counted) { m.rows.forEach(r => { r[HIST_FLAG] = HIST_YES; }); m.counted = true; } });
+  histDirty = true;
+  histRender();
+  showAlert("Marked <strong>" + n + "</strong> match(es) as counted. Export <strong>history_updated.xlsx</strong> to save the flags.", "good");
+});
+
+document.getElementById("btnExportHistory").addEventListener("click", () => {
+  if (!histRows) return;
+  const out = histRows.map(r => {
+    const o = {};
+    for (const h of histHeaders) o[h] = r[h] ?? "";
+    return o;
+  });
+  const ws = XLSX.utils.json_to_sheet(out, { header: histHeaders });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, histSheet);
+  XLSX.writeFile(wb, "history_updated.xlsx");
+  showAlert("Exported <strong>history_updated.xlsx</strong> — replace <code>" + HIST_PATH + "</code> with it.", "good");
 });
 
 /* ─── TOURNAMENT ─── */

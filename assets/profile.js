@@ -213,7 +213,7 @@ function buildSeries(maps) {
 }
 
 async function loadEvents() {
-  const res = await fetch(URLS.events);   // large file: let the browser cache it
+  const res = await fetch(URLS.events, { cache: 'no-cache' });   // revalidate: a 304 still avoids re-downloading it
   if (!res.ok) throw new Error('kz-events-backup.json → HTTP ' + res.status);
   const arr = await res.json();
   state.events = (Array.isArray(arr) ? arr : []).filter(e => e && e.name).map(e => ({
@@ -265,7 +265,7 @@ async function loadLogos() {
 }
 
 async function loadAwards() {
-  const res = await fetch(URLS.awards);   // large file: let the browser cache it
+  const res = await fetch(URLS.awards, { cache: 'no-cache' });   // revalidate: a 304 still avoids re-downloading it
   if (!res.ok) throw new Error('awards.json → HTTP ' + res.status);
   const data = await res.json();
   state.awards = data;

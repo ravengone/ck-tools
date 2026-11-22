@@ -2631,7 +2631,7 @@ async function scanFiles() {
   status.textContent = 'Scanning for files in file/ and assets/...';
 
   async function fetchXL(path) {
-    const res = await fetch(path);
+    const res = await fetch(path, { cache: 'no-cache' });
     if (!res.ok) throw new Error(path);
     const buf = await res.arrayBuffer();
     const wb = XLSX.read(buf, {type:'array'});
@@ -2639,7 +2639,7 @@ async function scanFiles() {
   }
 
   async function fetchJSON(path) {
-    const res = await fetch(path);
+    const res = await fetch(path, { cache: 'no-cache' });
     if (!res.ok) throw new Error(path);
     return res.json();
   }
@@ -2676,7 +2676,7 @@ async function scanFiles() {
   let histFile = '';
   for (const cand of ['file/history_updated.xlsx', 'file/history.xlsx']) {
     try {
-      const res = await fetch(cand);
+      const res = await fetch(cand, { cache: 'no-cache' });
       if (res.ok){
         const buf = await res.arrayBuffer();
         loadHistoryWB(XLSX.read(buf, {type:'array'}));

@@ -1,0 +1,132 @@
+[
+  {
+    "event": "FiReLEAGUE Buenos Aires 2026",
+    "team": "Legacy",
+    "in": [
+      "dumau"
+    ],
+    "out": [
+      "bitou"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "Legacy",
+    "in": [
+      "dumau"
+    ],
+    "out": [
+      "bitou"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "Iluminar",
+    "in": [
+      "kilzys",
+      "heroghoxxt"
+    ],
+    "out": [
+      "Gizmy",
+      "fl0m",
+      "xelex"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "BC.Game",
+    "in": [
+      "Valiance"
+    ],
+    "out": [
+      "Perfecto"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "Kappa Bar",
+    "in": [
+      "Gizmy"
+    ],
+    "out": [
+      "diskyb0b"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "Envy",
+    "in": [
+      "PTC"
+    ],
+    "out": [
+      "kl1m"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "Mythic",
+    "in": [
+      "fl0m"
+    ],
+    "out": [
+      "hades"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "The Huns",
+    "in": [
+      "arT"
+    ],
+    "out": [
+      "gafolo"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "Titan",
+    "in": [],
+    "out": [
+      "arT",
+      "dumau"
+    ]
+  },
+  {
+    "event": "DreamHack Winter 2026",
+    "team": "Copenhagen Flames",
+    "in": [],
+    "out": [
+      "NIGHT666BLADE"
+    ]
+  },
+  {
+    "event": "CS Asia Champions 2026",
+    "team": "kONO",
+    "in": [
+      "NIGHT666BLADE"
+    ],
+    "out": [
+      "senka"
+    ]
+  },
+  {
+    "event": "Fragadelphia 2026",
+    "team": "kONO",
+    "in": [
+      "NIGHT666BLADE"
+    ],
+    "out": [
+      "senka"
+    ]
+  },
+  {
+    "event": "Winamax Spanish Cirtuit 2026",
+    "team": "Nordix",
+    "in": [
+      "gafolo"
+    ],
+    "out": [
+      "Zeus"
+    ]
+  }
+]
